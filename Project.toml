@@ -1,0 +1,23 @@
+name = "OndaEDF"
+uuid = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
+authors = ["Beacon Biosignals, Inc."]
+version = "0.6.0"
+
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+EDF = "ccffbfc1-f56e-50fb-a33b-53d1781b2825"
+Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
+UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
+
+[compat]
+EDF = "0.6"
+Onda = "0.11"
+julia = "1.4"
+
+[extras]
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test", "Random", "Statistics"]
