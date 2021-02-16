@@ -1,7 +1,7 @@
 name = "OndaEDF"
 uuid = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.6.0"
+version = "0.7.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
