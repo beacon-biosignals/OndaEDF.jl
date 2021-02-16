@@ -4,7 +4,7 @@ using OndaEDF, Onda, EDF
 @testset "EDF.Signal label handling" begin
     signal_names = [:eeg, :test]
     canonical_names = OndaEDF.STANDARD_LABELS[[:eeg]]
-    @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", signal_names, :c3, canonical_names) == Symbol("c3-a1_plus_a2_over_2")
+    @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", signal_names, :c3, canonical_names) == Symbol("c3-m1_plus_a2_over_2")
     @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", [:ecg], :c3, canonical_names) == nothing
     @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", signal_names, :c4, canonical_names) == nothing
     @test OndaEDF.match_edf_label(" TEsT   -Fpz  -REF-cpz", signal_names, :fpz, canonical_names) == Symbol("-fpz-ref-cpz")
@@ -115,8 +115,8 @@ returned_uuid, recording = import_edf!(dataset, edf, uuid)
     @test recording.signals[:emg].sample_unit == :microvolt
     @test recording.signals[:eog].channel_names == [:left, :right]
     @test recording.signals[:eog].sample_unit == :microvolt
-    @test recording.signals[:eeg].channel_names == [:fpz, Symbol("f3-a2"), Symbol("f4-a1"), Symbol("c3-a2"),
-                                                    Symbol("c4-a1"), Symbol("o1-a2"), Symbol("o2-a1")]
+    @test recording.signals[:eeg].channel_names == [:fpz, Symbol("f3-m2"), Symbol("f4-m1"), Symbol("c3-m2"),
+                                                    Symbol("c4-m1"), Symbol("o1-m2"), Symbol("o2-a1")]
     @test recording.signals[:eeg].sample_unit == :microvolt
     @test recording.signals[:pap_device_cflow].channel_names == [:pap_device_cflow]
     @test recording.signals[:pap_device_cflow].sample_unit == :liter_per_minute
