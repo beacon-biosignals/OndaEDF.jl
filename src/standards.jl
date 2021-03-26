@@ -4,24 +4,24 @@
 # This doesn't cover everything, just units that we've seen often. Note that casing
 # matters for the EDF standard physical dimensions, so we can't just always normalize
 # to a single case when processing; this results in some redundant-looking values below.
-const STANDARD_UNITS = Dict(:nanovolt => ["nV"],
-                            :microvolt => ["uV"],
-                            :millivolt => ["mV"],
-                            :centivolt => ["cV"],
-                            :decivolt => ["dV"],
-                            :volt => ["V", "v"],
-                            :millimiter => ["mm"],
-                            :centimeter => ["cm"],
-                            :milliliter => ["mL", "ml"],
-                            :degrees_celsius => ["degC", "degc"],
-                            :degrees_fahrenheit => ["degF", "degf"],
-                            :kelvin => ["K"],
-                            :percent => ["%"],
-                            :liter_per_minute => ["L/m", "l/m", "LPM", "Lpm", "lpm", "LpM"],
-                            :millimeter_of_mercury => ["mmHg", "mmhg", "MMHG"],
-                            :beat_per_minute => ["B/m", "b/m", "bpm", "BPM", "BpM"],
-                            :centimeter_of_water => ["cmH2O", "cmh2o"],
-                            :unknown => [""])
+const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
+                            "microvolt" => ["uV"],
+                            "millivolt" => ["mV"],
+                            "centivolt" => ["cV"],
+                            "decivolt" => ["dV"],
+                            "volt" => ["V", "v"],
+                            "millimiter" => ["mm"],
+                            "centimeter" => ["cm"],
+                            "milliliter" => ["mL", "ml"],
+                            "degrees_celsius" => ["degC", "degc"],
+                            "degrees_fahrenheit" => ["degF", "degf"],
+                            "kelvin" => ["K"],
+                            "percent" => ["%"],
+                            "liter_per_minute" => ["L/m", "l/m", "LPM", "Lpm", "lpm", "LpM"],
+                            "millimeter_of_mercury" => ["mmHg", "mmhg", "MMHG"],
+                            "beat_per_minute" => ["B/m", "b/m", "bpm", "BPM", "BpM"],
+                            "centimeter_of_water" => ["cmH2O", "cmh2o"],
+                            "unknown" => [""])
 
 # The case-sensitivity of EDF physical dimension names means you can't/shouldn't
 # naively convert/lowercase them to compliant Onda unit names, so we have to be
@@ -40,7 +40,7 @@ function edf_to_onda_unit(edf_physical_dimension::AbstractString)
           """)
 end
 
-function onda_to_edf_unit(onda_sample_unit::Symbol)
+function onda_to_edf_unit(onda_sample_unit::String)
     haskey(STANDARD_UNITS, onda_sample_unit) && return first(STANDARD_UNITS[onda_sample_unit])
     error("""
           Failed to convert Onda unit `$(onda_sample_unit)` to EDF physical dimension
