@@ -177,24 +177,12 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
     all(==(onda_sample_unit), onda_units) || error("multiple possible units found for same signal: $onda_units")
     onda_encoding = promote_encodings(edf_encodings)
     onda_stop_nanosecond = Onda.time_from_index(onda_encoding.sample_rate, length(edf_channels[1].samples) + 1)
-
     info = SamplesInfo(; kind=first(signal_names), channels=edf_channel_names,
                        sample_unit=string(onda_sample_unit),
                        sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
                        sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
                        sample_type=onda_encoding.sample_type,
                        sample_rate=onda_encoding.sample_rate)
-
-    #onda_signal = Onda.Signal(channel_names=edf_channel_names,
-    #                          sample_type=onda_encoding.sample_type,
-    #                          sample_rate=onda_encoding.sample_rate,
-    #                          sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
-    #                          sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
-    #                          sample_unit=onda_sample_unit,
-    #                          start_nanosecond=Nanosecond(0),
-    #                          stop_nanosecond=onda_stop_nanosecond,
-    #                          file_extension=Symbol("lpcm.zst"),
-    #                          file_options=nothing)
     return info, edf_channels
 end
 
@@ -240,8 +228,7 @@ the signals in `recording` are converted from the provided `edf`. Collections
 of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple "extractor"
 callbacks of the form:
 
-    edf::EDF.File -> (onda_signal_name::Symbol,
-                      onda_signal::Onda.Signal,
+    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
                       edf_signals::Vector{EDF.Signal})
 
 `import_edf!` automatically uses a variety of default extractors derived from
