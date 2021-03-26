@@ -73,9 +73,9 @@ end
 ##### `EDF.Signal` conversion
 #####
 
-function export_edf_label(signal_name::Symbol, channel_name::Symbol)
-    signal_edf_name = uppercase(string(signal_name))
-    channel_edf_name = uppercase(string(channel_name))
+function export_edf_label(signal_name::String, channel_name::String)
+    signal_edf_name = uppercase(signal_name)
+    channel_edf_name = uppercase(channel_name)
     if signal_edf_name == "EEG" && !('-' in channel_edf_name)
         channel_edf_name *= "-Ref"
     end
@@ -92,71 +92,71 @@ function export_edf_header(signals::Vector{Onda.Signal};
                           is_contiguous, edf_record_metadata(signals)...)
 end
 
-function export_edf_signals(dataset::Dataset, uuid::UUID, signals, seconds_per_record::Float64)
-    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
-    for (signal_name::Symbol, onda_signal::Onda.Signal) in signals
-        if sizeof(onda_signal.sample_type) > sizeof(Int16)
-            decoded_samples = Onda.load(dataset, uuid, signal_name)
-            scaled_resolution = onda_signal.sample_resolution_in_unit * (sizeof(onda_signal.sample_type) / sizeof(Int16))
-            signal = signal_from_template(onda_signal; sample_type=Int16, sample_resolution_in_unit=scaled_resolution)
-            samples = encode(Onda.Samples(signal, false, decoded_samples.data), missing)
-        else
-            signal = onda_signal
-            samples = Onda.load_encoded(dataset, uuid, signal_name)
-        end
-        extrema = SignalExtrema(signal)
-        for channel_name in onda_signal.channel_names
-            sample_count = edf_sample_count_per_record(onda_signal, seconds_per_record)
-            physical_dimension = onda_to_edf_unit(onda_signal.sample_unit)
-            edf_signal_header = EDF.SignalHeader(export_edf_label(signal_name, channel_name),
-                                                 "", physical_dimension,
-                                                 extrema.physical_min, extrema.physical_max,
-                                                 extrema.digital_min, extrema.digital_max,
-                                                 "", sample_count)
-            sample_data = vec(samples[channel_name, :].data)
-            padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
-            edf_signal_samples = append!(sample_data, padding)
-            push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
-        end
-    end
-    return edf_signals
-end
-
-#####
-##### `export_edf`
-#####
-
-"""
-    export_edf(dataset::Dataset, uuid::UUID; signal_names=keys(dataset.recordings[uuid].signals))
-
-Return an `EDF.File` containing signal data converted from `dataset.recordings[uuid]`.
-
-Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`;
-only signals whose names are given in `signal_name`s are exported.
-
-The ordering of `EDF.Signal`s in the output will match the order of the given `signal_names`
-(and within each channel grouping, the order of the signal's channels).
-"""
-function export_edf(dataset::Dataset, uuid::UUID;
-                    signal_names=keys(dataset.recordings[uuid].signals),
-                    export_annotations::Bool=true,
-                    kwargs...)
-    recording = dataset.recordings[uuid]
-    signals = [recording.signals[name] for name in signal_names]
-    edf_header = export_edf_header(signals; kwargs...)
-    edf_signals = export_edf_signals(dataset, uuid, zip(signal_names, signals),
-                                     edf_header.seconds_per_record)
-    if export_annotations
-        records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
-                   for i in 0:(edf_header.record_count - 1)]
-        for annotation in sort(collect(recording.annotations); by=first)
-            annotation_onset_in_seconds = first(annotation).value / 1e9
-            annotation_duration_in_seconds = duration(annotation).value / 1e9
-            matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record)) + 1]
-            tal = EDF.TimestampedAnnotationList(annotation_onset_in_seconds, annotation_duration_in_seconds, [annotation.value])
-            push!(matching_record, tal)
-        end
-        push!(edf_signals, EDF.AnnotationsSignal(records))
-    end
-    return EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
-end
+#function export_edf_signals(dataset::Dataset, uuid::UUID, signals, seconds_per_record::Float64)
+#    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
+#    for (signal_name::Symbol, onda_signal::Onda.Signal) in signals
+#        if sizeof(onda_signal.sample_type) > sizeof(Int16)
+#            decoded_samples = Onda.load(dataset, uuid, signal_name)
+#            scaled_resolution = onda_signal.sample_resolution_in_unit * (sizeof(onda_signal.sample_type) / sizeof(Int16))
+#            signal = signal_from_template(onda_signal; sample_type=Int16, sample_resolution_in_unit=scaled_resolution)
+#            samples = encode(Onda.Samples(signal, false, decoded_samples.data), missing)
+#        else
+#            signal = onda_signal
+#            samples = Onda.load_encoded(dataset, uuid, signal_name)
+#        end
+#        extrema = SignalExtrema(signal)
+#        for channel_name in onda_signal.channel_names
+#            sample_count = edf_sample_count_per_record(onda_signal, seconds_per_record)
+#            physical_dimension = onda_to_edf_unit(onda_signal.sample_unit)
+#            edf_signal_header = EDF.SignalHeader(export_edf_label(signal_name, channel_name),
+#                                                 "", physical_dimension,
+#                                                 extrema.physical_min, extrema.physical_max,
+#                                                 extrema.digital_min, extrema.digital_max,
+#                                                 "", sample_count)
+#            sample_data = vec(samples[channel_name, :].data)
+#            padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
+#            edf_signal_samples = append!(sample_data, padding)
+#            push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
+#        end
+#    end
+#    return edf_signals
+#end
+#
+######
+###### `export_edf`
+######
+#
+#"""
+#    export_edf(dataset::Dataset, uuid::UUID; signal_names=keys(dataset.recordings[uuid].signals))
+#
+#Return an `EDF.File` containing signal data converted from `dataset.recordings[uuid]`.
+#
+#Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`;
+#only signals whose names are given in `signal_name`s are exported.
+#
+#The ordering of `EDF.Signal`s in the output will match the order of the given `signal_names`
+#(and within each channel grouping, the order of the signal's channels).
+#"""
+#function export_edf(dataset::Dataset, uuid::UUID;
+#                    signal_names=keys(dataset.recordings[uuid].signals),
+#                    export_annotations::Bool=true,
+#                    kwargs...)
+#    recording = dataset.recordings[uuid]
+#    signals = [recording.signals[name] for name in signal_names]
+#    edf_header = export_edf_header(signals; kwargs...)
+#    edf_signals = export_edf_signals(dataset, uuid, zip(signal_names, signals),
+#                                     edf_header.seconds_per_record)
+#    if export_annotations
+#        records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
+#                   for i in 0:(edf_header.record_count - 1)]
+#        for annotation in sort(collect(recording.annotations); by=first)
+#            annotation_onset_in_seconds = first(annotation).value / 1e9
+#            annotation_duration_in_seconds = duration(annotation).value / 1e9
+#            matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record)) + 1]
+#            tal = EDF.TimestampedAnnotationList(annotation_onset_in_seconds, annotation_duration_in_seconds, [annotation.value])
+#            push!(matching_record, tal)
+#        end
+#        push!(edf_signals, EDF.AnnotationsSignal(records))
+#    end
+#    return EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
+#end
