@@ -286,8 +286,12 @@ function import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
                 end
             end
         end
-        annotations_path = joinpath(path, "onda.annotations.arrow")
-        write_annotations(annotations_path, annotations)
+        if !isempty(annotations)
+            annotations_path = joinpath(path, "onda.annotations.arrow")
+            write_annotations(annotations_path, annotations)
+        else
+            @warn "No annotations found in $path"
+        end
     end
     return uuid => (signals, annotations)
 end
