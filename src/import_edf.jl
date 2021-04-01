@@ -253,14 +253,14 @@ function import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
                      custom_extractors=(), import_annotations::Bool=true)
     EDF.read!(edf)
     file_format = "lpcm.zst"
-    signals = Signal[]
+    signals = Any[]
     for extractor in Iterators.flatten((STANDARD_EXTRACTORS, custom_extractors))
         extracted = extractor(edf)
         extracted === nothing && continue
         samples_info, edf_signals = extracted
         file_path = joinpath(path, "samples", string(uuid, "_", samples_info.kind, ".", file_format))
         samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
-        signal = store(file_path, file_format, samples, uuid, Second(0))
+        signal = rowmerge(store(file_path, file_format, samples, uuid, Second(0)); file_path=string(file_path))
         push!(signals, signal)
     end
     signals_path = joinpath(path, "onda.signals.arrow")

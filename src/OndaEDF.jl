@@ -4,6 +4,7 @@ using Base.Iterators
 using Dates, UUIDs
 using Onda, EDF
 using TimeSpans
+using Tables: rowmerge
 
 include("standards.jl")
 
