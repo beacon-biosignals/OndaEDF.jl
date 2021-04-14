@@ -131,38 +131,39 @@ end
 ######
 ###### `export_edf`
 ######
-#
-#"""
-#    export_edf(dataset::Dataset, uuid::UUID; signal_names=keys(dataset.recordings[uuid].signals))
-#
-#Return an `EDF.File` containing signal data converted from `dataset.recordings[uuid]`.
-#
-#Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`;
-#only signals whose names are given in `signal_name`s are exported.
-#
-#The ordering of `EDF.Signal`s in the output will match the order of the given `signal_names`
-#(and within each channel grouping, the order of the signal's channels).
-#"""
-#function export_edf(signals, uuid::UUID, annotations;
-#                    signal_names=keys(dataset.recordings[uuid].signals),
-#                    export_annotations::Bool=true,
-#                    kwargs...)
-#    recording = dataset.recordings[uuid]
-#    signals = [recording.signals[name] for name in signal_names]
-#    edf_header = export_edf_header(signals; kwargs...)
-#    edf_signals = export_edf_signals(dataset, uuid, zip(signal_names, signals),
-#                                     edf_header.seconds_per_record)
-#    if export_annotations
-#        records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
-#                   for i in 0:(edf_header.record_count - 1)]
-#        for annotation in sort(collect(recording.annotations); by=first)
-#            annotation_onset_in_seconds = first(annotation).value / 1e9
-#            annotation_duration_in_seconds = duration(annotation).value / 1e9
-#            matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record)) + 1]
-#            tal = EDF.TimestampedAnnotationList(annotation_onset_in_seconds, annotation_duration_in_seconds, [annotation.value])
-#            push!(matching_record, tal)
-#        end
-#        push!(edf_signals, EDF.AnnotationsSignal(records))
-#    end
-#    return EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
-#end
+
+"""
+   export_edf(signals, annotations=[]; kwargs...)
+
+Return an `EDF.File` containing signal data converted from the Onda [`signals`
+table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.signals.arrow-1)
+and (optionally) annotations from an [`annotations`
+table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.arrow-1).
+
+Following the Onda v0.5 format, both `signals` and `annotations` can be any
+Tables.jl-compatible table (DataFrame, Arrow.Table, NamedTuple of vectors, vector of
+NamedTuples) which follow the signal and annotation schemas (respectively).
+
+Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`;
+
+The ordering of `EDF.Signal`s in the output will match the order of the rows of
+the signals table (and within each channel grouping, the order of the signal's
+channels).
+"""
+function export_edf(signals, annotations=[]; kwargs...)
+    edf_header = export_edf_header(signals; kwargs...)
+    edf_signals = export_edf_signals(signals, edf_header.seconds_per_record)
+    if !isempty(annotations)
+        records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
+                   for i in 0:(edf_header.record_count - 1)]
+        for annotation in sort(Tables.rows(annotations); by=row -> start(row.span))
+            annotation_onset_in_seconds = start(annotation.span).value / 1e9
+            annotation_duration_in_seconds = duration(annotation.span).value / 1e9
+            matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record)) + 1]
+            tal = EDF.TimestampedAnnotationList(annotation_onset_in_seconds, annotation_duration_in_seconds, [annotation.value])
+            push!(matching_record, tal)
+        end
+        push!(edf_signals, EDF.AnnotationsSignal(records))
+    end
+    return EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
+end
