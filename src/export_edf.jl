@@ -156,7 +156,7 @@ function export_edf(signals, annotations=[]; kwargs...)
     if !isempty(annotations)
         records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
                    for i in 0:(edf_header.record_count - 1)]
-        for annotation in sort(Tables.rows(annotations); by=row -> start(row.span))
+        for annotation in sort(Tables.rowtable(annotations); by=row -> start(row.span))
             annotation_onset_in_seconds = start(annotation.span).value / 1e9
             annotation_duration_in_seconds = duration(annotation.span).value / 1e9
             matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record)) + 1]
