@@ -131,9 +131,9 @@ function export_edf_signals(signals, seconds_per_record::Float64)
     return edf_signals
 end
 
-######
-###### `export_edf`
-######
+#####
+##### `export_edf`
+#####
 
 """
    export_edf(signals, annotations=[]; kwargs...)
