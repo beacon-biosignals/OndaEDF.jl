@@ -136,7 +136,7 @@ end
 #####
 
 """
-   export_edf(signals, annotations=[]; kwargs...)
+    export_edf(signals, annotations=[]; kwargs...)
 
 Return an `EDF.File` containing signal data converted from the Onda [`signals`
 table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.signals.arrow-1)
