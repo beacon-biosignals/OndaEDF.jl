@@ -1,5 +1,5 @@
 using Test, Dates, Random, UUIDs, Statistics
-using OndaEDF, Onda, EDF
+using OndaEDF, Onda, EDF, Tables
 
 @testset "EDF.Signal label handling" begin
     signal_names = ["eeg", "eog", "test"]
@@ -175,25 +175,28 @@ end
         end
     end
     @testset "Record metadata" begin
-        massive_eeg = signal_from_template(recording.signals[:eeg]; sample_rate=5000.0)
+        eeg_signal = only(filter(row -> row.kind == "eeg", returned_signals))
+        ecg_signal = only(filter(row -> row.kind == "ecg", returned_signals))
+        
+        massive_eeg = Tables.rowmerge(eeg_signal; sample_rate=5000.0)
         @test OndaEDF.edf_record_metadata([massive_eeg]) == (1000000, 1 / 5000)
 
-        chunky_eeg = signal_from_template(recording.signals[:eeg]; sample_rate=9999.0)
-        chunky_ecg = signal_from_template(recording.signals[:ecg]; sample_rate=425.0)
+        chunky_eeg = Tables.rowmerge(eeg_signal; sample_rate=9999.0)
+        chunky_ecg = Tables.rowmerge(ecg_signal; sample_rate=425.0)
         @test_throws OndaEDF.RecordSizeException OndaEDF.edf_record_metadata([chunky_eeg, chunky_ecg])
 
-        e_notation_eeg = signal_from_template(recording.signals[:eeg]; sample_rate=20_000_000.0)
+        e_notation_eeg = Tables.rowmerge(eeg_signal; sample_rate=20_000_000.0)
         @test OndaEDF.edf_record_metadata([e_notation_eeg]) == (4.0e9, 1 / 20_000_000)
 
-        too_big_and_thorny_eeg = signal_from_template(recording.signals[:eeg]; sample_rate=20_576_999.0)
+        too_big_and_thorny_eeg = Tables.rowmerge(eeg_signal; sample_rate=20_576_999.0)
         @test_throws OndaEDF.EDFPrecisionError OndaEDF.edf_record_metadata([too_big_and_thorny_eeg])
 
-        floaty_eeg = signal_from_template(recording.signals[:eeg]; sample_rate=256.5)
-        floaty_ecg = signal_from_template(recording.signals[:ecg]; sample_rate=340)
+        floaty_eeg = Tables.rowmerge(eeg_signal; sample_rate=256.5)
+        floaty_ecg = Tables.rowmerge(ecg_signal; sample_rate=340)
         @test OndaEDF.edf_record_metadata([floaty_eeg, floaty_ecg]) == (100, 2)
 
-        resizable_eeg = signal_from_template(recording.signals[:eeg]; sample_rate=25.25)
-        resizable_ecg = signal_from_template(recording.signals[:ecg]; sample_rate=10.4)
+        resizable_eeg = Tables.rowmerge(eeg_signal; sample_rate=25.25)
+        resizable_ecg = Tables.rowmerge(ecg_signal; sample_rate=10.4)
         @test OndaEDF.edf_record_metadata([resizable_eeg, resizable_ecg]) == (10, 20)
 
         @testset "Exception and Error handling" begin
@@ -211,8 +214,19 @@ end
         uuid4() # call this here because `@testset` resets global RNG, so we'll
         # get a conflict with the existing UUID if we let `import_edf!`
         # generate it without "advancing" the RNG
-        testuuid, round_tripped = import_edf!(dataset, exported_edf)
-        @test round_tripped isa Onda.Recording
-        @test dataset.recordings[uuid].annotations == round_tripped.annotations
+        round_tripped = mktempdir() do root
+            _, (_, annotations) = import_edf!(root, exported_edf)
+            return annotations
+        end
+        
+        @test round_tripped isa Vector{<:Onda.Annotation}
+        # annotations are sorted by start time on export
+        ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
+        @test getproperty.(round_tripped, :span) == getproperty.(ann_sorted, :span)
+        @test getproperty.(round_tripped, :value) == getproperty.(ann_sorted, :value)
+        # new UUID for recording is created during import
+        @test all(getproperty.(round_tripped, :recording) .!= getproperty.(ann_sorted, :recording))
+        # new UUID for each annotation created during import
+        @test all(getproperty.(round_tripped, :id) .!= getproperty.(ann_sorted, :id))
     end
 end
