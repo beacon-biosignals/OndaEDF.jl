@@ -25,8 +25,11 @@ const EDF_BYTE_LIMIT = 8
 
 edf_sample_count_per_record(signal, seconds_per_record::Float64) = Int16(signal.sample_rate * seconds_per_record)
 
+_rationalize(x) = rationalize(x)
+_rationalize(x::Int) = x // 1
+
 function edf_record_metadata(signals)
-    sample_rates = map(signal -> rationalize(signal.sample_rate), signals)
+    sample_rates = map(signal -> _rationalize(signal.sample_rate), signals)
     seconds_per_record = lcm(map(denominator, sample_rates))
     samples_per_record = map(zip(signals, sample_rates)) do (signal, sample_rate)
         return channel_count(signal) * numerator(sample_rate) * seconds_per_record
@@ -50,7 +53,7 @@ function edf_record_metadata(signals)
 end
 
 struct RecordSizeException <: Exception
-    signals::Vector{Onda.Signal}
+    signals
 end
 
 struct EDFPrecisionError <: Exception
