@@ -9,9 +9,10 @@ struct SignalExtrema
     digital_max::Float32
 end
 
-function SignalExtrema(signal::Onda.Signal)
-    digital_extrema = (typemin(signal.sample_type), typemax(signal.sample_type))
-    physical_extrema = @. (signal.sample_resolution_in_unit * digital_extrema) + signal.sample_offset_in_unit
+SignalExtrema(signal) = SignalExtrema(SamplesInfo(signal))
+function SignalExtrema(info::SamplesInfo)
+    digital_extrema = (typemin(info.sample_type), typemax(info.sample_type))
+    physical_extrema = @. (info.sample_resolution_in_unit * digital_extrema) + info.sample_offset_in_unit
     return SignalExtrema(physical_extrema..., digital_extrema...)
 end
 
@@ -22,9 +23,9 @@ end
 const DATA_RECORD_SIZE_LIMIT = 30720
 const EDF_BYTE_LIMIT = 8
 
-edf_sample_count_per_record(signal::Onda.Signal, seconds_per_record::Float64) = Int16(signal.sample_rate * seconds_per_record)
+edf_sample_count_per_record(signal, seconds_per_record::Float64) = Int16(signal.sample_rate * seconds_per_record)
 
-function edf_record_metadata(signals::Vector{Onda.Signal})
+function edf_record_metadata(signals)
     sample_rates = map(signal -> rationalize(signal.sample_rate), signals)
     seconds_per_record = lcm(map(denominator, sample_rates))
     samples_per_record = map(zip(signals, sample_rates)) do (signal, sample_rate)
@@ -42,7 +43,7 @@ function edf_record_metadata(signals::Vector{Onda.Signal})
         sizeof(string(seconds_per_record)) > EDF_BYTE_LIMIT && throw(EDFPrecisionError(seconds_per_record))
     end
     record_duration_in_nanoseconds = Nanosecond(seconds_per_record * 1_000_000_000)
-    signal_duration = maximum(signal -> signal.stop_nanosecond, signals)
+    signal_duration = maximum(signal -> stop(signal.span), signals)
     record_count = ceil(signal_duration / record_duration_in_nanoseconds)
     sizeof(string(record_count)) > EDF_BYTE_LIMIT && throw(EDFPrecisionError(record_count))
     return record_count, seconds_per_record
@@ -82,7 +83,7 @@ function export_edf_label(signal_name::String, channel_name::String)
     return string(signal_edf_name, " ", channel_edf_name)
 end
 
-function export_edf_header(signals::Vector{Onda.Signal};
+function export_edf_header(signals;
                            version::AbstractString="0",
                            patient_metadata=EDF.PatientID(missing, missing, missing, missing),
                            recording_metadata=EDF.RecordingID(missing, missing, missing, missing),
@@ -92,36 +93,41 @@ function export_edf_header(signals::Vector{Onda.Signal};
                           is_contiguous, edf_record_metadata(signals)...)
 end
 
-#function export_edf_signals(dataset::Dataset, uuid::UUID, signals, seconds_per_record::Float64)
-#    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
-#    for (signal_name::Symbol, onda_signal::Onda.Signal) in signals
-#        if sizeof(onda_signal.sample_type) > sizeof(Int16)
-#            decoded_samples = Onda.load(dataset, uuid, signal_name)
-#            scaled_resolution = onda_signal.sample_resolution_in_unit * (sizeof(onda_signal.sample_type) / sizeof(Int16))
-#            signal = signal_from_template(onda_signal; sample_type=Int16, sample_resolution_in_unit=scaled_resolution)
-#            samples = encode(Onda.Samples(signal, false, decoded_samples.data), missing)
-#        else
-#            signal = onda_signal
-#            samples = Onda.load_encoded(dataset, uuid, signal_name)
-#        end
-#        extrema = SignalExtrema(signal)
-#        for channel_name in onda_signal.channel_names
-#            sample_count = edf_sample_count_per_record(onda_signal, seconds_per_record)
-#            physical_dimension = onda_to_edf_unit(onda_signal.sample_unit)
-#            edf_signal_header = EDF.SignalHeader(export_edf_label(signal_name, channel_name),
-#                                                 "", physical_dimension,
-#                                                 extrema.physical_min, extrema.physical_max,
-#                                                 extrema.digital_min, extrema.digital_max,
-#                                                 "", sample_count)
-#            sample_data = vec(samples[channel_name, :].data)
-#            padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
-#            edf_signal_samples = append!(sample_data, padding)
-#            push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
-#        end
-#    end
-#    return edf_signals
-#end
-#
+
+
+function export_edf_signals(signals, seconds_per_record::Float64)
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
+    for onda_signal in signals
+        signal_name = onda_signal.kind
+        # parse the strings in the signals row
+        samples_info = SamplesInfo(onda_signal)
+        if sizeof(samples_info.sample_type) > sizeof(Int16)
+            decoded_samples = Onda.load(onda_signal; encoded=false)
+            scaled_resolution = samples_info.sample_resolution_in_unit * (sizeof(samples_info.sample_type) / sizeof(Int16))
+            signal = Tables.rowmerge(onda_signal; sample_type=Int16, sample_resolution_in_unit=scaled_resolution)
+            samples = encode(Onda.Samples(decoded_samples.data, SamplesInfo(signal), false))
+        else
+            signal = onda_signal
+            samples = Onda.load(onda_signal; encoded=true)
+        end
+        extrema = SignalExtrema(signal)
+        for channel_name in onda_signal.channels
+            sample_count = edf_sample_count_per_record(onda_signal, seconds_per_record)
+            physical_dimension = onda_to_edf_unit(onda_signal.sample_unit)
+            edf_signal_header = EDF.SignalHeader(export_edf_label(signal_name, channel_name),
+                                                 "", physical_dimension,
+                                                 extrema.physical_min, extrema.physical_max,
+                                                 extrema.digital_min, extrema.digital_max,
+                                                 "", sample_count)
+            sample_data = vec(samples[channel_name, :].data)
+            padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
+            edf_signal_samples = append!(sample_data, padding)
+            push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
+        end
+    end
+    return edf_signals
+end
+
 ######
 ###### `export_edf`
 ######
@@ -137,7 +143,7 @@ end
 #The ordering of `EDF.Signal`s in the output will match the order of the given `signal_names`
 #(and within each channel grouping, the order of the signal's channels).
 #"""
-#function export_edf(dataset::Dataset, uuid::UUID;
+#function export_edf(signals, uuid::UUID, annotations;
 #                    signal_names=keys(dataset.recordings[uuid].signals),
 #                    export_annotations::Bool=true,
 #                    kwargs...)
