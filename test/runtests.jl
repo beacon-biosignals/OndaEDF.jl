@@ -118,7 +118,7 @@ returned_uuid, (returned_signals, annotations) = import_edf!(root, edf, uuid)
     @test signals["eog"].channels == ["left", "right"]
     @test signals["eog"].sample_unit == "microvolt"
     @test signals["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
-                                                    "c4-m1", "o1-m2", "o2-a1"]
+                                      "c4-m1", "o1-m2", "o2-a1"]
     @test signals["eeg"].sample_unit == "microvolt"
     @test signals["pap_device_cflow"].channels == ["pap_device_cflow"]
     @test signals["pap_device_cflow"].sample_unit == "liter_per_minute"
