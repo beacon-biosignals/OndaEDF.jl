@@ -28,7 +28,7 @@ edf_sample_count_per_record(samples::Samples, seconds_per_record::Float64) = Int
 _rationalize(x) = rationalize(x)
 _rationalize(x::Int) = x // 1
 
-function edf_record_metadata(all_samples::Vector{Onda.Samples})
+function edf_record_metadata(all_samples::AbstractVector{<:Onda.Samples})
     sample_rates = map(s -> _rationalize(s.info.sample_rate), all_samples)
     seconds_per_record = lcm(map(denominator, sample_rates))
     samples_per_record = map(zip(all_samples, sample_rates)) do (samples, sample_rate)
@@ -86,7 +86,7 @@ function export_edf_label(signal_name::String, channel_name::String)
     return string(signal_edf_name, " ", channel_edf_name)
 end
 
-function onda_samples_to_edf_header(samples::AbstractVector{Samples};
+function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
                                     version::AbstractString="0",
                                     patient_metadata=EDF.PatientID(missing, missing, missing, missing),
                                     recording_metadata=EDF.RecordingID(missing, missing, missing, missing),
@@ -96,9 +96,7 @@ function onda_samples_to_edf_header(samples::AbstractVector{Samples};
                           is_contiguous, edf_record_metadata(samples)...)
 end
 
-
-
-function onda_samples_to_edf_signals(onda_samples::Vector{Samples}, seconds_per_record::Float64)
+function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
     for samples in onda_samples
         # encode samples, rescaling if necessary
@@ -151,7 +149,7 @@ The ordering of `EDF.Signal`s in the output will match the order of the rows of
 the signals table (and within each channel grouping, the order of the signal's
 channels).
 """
-function onda_to_edf(samples::AbstractVector{Samples}, annotations=[]; kwargs...)
+function onda_to_edf(samples::AbstractVector{<:Samples}, annotations=[]; kwargs...)
     edf_header = onda_samples_to_edf_header(samples; kwargs...)
     edf_signals = onda_samples_to_edf_signals(samples, edf_header.seconds_per_record)
     if !isempty(annotations)
