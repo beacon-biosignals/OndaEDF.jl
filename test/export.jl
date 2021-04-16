@@ -11,22 +11,22 @@
     signal_names = ["eeg", "eog", "ecg", "emg", "heart_rate", "tidal_volume",
                     "respiratory_effort", "snore", "positive_airway_pressure",
                     "pap_device_leak", "pap_device_cflow", "sao2", "ptaf"]
-    signals_to_export = onda_samples[indexin(signal_names, getproperty.(getproperty.(onda_samples, :info), :kind))]
-    exported_edf = onda_to_edf(signals_to_export, annotations)
+    samples_to_export = onda_samples[indexin(signal_names, getproperty.(getproperty.(onda_samples, :info), :kind))]
+    exported_edf = onda_to_edf(samples_to_export, annotations)
     @test exported_edf.header.record_count == 200
     offset = 0
     for signal_name in signal_names
-        onda_signal = only(filter(row -> row.kind == signal_name, returned_signals))
-        channel_names = onda_signal.channels
+        samples = only(filter(s -> s.info.kind == signal_name, onda_samples))
+        channel_names = samples.info.channels
         edf_indices = (1:length(channel_names)) .+ offset
         offset += length(channel_names)
-        onda_samples = Onda.load(onda_signal).data
+        samples_data = samples.data
         edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, exported_edf.signals[edf_indices])
-        @test isapprox(onda_samples, edf_samples, rtol=0.02)
+        @test isapprox(samples_data, edf_samples, rtol=0.02)
         for (i, channel_name) in zip(edf_indices, channel_names)
             s = exported_edf.signals[i]
             @test s.header.label == OndaEDF.export_edf_label(signal_name, channel_name)
-            @test s.header.physical_dimension == OndaEDF.onda_to_edf_unit(onda_signal.sample_unit)
+            @test s.header.physical_dimension == OndaEDF.onda_to_edf_unit(samples.info.sample_unit)
         end
     end
     @testset "Record metadata" begin
