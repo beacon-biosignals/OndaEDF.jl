@@ -220,18 +220,25 @@ function onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
 end
 
 """
-    import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
-                custom_extractors=(), import_annotations::Bool=true)
+    store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
+                      custom_extractors=(), import_annotations::Bool=true)
 
-Create, store, and return a `uuid::UUID => recording::Onda.Recording` where all
-the signals in `recording` are converted from the provided `edf`. Collections
-of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple "extractor"
-callbacks of the form:
+Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
+in `\$path/samples/`, and write the Onda signals and annotations tables to
+`\$path/onda.(signals|annotations).arrow`.  Returns `uuid => (signals,
+annotations)`.
+
+Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
+extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
+(the default).
+
+Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
+"extractor" callbacks of the form:
 
     edf::EDF.File -> (samples_info::Onda.SamplesInfo,
                       edf_signals::Vector{EDF.Signal})
 
-`import_edf!` automatically uses a variety of default extractors derived from
+`store_edf_as_onda` automatically uses a variety of default extractors derived from
 the EDF standard texts; see `src/standards.jl` for details. The caller can also
 provide additional extractors via the `custom_extractors` keyword argument.
 
@@ -244,13 +251,10 @@ following transformations:
 - all component names are converted to their "canonical names" when possible
   (e.g. "m1" in an EEG-matched channel name will be converted to "a1").
 
-If `import_annotations` is `true`, any EDF+ annotations in `edf` will be written
-out as Onda annotations to `recording`.
-
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
-function import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
-                     custom_extractors=(), import_annotations::Bool=true)
+function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
+                           custom_extractors=(), import_annotations::Bool=true)
     EDF.read!(edf)
     file_format = "lpcm.zst"
 
@@ -276,10 +280,36 @@ function import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
     return uuid => (signals, annotations)
 end
 
+
+"""
+    edf_to_onda_samples(edf::EDF.File; custom_extractors=())
+
+Read signals from an `EDF.File` into a vector of `Onda.Samples`.
+
+Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
+"extractor" callbacks of the form:
+
+    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
+                      edf_signals::Vector{EDF.Signal})
+
+`edf_to_onda_samples` automatically uses a variety of default extractors derived from
+the EDF standard texts; see `src/standards.jl` for details. The caller can also
+provide additional extractors via the `custom_extractors` keyword argument.
+
+`EDF.Signal` labels that are converted into Onda channel names undergo the
+following transformations:
+
+- the label is whitespace-stripped, parens-stripped, and lowercased
+- trailing generic EDF references (e.g. "ref", "ref2", etc.) are dropped
+- any instance of `+` is replaced with `_plus_` and `/` with `_over_`
+- all component names are converted to their "canonical names" when possible
+  (e.g. "m1" in an EEG-matched channel name will be converted to "a1").
+
+See the OndaEDF README for additional details regarding EDF formatting expectations.
+"""
 function edf_to_onda_samples(edf::EDF.File; custom_extractors=())
     EDF.read!(edf)
-    file_format = "lpcm.zst"
-    edf_samples = Any[]
+    edf_samples = Samples[]
     for extractor in Iterators.flatten((STANDARD_EXTRACTORS, custom_extractors))
         extracted = extractor(edf)
         extracted === nothing && continue
@@ -290,6 +320,13 @@ function edf_to_onda_samples(edf::EDF.File; custom_extractors=())
     return edf_samples
 end
 
+"""
+    edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
+
+Extract EDF+ annotations from an `EDF.File` for recording with ID `uuid` and
+return them as a vector of `Onda.Annotation`s.  If no annotations are found then
+an empty `Vector{Annotation}` is returned.
+"""
 function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
     EDF.read!(edf)
     annotations = Annotation[]

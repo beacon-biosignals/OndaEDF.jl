@@ -10,9 +10,9 @@ using Tables: rowmerge
 include("standards.jl")
 
 include("import_edf.jl")
-export import_edf!
+export edf_to_onda_samples, edf_to_onda_annotations, store_edf_as_onda
 
 include("export_edf.jl")
-export export_edf
+export onda_to_edf
 
 end # module
