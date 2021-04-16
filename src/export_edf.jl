@@ -62,7 +62,7 @@ end
 
 function Base.showerror(io::IO, exception::RecordSizeException)
     print(io, "RecordSizeException: sample rates ")
-    print(io, [signal.sample_rate for signal in exception.signals])
+    print(io, [s.info.sample_rate for s in exception.samples])
     print(io, " cannot be resolved to a data record size smaller than ")
     print(io, DATA_RECORD_SIZE_LIMIT * 2, " bytes")
 end
