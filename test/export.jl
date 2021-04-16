@@ -2,7 +2,6 @@
 
     n_records = 100
     edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
-    root = mktempdir()
     uuid = uuid4()
 
     onda_samples = edf_to_onda_samples(edf)

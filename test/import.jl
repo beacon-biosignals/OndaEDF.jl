@@ -40,7 +40,7 @@
     end
 
 
-    @testset "import edf" begin
+    @testset "store_edf_as_onda" begin
         root = mktempdir()
         uuid = uuid4()
         returned_uuid, (returned_signals, annotations) = OndaEDF.store_edf_as_onda(root, edf, uuid)
