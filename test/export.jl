@@ -20,7 +20,7 @@
         channel_names = samples.info.channels
         edf_indices = (1:length(channel_names)) .+ offset
         offset += length(channel_names)
-        samples_data = samples.data
+        samples_data = Onda.decode(samples).data
         edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, exported_edf.signals[edf_indices])
         @test isapprox(samples_data, edf_samples, rtol=0.02)
         for (i, channel_name) in zip(edf_indices, channel_names)
@@ -32,7 +32,7 @@
     @testset "Record metadata" begin
         function change_sample_rate(samples; sample_rate)
             info = SamplesInfo(Tables.rowmerge(samples.info; sample_rate=sample_rate))
-            new_data = similar(samples.data, 0, index_from_time(sample_rate, duration(samples)) - 1)
+            new_data = similar(samples.data, 0, Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1)
             return Samples(new_data, info, samples.encoded; validate=false)
         end
         
