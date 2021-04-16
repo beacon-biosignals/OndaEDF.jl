@@ -253,39 +253,19 @@ function import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
                      custom_extractors=(), import_annotations::Bool=true)
     EDF.read!(edf)
     file_format = "lpcm.zst"
+
     signals = Any[]
-    for extractor in Iterators.flatten((STANDARD_EXTRACTORS, custom_extractors))
-        extracted = extractor(edf)
-        extracted === nothing && continue
-        samples_info, edf_signals = extracted
-        file_path = joinpath(path, "samples", string(uuid, "_", samples_info.kind, ".", file_format))
-        samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
+    edf_samples = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+    for samples in edf_samples
+        file_path = joinpath(path, "samples", string(uuid, "_", samples.info.kind, ".", file_format))
         signal = rowmerge(store(file_path, file_format, samples, uuid, Second(0)); file_path=string(file_path))
         push!(signals, signal)
     end
+
     signals_path = joinpath(path, "onda.signals.arrow")
     write_signals(signals_path, signals)
     if import_annotations
-        annotations = Annotation[]
-        for annotation_signal in edf.signals
-            annotation_signal isa EDF.AnnotationsSignal || continue
-            for record in annotation_signal.records
-                for tal in record
-                    start_nanosecond = Nanosecond(round(Int, 1e9 * tal.onset_in_seconds))
-                    if tal.duration_in_seconds === nothing
-                        stop_nanosecond = start_nanosecond
-                    else
-                        stop_nanosecond = start_nanosecond + Nanosecond(round(Int, 1e9 * tal.duration_in_seconds))
-                    end
-                    for annotation_string in tal.annotations
-                        isempty(annotation_string) && continue
-                        annotation = Annotation(uuid, uuid4(), TimeSpan(start_nanosecond, stop_nanosecond);
-                                                value=annotation_string)
-                        push!(annotations, annotation)
-                    end
-                end
-            end
-        end
+        annotations = edf_to_onda_annotations(edf, uuid)
         if !isempty(annotations)
             annotations_path = joinpath(path, "onda.annotations.arrow")
             write_annotations(annotations_path, annotations)
@@ -294,4 +274,43 @@ function import_edf!(path, edf::EDF.File, uuid::UUID=uuid4();
         end
     end
     return uuid => (signals, annotations)
+end
+
+function edf_to_onda_samples(edf::EDF.File; custom_extractors=())
+    EDF.read!(edf)
+    file_format = "lpcm.zst"
+    edf_samples = Any[]
+    for extractor in Iterators.flatten((STANDARD_EXTRACTORS, custom_extractors))
+        extracted = extractor(edf)
+        extracted === nothing && continue
+        samples_info, edf_signals = extracted
+        samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
+        push!(edf_samples, samples)
+    end
+    return edf_samples
+end
+
+function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
+    EDF.read!(edf)
+    annotations = Annotation[]
+    for annotation_signal in edf.signals
+        annotation_signal isa EDF.AnnotationsSignal || continue
+        for record in annotation_signal.records
+            for tal in record
+                start_nanosecond = Nanosecond(round(Int, 1e9 * tal.onset_in_seconds))
+                if tal.duration_in_seconds === nothing
+                    stop_nanosecond = start_nanosecond
+                else
+                    stop_nanosecond = start_nanosecond + Nanosecond(round(Int, 1e9 * tal.duration_in_seconds))
+                end
+                for annotation_string in tal.annotations
+                    isempty(annotation_string) && continue
+                    annotation = Annotation(uuid, uuid4(), TimeSpan(start_nanosecond, stop_nanosecond);
+                                            value=annotation_string)
+                    push!(annotations, annotation)
+                end
+            end
+        end
+    end
+    return annotations
 end
