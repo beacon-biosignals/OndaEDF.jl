@@ -249,7 +249,8 @@ following transformations:
 - trailing generic EDF references (e.g. "ref", "ref2", etc.) are dropped
 - any instance of `+` is replaced with `_plus_` and `/` with `_over_`
 - all component names are converted to their "canonical names" when possible
-  (e.g. "m1" in an EEG-matched channel name will be converted to "a1").
+  (e.g. for an EOG matched channel, "eogl", "loc", "lefteye", etc. are converted
+  to "left").
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
