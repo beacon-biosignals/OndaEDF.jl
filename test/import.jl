@@ -87,7 +87,7 @@
         for (signal_name, edf_indices) in edf_channel_indices
             onda_samples = load(signals[string(signal_name)]).data
             edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, edf.signals[edf_indices])
-            @test isapprox(onda_samples, edf_samples, rtol=0.02)
+            @test isapprox(onda_samples, edf_samples; rtol=0.02)
         end
 
         @test length(annotations) == n_records * 4

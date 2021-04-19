@@ -143,7 +143,7 @@ Following the Onda v0.5 format, both `signals` and `annotations` can be any
 Tables.jl-compatible table (DataFrame, Arrow.Table, NamedTuple of vectors, vector of
 NamedTuples) which follow the signal and annotation schemas (respectively).
 
-Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`;
+Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`.
 
 The ordering of `EDF.Signal`s in the output will match the order of the rows of
 the signals table (and within each channel grouping, the order of the signal's

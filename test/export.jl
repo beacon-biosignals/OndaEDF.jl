@@ -21,7 +21,7 @@
         offset += length(channel_names)
         samples_data = Onda.decode(samples).data
         edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, exported_edf.signals[edf_indices])
-        @test isapprox(samples_data, edf_samples, rtol=0.02)
+        @test isapprox(samples_data, edf_samples; rtol=0.02)
         for (i, channel_name) in zip(edf_indices, channel_names)
             s = exported_edf.signals[i]
             @test s.header.label == OndaEDF.export_edf_label(signal_name, channel_name)
