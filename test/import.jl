@@ -90,14 +90,19 @@
             @test isapprox(onda_samples, edf_samples; rtol=0.02)
         end
 
-        @test length(annotations) == n_records * 4
-        for i in 1:n_records
-            start = Nanosecond(Second(i))
-            stop = start + Nanosecond(Second(i + 1))
-            @test any(a -> a.value == "$i a" && a.span.start == start && a.span.stop == stop, annotations) #Onda.Annotation("$i a", start, stop) in annotations
-            @test any(a -> a.value == "$i b" && a.span.start == start && a.span.stop == stop, annotations) #Onda.Annotation("$i b", start, stop) in annotations
-            @test any(a -> a.value == "$i c" && a.span.start == start && a.span.stop == start + Nanosecond(1), annotations) #Onda.Annotation("$i c", start, start) in annotations
-            @test any(a -> a.value == "$i d" && a.span.start == start && a.span.stop == start + Nanosecond(1), annotations) #Onda.Annotation("$i d", start, start) in annotations
+        @testset "Annotations import" begin
+            @test length(annotations) == n_records * 4
+            # check whether all four types of annotations are preserved on import:
+            for i in 1:n_records
+                start = Nanosecond(Second(i))
+                stop = start + Nanosecond(Second(i + 1))
+                # two annotations with same 1s span and different values:
+                @test any(a -> a.value == "$i a" && a.span.start == start && a.span.stop == stop, annotations)
+                @test any(a -> a.value == "$i b" && a.span.start == start && a.span.stop == stop, annotations)
+                # two annotations with instantaneous (1ns) span and different values
+                @test any(a -> a.value == "$i c" && a.span.start == start && a.span.stop == start + Nanosecond(1), annotations)
+                @test any(a -> a.value == "$i d" && a.span.start == start && a.span.stop == start + Nanosecond(1), annotations)
+            end
         end
     end
 
