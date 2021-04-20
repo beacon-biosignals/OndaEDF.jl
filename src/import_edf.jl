@@ -56,11 +56,11 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     if spec === nothing
         label = type
     else
-        any(==(Symbol(type)), signal_names) || return nothing
+        any(==(type), signal_names) || return nothing
         label = spec
     end
     initial, normalized_label = _normalize_references(label, canonical_names)
-    initial == string(channel_name) && return Symbol(normalized_label)
+    initial == channel_name && return normalized_label
     return nothing
 end
 
@@ -147,7 +147,7 @@ end
 #####
 
 function extract_channels(edf_signals, channel_matchers)
-    extracted_channel_names = Symbol[]
+    extracted_channel_names = String[]
     extracted_channels = EDF.Signal[]
     for channel_matcher in channel_matchers
         for edf_signal in edf_signals
@@ -177,30 +177,26 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
     all(==(onda_sample_unit), onda_units) || error("multiple possible units found for same signal: $onda_units")
     onda_encoding = promote_encodings(edf_encodings)
     onda_stop_nanosecond = Onda.time_from_index(onda_encoding.sample_rate, length(edf_channels[1].samples) + 1)
-    onda_signal = Onda.Signal(channel_names=edf_channel_names,
-                              sample_type=onda_encoding.sample_type,
-                              sample_rate=onda_encoding.sample_rate,
-                              sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
-                              sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
-                              sample_unit=onda_sample_unit,
-                              start_nanosecond=Nanosecond(0),
-                              stop_nanosecond=onda_stop_nanosecond,
-                              file_extension=Symbol("lpcm.zst"),
-                              file_options=nothing)
-    return first(signal_names), onda_signal, edf_channels
+    info = SamplesInfo(; kind=first(signal_names), channels=edf_channel_names,
+                       sample_unit=string(onda_sample_unit),
+                       sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
+                       sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
+                       sample_type=onda_encoding.sample_type,
+                       sample_rate=onda_encoding.sample_rate)
+    return info, edf_channels
 end
 
 #####
 ##### `import_edf!`
 #####
 
-function onda_samples_from_edf_signals(target::Onda.Signal, edf_signals,
+function onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
                                        edf_seconds_per_record)
     sample_count = length(first(edf_signals).samples)
     if !all(length(s.samples) == sample_count for s in edf_signals)
         error("mismatched sample counts between `EDF.Signal`s: ", [length(s.samples) for s in edf_signals])
     end
-    sample_data = Matrix{target.sample_type}(undef, length(target.channel_names), sample_count)
+    sample_data = Matrix{target.sample_type}(undef, length(target.channels), sample_count)
     for (i, edf_signal) in enumerate(edf_signals)
         edf_encoding = edf_signal_encoding(edf_signal.header, edf_seconds_per_record)
         if target.sample_rate != edf_encoding.sample_rate
@@ -220,23 +216,100 @@ function onda_samples_from_edf_signals(target::Onda.Signal, edf_signals,
         end
         copyto!(view(sample_data, i, :), encoded_samples)
     end
-    return Samples(target, true, sample_data)
+    return Samples(sample_data, target, true)
 end
 
 """
-    import_edf!(dataset::Dataset, edf::EDF.File, uuid::UUID=uuid4();
-                custom_extractors=(), import_annotations::Bool=true)
+    store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
+                      custom_extractors=(), import_annotations::Bool=true,
+                      signals_prefix="edf", annotations_prefix=signals_prefix)
 
-Create, store, and return a `uuid::UUID => recording::Onda.Recording` where all
-the signals in `recording` are converted from the provided `edf`. Collections
-of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple "extractor"
-callbacks of the form:
+Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
+in `\$path/samples/`, and write the Onda signals and annotations tables to
+`\$path/\$(signals_prefix).onda.signals.arrow` and
+`\$path/\$(annotations_prefix).onda.annotations.arrow`.  The default prefix is
+"edf", and if a prefix is provided for signals but not annotations both will use
+the signals prefix.  The prefixes cannot reference (sub)directories.
 
-    edf::EDF.File -> (onda_signal_name::Symbol,
-                      onda_signal::Onda.Signal,
+Returns `uuid => (signals, annotations)`.
+
+Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
+extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
+(the default).
+
+Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
+"extractor" callbacks of the form:
+
+    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
                       edf_signals::Vector{EDF.Signal})
 
-`import_edf!` automatically uses a variety of default extractors derived from
+`store_edf_as_onda` automatically uses a variety of default extractors derived from
+the EDF standard texts; see `src/standards.jl` for details. The caller can also
+provide additional extractors via the `custom_extractors` keyword argument.
+
+`EDF.Signal` labels that are converted into Onda channel names undergo the
+following transformations:
+
+- the label is whitespace-stripped, parens-stripped, and lowercased
+- trailing generic EDF references (e.g. "ref", "ref2", etc.) are dropped
+- any instance of `+` is replaced with `_plus_` and `/` with `_over_`
+- all component names are converted to their "canonical names" when possible
+  (e.g. for an EOG matched channel, "eogl", "loc", "lefteye", etc. are converted
+  to "left").
+
+See the OndaEDF README for additional details regarding EDF formatting expectations.
+"""
+function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
+                           custom_extractors=(), import_annotations::Bool=true,
+                           signals_prefix="edf", annotations_prefix=signals_prefix)
+    EDF.read!(edf)
+    file_format = "lpcm.zst"
+
+    signals = Any[]
+    edf_samples = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+    for samples in edf_samples
+        file_path = joinpath(path, "samples", string(uuid, "_", samples.info.kind, ".", file_format))
+        signal = rowmerge(store(file_path, file_format, samples, uuid, Second(0)); file_path=string(file_path))
+        push!(signals, signal)
+    end
+
+    signals_path = joinpath(path, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
+    write_signals(signals_path, signals)
+    if import_annotations
+        annotations = edf_to_onda_annotations(edf, uuid)
+        if !isempty(annotations)
+            annotations_path = joinpath(path, "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
+            write_annotations(annotations_path, annotations)
+        else
+            @warn "No annotations found in $path"
+        end
+    end
+    return uuid => (signals, annotations)
+end
+
+function validate_arrow_prefix(prefix)
+    prefix == basename(prefix) || throw(ArgumentError("prefix \"$prefix\" is invalid: cannot contain directory separator"))
+    pm = match(r"(.*).onda.(signals|annotations).arrow", prefix)
+    if pm !== nothing
+        @warn "Extracting prefix \"$(pm.captures[1])\" from provided prefix \"$prefix\""
+        prefix = pm.captures[1]
+    end
+    return prefix
+end
+
+
+"""
+    edf_to_onda_samples(edf::EDF.File; custom_extractors=())
+
+Read signals from an `EDF.File` into a vector of `Onda.Samples`.
+
+Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
+"extractor" callbacks of the form:
+
+    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
+                      edf_signals::Vector{EDF.Signal})
+
+`edf_to_onda_samples` automatically uses a variety of default extractors derived from
 the EDF standard texts; see `src/standards.jl` for details. The caller can also
 provide additional extractors via the `custom_extractors` keyword argument.
 
@@ -249,40 +322,53 @@ following transformations:
 - all component names are converted to their "canonical names" when possible
   (e.g. "m1" in an EEG-matched channel name will be converted to "a1").
 
-If `import_annotations` is `true`, any EDF+ annotations in `edf` will be written
-out as Onda annotations to `recording`.
-
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
-function import_edf!(dataset::Dataset, edf::EDF.File, uuid::UUID=uuid4();
-                     custom_extractors=(), import_annotations::Bool=true)
+function edf_to_onda_samples(edf::EDF.File; custom_extractors=())
     EDF.read!(edf)
-    _, recording = create_recording!(dataset, uuid)
+    edf_samples = Samples[]
     for extractor in Iterators.flatten((STANDARD_EXTRACTORS, custom_extractors))
         extracted = extractor(edf)
         extracted === nothing && continue
-        onda_signal_name, onda_signal, edf_signals = extracted
-        samples = onda_samples_from_edf_signals(onda_signal, edf_signals, edf.header.seconds_per_record)
-        store!(dataset, uuid, onda_signal_name, samples)
+        samples_info, edf_signals = extracted
+        samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
+        push!(edf_samples, samples)
     end
-    if import_annotations
-        for annotation_signal in edf.signals
-            annotation_signal isa EDF.AnnotationsSignal || continue
-            for record in annotation_signal.records
-                for tal in record
-                    start_nanosecond = Nanosecond(round(Int, 1e9 * tal.onset_in_seconds))
-                    if tal.duration_in_seconds === nothing
-                        stop_nanosecond = start_nanosecond
-                    else
-                        stop_nanosecond = start_nanosecond + Nanosecond(round(Int, 1e9 * tal.duration_in_seconds))
-                    end
-                    for annotation_string in tal.annotations
-                        isempty(annotation_string) && continue
-                        annotate!(recording, Annotation(annotation_string, start_nanosecond, stop_nanosecond))
-                    end
+    return edf_samples
+end
+
+"""
+    edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
+
+Extract EDF+ annotations from an `EDF.File` for recording with ID `uuid` and
+return them as a vector of `Onda.Annotation`s.  Each returned annotation has 
+a  `value` field that contains the string value of the corresponding EDF+ 
+annotation. 
+
+If no EDF+ annotations are found in `edf`, then an empty `Vector{Annotation}` is 
+returned.
+"""
+function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
+    EDF.read!(edf)
+    annotations = Annotation[]
+    for annotation_signal in edf.signals
+        annotation_signal isa EDF.AnnotationsSignal || continue
+        for record in annotation_signal.records
+            for tal in record
+                start_nanosecond = Nanosecond(round(Int, 1e9 * tal.onset_in_seconds))
+                if tal.duration_in_seconds === nothing
+                    stop_nanosecond = start_nanosecond
+                else
+                    stop_nanosecond = start_nanosecond + Nanosecond(round(Int, 1e9 * tal.duration_in_seconds))
+                end
+                for annotation_string in tal.annotations
+                    isempty(annotation_string) && continue
+                    annotation = Annotation(uuid, uuid4(), TimeSpan(start_nanosecond, stop_nanosecond);
+                                            value=annotation_string)
+                    push!(annotations, annotation)
                 end
             end
         end
     end
-    return uuid => recording
+    return annotations
 end

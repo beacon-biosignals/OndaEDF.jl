@@ -4,7 +4,32 @@
 CurrentModule = OndaEDF
 ```
 
+## Import EDF to Onda
+
+OndaEDF.jl prefers "self-service" import over "automagic", and provides
+functionality to extract
+[`Onda.Samples`](https://beacon-biosignals.github.io/Onda.jl/stable/#Samples-1)
+and
+[`Onda.Annotation`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.Annotation)s
+from an `EDF.File`.  These can be written to disk (with
+[`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store) /
+[`Onda.write_annotations`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.write_annotations))
+or manipulated in memory as desired.
+
 ```@docs
-import_edf!
-export_edf
+edf_to_onda_samples
+edf_to_onda_annotations
+```
+
+For a more "full-service" experience, OndaEDF.jl also provides functionality to
+write the extracted signals/annotations to disk:
+
+```@docs
+store_edf_as_onda
+```
+
+## Export EDF from Onda
+
+```@docs
+onda_to_edf
 ```

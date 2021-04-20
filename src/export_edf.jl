@@ -9,9 +9,10 @@ struct SignalExtrema
     digital_max::Float32
 end
 
-function SignalExtrema(signal::Onda.Signal)
-    digital_extrema = (typemin(signal.sample_type), typemax(signal.sample_type))
-    physical_extrema = @. (signal.sample_resolution_in_unit * digital_extrema) + signal.sample_offset_in_unit
+SignalExtrema(samples::Samples) = SignalExtrema(samples.info)
+function SignalExtrema(info::SamplesInfo)
+    digital_extrema = (typemin(info.sample_type), typemax(info.sample_type))
+    physical_extrema = @. (info.sample_resolution_in_unit * digital_extrema) + info.sample_offset_in_unit
     return SignalExtrema(physical_extrema..., digital_extrema...)
 end
 
@@ -22,34 +23,37 @@ end
 const DATA_RECORD_SIZE_LIMIT = 30720
 const EDF_BYTE_LIMIT = 8
 
-edf_sample_count_per_record(signal::Onda.Signal, seconds_per_record::Float64) = Int16(signal.sample_rate * seconds_per_record)
+edf_sample_count_per_record(samples::Samples, seconds_per_record::Float64) = Int16(samples.info.sample_rate * seconds_per_record)
 
-function edf_record_metadata(signals::Vector{Onda.Signal})
-    sample_rates = map(signal -> rationalize(signal.sample_rate), signals)
+_rationalize(x) = rationalize(x)
+_rationalize(x::Int) = x // 1
+
+function edf_record_metadata(all_samples::AbstractVector{<:Onda.Samples})
+    sample_rates = map(s -> _rationalize(s.info.sample_rate), all_samples)
     seconds_per_record = lcm(map(denominator, sample_rates))
-    samples_per_record = map(zip(signals, sample_rates)) do (signal, sample_rate)
-        return channel_count(signal) * numerator(sample_rate) * seconds_per_record
+    samples_per_record = map(zip(all_samples, sample_rates)) do (samples, sample_rate)
+        return channel_count(samples) * numerator(sample_rate) * seconds_per_record
     end
     if sum(samples_per_record) > DATA_RECORD_SIZE_LIMIT
-        if length(signals) == 1
+        if length(all_samples) == 1
             seconds_per_record = Float64(inv(first(sample_rates)))
         else
             scale = gcd(numerator.(sample_rates) .* seconds_per_record)
             samples_per_record ./= scale
-            sum(samples_per_record) > DATA_RECORD_SIZE_LIMIT && throw(RecordSizeException(signals))
+            sum(samples_per_record) > DATA_RECORD_SIZE_LIMIT && throw(RecordSizeException(all_samples))
             seconds_per_record /= scale
         end
         sizeof(string(seconds_per_record)) > EDF_BYTE_LIMIT && throw(EDFPrecisionError(seconds_per_record))
     end
     record_duration_in_nanoseconds = Nanosecond(seconds_per_record * 1_000_000_000)
-    signal_duration = maximum(signal -> signal.stop_nanosecond, signals)
+    signal_duration = maximum(Onda.duration, all_samples)
     record_count = ceil(signal_duration / record_duration_in_nanoseconds)
     sizeof(string(record_count)) > EDF_BYTE_LIMIT && throw(EDFPrecisionError(record_count))
     return record_count, seconds_per_record
 end
 
 struct RecordSizeException <: Exception
-    signals::Vector{Onda.Signal}
+    samples
 end
 
 struct EDFPrecisionError <: Exception
@@ -58,7 +62,7 @@ end
 
 function Base.showerror(io::IO, exception::RecordSizeException)
     print(io, "RecordSizeException: sample rates ")
-    print(io, [signal.sample_rate for signal in exception.signals])
+    print(io, [s.info.sample_rate for s in exception.samples])
     print(io, " cannot be resolved to a data record size smaller than ")
     print(io, DATA_RECORD_SIZE_LIMIT * 2, " bytes")
 end
@@ -73,41 +77,42 @@ end
 ##### `EDF.Signal` conversion
 #####
 
-function export_edf_label(signal_name::Symbol, channel_name::Symbol)
-    signal_edf_name = uppercase(string(signal_name))
-    channel_edf_name = uppercase(string(channel_name))
+function export_edf_label(signal_name::String, channel_name::String)
+    signal_edf_name = uppercase(signal_name)
+    channel_edf_name = uppercase(channel_name)
     if signal_edf_name == "EEG" && !('-' in channel_edf_name)
         channel_edf_name *= "-Ref"
     end
     return string(signal_edf_name, " ", channel_edf_name)
 end
 
-function export_edf_header(signals::Vector{Onda.Signal};
-                           version::AbstractString="0",
-                           patient_metadata=EDF.PatientID(missing, missing, missing, missing),
-                           recording_metadata=EDF.RecordingID(missing, missing, missing, missing),
-                           is_contiguous::Bool=true,
-                           start::DateTime=DateTime(Year(1985)))
+function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
+                                    version::AbstractString="0",
+                                    patient_metadata=EDF.PatientID(missing, missing, missing, missing),
+                                    recording_metadata=EDF.RecordingID(missing, missing, missing, missing),
+                                    is_contiguous::Bool=true,
+                                    start::DateTime=DateTime(Year(1985)))
     return EDF.FileHeader(version, patient_metadata, recording_metadata, start,
-                          is_contiguous, edf_record_metadata(signals)...)
+                          is_contiguous, edf_record_metadata(samples)...)
 end
 
-function export_edf_signals(dataset::Dataset, uuid::UUID, signals, seconds_per_record::Float64)
+function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
-    for (signal_name::Symbol, onda_signal::Onda.Signal) in signals
-        if sizeof(onda_signal.sample_type) > sizeof(Int16)
-            decoded_samples = Onda.load(dataset, uuid, signal_name)
-            scaled_resolution = onda_signal.sample_resolution_in_unit * (sizeof(onda_signal.sample_type) / sizeof(Int16))
-            signal = signal_from_template(onda_signal; sample_type=Int16, sample_resolution_in_unit=scaled_resolution)
-            samples = encode(Onda.Samples(signal, false, decoded_samples.data), missing)
+    for samples in onda_samples
+        # encode samples, rescaling if necessary
+        if sizeof(samples.info.sample_type) > sizeof(Int16)
+            decoded_samples = Onda.decode(samples)
+            scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(samples.info.sample_type) / sizeof(Int16))
+            encode_info = SamplesInfo(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
+            samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
         else
-            signal = onda_signal
-            samples = Onda.load_encoded(dataset, uuid, signal_name)
+            samples = Onda.encode(samples)
         end
-        extrema = SignalExtrema(signal)
-        for channel_name in onda_signal.channel_names
-            sample_count = edf_sample_count_per_record(onda_signal, seconds_per_record)
-            physical_dimension = onda_to_edf_unit(onda_signal.sample_unit)
+        signal_name = samples.info.kind
+        extrema = SignalExtrema(samples)
+        for channel_name in samples.info.channels
+            sample_count = edf_sample_count_per_record(samples, seconds_per_record)
+            physical_dimension = onda_to_edf_unit(samples.info.sample_unit)
             edf_signal_header = EDF.SignalHeader(export_edf_label(signal_name, channel_name),
                                                  "", physical_dimension,
                                                  extrema.physical_min, extrema.physical_max,
@@ -127,31 +132,32 @@ end
 #####
 
 """
-    export_edf(dataset::Dataset, uuid::UUID; signal_names=keys(dataset.recordings[uuid].signals))
+    onda_to_edf(signals, annotations=[]; kwargs...)
 
-Return an `EDF.File` containing signal data converted from `dataset.recordings[uuid]`.
+Return an `EDF.File` containing signal data converted from the Onda [`signals`
+table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.signals.arrow-1)
+and (optionally) annotations from an [`annotations`
+table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.arrow-1).
 
-Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`;
-only signals whose names are given in `signal_name`s are exported.
+Following the Onda v0.5 format, both `signals` and `annotations` can be any
+Tables.jl-compatible table (DataFrame, Arrow.Table, NamedTuple of vectors, vector of
+NamedTuples) which follow the signal and annotation schemas (respectively).
 
-The ordering of `EDF.Signal`s in the output will match the order of the given `signal_names`
-(and within each channel grouping, the order of the signal's channels).
+Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an `Onda.Signal`.
+
+The ordering of `EDF.Signal`s in the output will match the order of the rows of
+the signals table (and within each channel grouping, the order of the signal's
+channels).
 """
-function export_edf(dataset::Dataset, uuid::UUID;
-                    signal_names=keys(dataset.recordings[uuid].signals),
-                    export_annotations::Bool=true,
-                    kwargs...)
-    recording = dataset.recordings[uuid]
-    signals = [recording.signals[name] for name in signal_names]
-    edf_header = export_edf_header(signals; kwargs...)
-    edf_signals = export_edf_signals(dataset, uuid, zip(signal_names, signals),
-                                     edf_header.seconds_per_record)
-    if export_annotations
+function onda_to_edf(samples::AbstractVector{<:Samples}, annotations=[]; kwargs...)
+    edf_header = onda_samples_to_edf_header(samples; kwargs...)
+    edf_signals = onda_samples_to_edf_signals(samples, edf_header.seconds_per_record)
+    if !isempty(annotations)
         records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
                    for i in 0:(edf_header.record_count - 1)]
-        for annotation in sort(collect(recording.annotations); by=first)
-            annotation_onset_in_seconds = first(annotation).value / 1e9
-            annotation_duration_in_seconds = duration(annotation).value / 1e9
+        for annotation in sort(Tables.rowtable(annotations); by=row -> start(row.span))
+            annotation_onset_in_seconds = start(annotation.span).value / 1e9
+            annotation_duration_in_seconds = duration(annotation.span).value / 1e9
             matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record)) + 1]
             tal = EDF.TimestampedAnnotationList(annotation_onset_in_seconds, annotation_duration_in_seconds, [annotation.value])
             push!(matching_record, tal)
