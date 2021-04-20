@@ -231,7 +231,7 @@ in `\$path/samples/`, and write the Onda signals and annotations tables to
 "edf", and if a prefix is provided for signals but not annotations both will use
 the signals prefix.  The prefixes cannot reference (sub)directories.
 
-Returns `uuid => (signals, annotations)`.
+Returns `uuid => (signals, annotations)`. 
 
 Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
 extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
@@ -283,6 +283,8 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
         else
             @warn "No annotations found in $path"
         end
+    else
+        annotations = Annotation[]                                    
     end
     return uuid => (signals, annotations)
 end
