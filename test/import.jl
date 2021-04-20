@@ -1,3 +1,5 @@
+using OndaEDF: validate_arrow_prefix
+
 @testset "Import EDF" begin
 
     n_records = 100
@@ -45,6 +47,9 @@
         uuid = uuid4()
         returned_uuid, (returned_signals, annotations) = OndaEDF.store_edf_as_onda(root, edf, uuid)
         signals = Dict(s.kind => s for s in returned_signals)
+
+        @test isfile(joinpath(root, "edf.onda.signals.arrow"))
+        @test isfile(joinpath(root, "edf.onda.annotations.arrow"))
 
         @test returned_uuid == uuid
         @test length(returned_signals) == 13
@@ -103,6 +108,54 @@
                 @test any(a -> a.value == "$i c" && a.span.start == start && a.span.stop == start + Nanosecond(1), annotations)
                 @test any(a -> a.value == "$i d" && a.span.start == start && a.span.stop == start + Nanosecond(1), annotations)
             end
+        end
+
+        @testset "Table prefixes" begin
+            prefix = @test_nowarn validate_arrow_prefix("edf")
+            @test prefix == "edf"
+            prefix = @test_nowarn validate_arrow_prefix("edf.something")
+            @test prefix == "edf.something"
+            @test_throws ArgumentError validate_arrow_prefix("/edf.something")
+            @test_throws ArgumentError validate_arrow_prefix("subdir/something")
+            prefix = @test_logs (:warn, r"Extracting prefix \"edf\"") validate_arrow_prefix("edf.onda.signals.arrow")
+            @test prefix == "edf"
+            prefix = @test_logs (:warn, r"Extracting prefix \"edf\"") validate_arrow_prefix("edf.onda.annotations.arrow")
+            @test prefix == "edf"
+
+            mktempdir() do root
+                OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="edfff")
+                @test isfile(joinpath(root, "edfff.onda.signals.arrow"))
+                @test isfile(joinpath(root, "edfff.onda.annotations.arrow"))
+            end
+
+            mktempdir() do root
+                OndaEDF.store_edf_as_onda(root, edf, uuid; annotations_prefix="edff")
+                @test isfile(joinpath(root, "edf.onda.signals.arrow"))
+                @test isfile(joinpath(root, "edff.onda.annotations.arrow"))
+            end
+
+            mktempdir() do root
+                OndaEDF.store_edf_as_onda(root, edf, uuid; annotations_prefix="edff")
+                @test isfile(joinpath(root, "edf.onda.signals.arrow"))
+                @test isfile(joinpath(root, "edff.onda.annotations.arrow"))
+            end
+
+            mktempdir() do root
+                OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="edfff", annotations_prefix="edff")
+                @test isfile(joinpath(root, "edfff.onda.signals.arrow"))
+                @test isfile(joinpath(root, "edff.onda.annotations.arrow"))
+            end
+
+            mktempdir() do root
+                @test_logs (:warn, r"Extracting prefix") OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
+                @test isfile(joinpath(root, "edff.onda.signals.arrow"))
+                @test isfile(joinpath(root, "edf.onda.annotations.arrow"))
+            end
+
+            mktempdir() do root
+                @test_throws ArgumentError OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="stuff/edf", annotations_prefix="edf")
+            end
+            
         end
     end
 

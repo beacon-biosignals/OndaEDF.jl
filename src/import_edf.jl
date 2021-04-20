@@ -221,12 +221,17 @@ end
 
 """
     store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
-                      custom_extractors=(), import_annotations::Bool=true)
+                      custom_extractors=(), import_annotations::Bool=true,
+                      signals_prefix="edf", annotations_prefix=signals_prefix)
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
 in `\$path/samples/`, and write the Onda signals and annotations tables to
-`\$path/onda.(signals|annotations).arrow`.  Returns `uuid => (signals,
-annotations)`.
+`\$path/\$(signals_prefix).onda.signals.arrow` and
+`\$path/\$(annotations_prefix).onda.annotations.arrow`.  The default prefix is
+"edf", and if a prefix is provided for signals but not annotations both will use
+the signals prefix.  The prefixes cannot reference (sub)directories.
+
+Returns `uuid => (signals, annotations)`.
 
 Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
 extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
@@ -255,7 +260,8 @@ following transformations:
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
-                           custom_extractors=(), import_annotations::Bool=true)
+                           custom_extractors=(), import_annotations::Bool=true,
+                           signals_prefix="edf", annotations_prefix=signals_prefix)
     EDF.read!(edf)
     file_format = "lpcm.zst"
 
@@ -267,18 +273,28 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
         push!(signals, signal)
     end
 
-    signals_path = joinpath(path, "onda.signals.arrow")
+    signals_path = joinpath(path, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
     write_signals(signals_path, signals)
     if import_annotations
         annotations = edf_to_onda_annotations(edf, uuid)
         if !isempty(annotations)
-            annotations_path = joinpath(path, "onda.annotations.arrow")
+            annotations_path = joinpath(path, "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
             write_annotations(annotations_path, annotations)
         else
             @warn "No annotations found in $path"
         end
     end
     return uuid => (signals, annotations)
+end
+
+function validate_arrow_prefix(prefix)
+    prefix == basename(prefix) || throw(ArgumentError("prefix \"$prefix\" is invalid: cannot contain directory separator"))
+    pm = match(r"(.*).onda.(signals|annotations).arrow", prefix)
+    if pm !== nothing
+        @warn "Extracting prefix \"$(pm.captures[1])\" from provided prefix \"$prefix\""
+        prefix = pm.captures[1]
+    end
+    return prefix
 end
 
 
