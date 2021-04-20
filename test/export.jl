@@ -34,10 +34,10 @@
             new_data = similar(samples.data, 0, Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1)
             return Samples(new_data, info, samples.encoded; validate=false)
         end
-        
+
         eeg_samples = only(filter(row -> row.info.kind == "eeg", onda_samples))
         ecg_samples = only(filter(row -> row.info.kind == "ecg", onda_samples))
-        
+
         massive_eeg = change_sample_rate(eeg_samples, sample_rate=5000.0)
         @test OndaEDF.edf_record_metadata([massive_eeg]) == (1000000, 1 / 5000)
 
@@ -72,7 +72,7 @@
     end
     @testset "annotation import/export via round trip" begin
         round_tripped = edf_to_onda_annotations(exported_edf, uuid)
-        
+
         @test round_tripped isa Vector{<:Onda.Annotation}
         # annotations are sorted by start time on export
         ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
@@ -82,6 +82,30 @@
         @test getproperty.(round_tripped, :recording) == getproperty.(ann_sorted, :recording)
         # new UUID for each annotation created during import
         @test all(getproperty.(round_tripped, :id) .!= getproperty.(ann_sorted, :id))
+    end
+
+    @testset "full service" begin
+        # import annotations
+        recordings, round_tripped = store_edf_as_onda(mktempdir(), exported_edf, uuid).second
+        @test round_tripped isa Vector{<:Onda.Annotation}
+        # annotations are sorted by start time on export
+        ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
+        @test getproperty.(round_tripped, :span) == getproperty.(ann_sorted, :span)
+        @test getproperty.(round_tripped, :value) == getproperty.(ann_sorted, :value)
+        # same recording UUID passed as original:
+        @test getproperty.(round_tripped, :recording) == getproperty.(ann_sorted, :recording)
+        # new UUID for each annotation created during import
+        @test all(getproperty.(round_tripped, :id) .!= getproperty.(ann_sorted, :id))
+        @test SamplesInfo(first(recordings)) == first(onda_samples).info
+
+        # don't import annotations
+        recordings, round_tripped = store_edf_as_onda(mktempdir(), exported_edf, uuid; import_annotations=false).second
+        @test round_tripped isa Vector{<:Onda.Annotation}
+        @test length(round_tripped) == 0
+
+        # import empty annotations
+        exported_edf2 = onda_to_edf(samples_to_export)
+        @test_logs (:warn, r"No annotations found in") store_edf_as_onda(mktempdir(), exported_edf2, uuid; import_annotations=true)
     end
 
 end
