@@ -283,6 +283,8 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
         else
             @warn "No annotations found in $path"
         end
+    else
+        annotations = Annotation[]                                    
     end
     return uuid => (signals, annotations)
 end
