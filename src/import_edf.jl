@@ -162,6 +162,52 @@ function extract_channels(edf_signals, channel_matchers)
     return extracted_channel_names, extracted_channels
 end
 
+"""
+    edf_signals_to_samplesinfo(edf_signals, kind, channel_names)
+
+Generate a single `Onda.SamplesInfo` for the given a collection of `EDF.Signal`s
+corresponding to multiple channels from a single signal kind.  Sample units are
+converted to Onda units and checked for consistency, and a promoted encoding
+(resolution, offset, and sample type/rate) is generated.
+
+No conversion of the actual signals is performed at this step.
+"""
+function edf_signals_to_samplesinfo(edf_signals, kind, channel_names)
+    onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension), edf_signals)
+    onda_sample_unit = first(onda_units)
+    all(==(onda_sample_unit), onda_units) || error("multiple possible units found for same signal: $onda_units")
+
+    edf_encodings = map(s -> edf_signal_encoding(s.header, edf.header.seconds_per_record), edf_signals)
+    onda_encoding = promote_encodings(edf_encodings)
+
+    info = SamplesInfo(; kind=kind, channels=channel_names,
+                       sample_unit=string(onda_sample_unit),
+                       sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
+                       sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
+                       sample_type=onda_encoding.sample_type,
+                       sample_rate=onda_encoding.sample_rate)
+    return info
+end
+
+"""
+    extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
+
+For one or more signal names and one or more channel names, return all matching
+signals from an `EDF.File`, and the `Onda.SamplesInfo` struct that describes the
+extracted channels.
+
+`signal_names` should be an iterable of `String`s naming the signal types to
+extract (e.g., `["ecg", "ekg"]`; `["eeg"]`).
+
+`channel_names` should be an iterable of channel specifications, each of which
+can be either a `String` giving the generated channel name, or a `Pair` mapping
+a canonical name to a list of alternatives that it should be substituted for
+(e.g., `"canonical_name" => ["alt1", "alt2", ...]`).
+
+See OndaEDF.STANDARD_LABELS for the labels (`signal_names => channel_names`
+`Pair`s) that are used to extract EDF signals by default.
+
+"""
 function extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
     matcher = x -> begin
         # yo I heard you like closures
@@ -171,18 +217,8 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
     end
     edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
     isempty(edf_channel_names) && return nothing
-    edf_encodings = map(s -> edf_signal_encoding(s.header, edf.header.seconds_per_record), edf_channels)
-    onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension), edf_channels)
-    onda_sample_unit = first(onda_units)
-    all(==(onda_sample_unit), onda_units) || error("multiple possible units found for same signal: $onda_units")
-    onda_encoding = promote_encodings(edf_encodings)
-    onda_stop_nanosecond = Onda.time_from_index(onda_encoding.sample_rate, length(edf_channels[1].samples) + 1)
-    info = SamplesInfo(; kind=first(signal_names), channels=edf_channel_names,
-                       sample_unit=string(onda_sample_unit),
-                       sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
-                       sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
-                       sample_type=onda_encoding.sample_type,
-                       sample_rate=onda_encoding.sample_rate)
+
+    info = edf_signals_to_samplesinfo(edf_channels, first(signals_names), edf_channel_names)
     return info, edf_channels
 end
 
