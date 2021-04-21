@@ -163,7 +163,7 @@ function extract_channels(edf_signals, channel_matchers)
 end
 
 """
-    edf_signals_to_samplesinfo(edf_signals, kind, channel_names)
+    edf_signals_to_samplesinfo(edf, edf_signals, kind, channel_names, samples_per_record)
 
 Generate a single `Onda.SamplesInfo` for the given a collection of `EDF.Signal`s
 corresponding to multiple channels from a single signal kind.  Sample units are
@@ -172,7 +172,7 @@ converted to Onda units and checked for consistency, and a promoted encoding
 
 No conversion of the actual signals is performed at this step.
 """
-function edf_signals_to_samplesinfo(edf_signals, kind, channel_names)
+function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Signal}, kind, channel_names)
     onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension), edf_signals)
     onda_sample_unit = first(onda_units)
     all(==(onda_sample_unit), onda_units) || error("multiple possible units found for same signal: $onda_units")
@@ -218,7 +218,7 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
     edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
     isempty(edf_channel_names) && return nothing
 
-    info = edf_signals_to_samplesinfo(edf_channels, first(signals_names), edf_channel_names)
+    info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), edf_channel_names)
     return info, edf_channels
 end
 
