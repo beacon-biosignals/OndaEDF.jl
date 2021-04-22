@@ -204,7 +204,7 @@ can be either a `String` giving the generated channel name, or a `Pair` mapping
 a canonical name to a list of alternatives that it should be substituted for
 (e.g., `"canonical_name" => ["alt1", "alt2", ...]`).
 
-See OndaEDF.STANDARD_LABELS for the labels (`signal_names => channel_names`
+See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
 `Pair`s) that are used to extract EDF signals by default.
 
 """
