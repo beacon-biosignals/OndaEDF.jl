@@ -279,9 +279,12 @@ Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
     edf::EDF.File -> (samples_info::Onda.SamplesInfo,
                       edf_signals::Vector{EDF.Signal})
 
-`store_edf_as_onda` automatically uses a variety of default extractors derived from
-the EDF standard texts; see `src/standards.jl` for details. The caller can also
-provide additional extractors via the `custom_extractors` keyword argument.
+`store_edf_as_onda` automatically uses a variety of default extractors derived
+from the EDF standard texts; see `src/standards.jl` and
+[`extract_channels_by_label`](@ref) for details. The caller can also provide
+additional extractors via the `custom_extractors` keyword argument, and the
+[`edf_signals_to_samplesinfo`](@ref) utility can be used to extract a common
+`Onda.SamplesInfo` from a collection of EDF.Signals.
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:

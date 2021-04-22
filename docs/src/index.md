@@ -21,8 +21,17 @@ edf_to_onda_samples
 edf_to_onda_annotations
 ```
 
+### Import utilities
+
+```@docs
+extract_channels_by_label
+edf_signals_to_samplesinfo
+```
+
+### Full-service import
+
 For a more "full-service" experience, OndaEDF.jl also provides functionality to
-write the extracted signals/annotations to disk:
+extract `Onda.Samples` and `Onda.Annotations` and then write them to disk:
 
 ```@docs
 store_edf_as_onda
