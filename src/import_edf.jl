@@ -166,7 +166,7 @@ end
     edf_signals_to_samplesinfo(edf, edf_signals, kind, channel_names, samples_per_record)
 
 Generate a single `Onda.SamplesInfo` for the given collection of `EDF.Signal`s
-corresponding to multiple channels from a single signal kind.  Sample units are
+corresponding to the channels of a single Onda signal.  Sample units are
 converted to Onda units and checked for consistency, and a promoted encoding
 (resolution, offset, and sample type/rate) is generated.
 
