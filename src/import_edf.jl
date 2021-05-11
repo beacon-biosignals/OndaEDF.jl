@@ -20,18 +20,25 @@ end
 # - ensures the given label is whitespace-stripped, lowercase, and parens-free
 # - strips trailing generic EDF references (e.g. "ref", "ref2", etc.)
 # - replaces all references with the appropriate name as specified by `canonical_names`
-# - replaces `+` with `_plus_` and `/` with `_over_`
-# - returns the initial reference name (w/o prefix sign, if present) and the entire label
+# - replaces
+#     - `+` with `_plus_`
+#     - `/` with `_over_`
+#     - `:` with `_colon_`
+# - returns the entire label if all the parts are canonical names, and `nothing` otherwise.
 function _normalize_references(original_label, canonical_names)
     label = replace(lowercase(original_label), r"\s"=>"")
     label = replace(replace(label, '('=>""), ')'=>"")
+    label = replace(label, r"\*$"=>"")
     label = replace(label, '-'=>'…')
     label = replace(label, '+'=>"…+…")
     label = replace(label, '/'=>"…/…")
+    label = replace(label, ':'=>"…:…")
     parts = split(label, '…'; keepempty=false)
     final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
     parts = parts[1:something(final, 0)]
+    #@show original_label, parts, canonical_names
     isempty(parts) && return ("", "")
+    #any(p -> !all([isdigit(c) for c in p]) && ∉(p, union(["-", "+", "/", ":"], _canonical.(canonical_names))), parts) && return ("", "")
     for n in canonical_names
         if n isa Pair
             primary, alternatives = n
@@ -48,6 +55,7 @@ function _normalize_references(original_label, canonical_names)
     recombined = '-'^startswith(original_label, '-') * join(parts, '-')
     recombined = replace(recombined, "-+-"=>"_plus_")
     recombined = replace(recombined, "-/-"=>"_over_")
+    recombined = replace(recombined, "-:-"=>"_colon_")
     return first(parts), recombined
 end
 
@@ -59,6 +67,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
         any(==(type), signal_names) || return nothing
         label = spec
     end
+    #@show signal_names, label, channel_name
     initial, normalized_label = _normalize_references(label, canonical_names)
     initial == channel_name && return normalized_label
     return nothing
@@ -163,7 +172,7 @@ function extract_channels(edf_signals, channel_matchers)
 end
 
 """
-    edf_signals_to_samplesinfo(edf, edf_signals, kind, channel_names, samples_per_record)
+    edf_signals_to_samplesinfo(edf, edf_signals, kind, channel_names, samples_per_record; unit_alternatives=STANDARD_UNITS)
 
 Generate a single `Onda.SamplesInfo` for the given collection of `EDF.Signal`s
 corresponding to the channels of a single Onda signal.  Sample units are
@@ -172,10 +181,12 @@ converted to Onda units and checked for consistency, and a promoted encoding
 
 No conversion of the actual signals is performed at this step.
 """
-function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Signal}, kind, channel_names)
-    onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension), edf_signals)
-    onda_sample_unit = first(onda_units)
-    all(==(onda_sample_unit), onda_units) || error("multiple possible units found for same signal: $onda_units")
+function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Signal}, kind, channel_names; unit_alternatives=STANDARD_UNITS)
+    onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension, unit_alternatives), edf_signals)
+    onda_sample_units = Set(u for u in onda_units if u != "unknown")
+    onda_sample_units = isempty(onda_sample_units) ? Set(["unknown"]) : onda_sample_units
+    length(onda_sample_units) == 1 || error("multiple possible units found for same signal: $onda_sample_units")
+    onda_sample_unit = first(onda_sample_units)
 
     edf_encodings = map(s -> edf_signal_encoding(s.header, edf.header.seconds_per_record), edf_signals)
     onda_encoding = promote_encodings(edf_encodings)
@@ -208,14 +219,16 @@ See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
 `Pair`s) that are used to extract EDF signals by default.
 
 """
-function extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
+function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS)
     matcher = x -> begin
         # yo I heard you like closures
         return s -> match_edf_label(s.header.label, signal_names,
                                     x isa Pair ? first(x) : x,
                                     channel_names)
     end
+    #@show signal_names, channel_names
     edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
+    #@show edf_channel_names, [s.header for s in edf_channels]
     isempty(edf_channel_names) && return nothing
 
     info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), edf_channel_names)
@@ -368,7 +381,7 @@ See the OndaEDF README for additional details regarding EDF formatting expectati
 function edf_to_onda_samples(edf::EDF.File; custom_extractors=())
     EDF.read!(edf)
     edf_samples = Samples[]
-    for extractor in Iterators.flatten((STANDARD_EXTRACTORS, custom_extractors))
+    for extractor in Iterators.flatten((custom_extractors, STANDARD_EXTRACTORS))
         extracted = extractor(edf)
         extracted === nothing && continue
         samples_info, edf_signals = extracted

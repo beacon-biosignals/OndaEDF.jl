@@ -5,7 +5,7 @@
 # matters for the EDF standard physical dimensions, so we can't just always normalize
 # to a single case when processing; this results in some redundant-looking values below.
 const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
-                            "microvolt" => ["uV"],
+                            "microvolt" => ["uV", "\xb5V"],
                             "millivolt" => ["mV"],
                             "centivolt" => ["cV"],
                             "decivolt" => ["dV"],
@@ -19,16 +19,17 @@ const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
                             "percent" => ["%"],
                             "liter_per_minute" => ["L/m", "l/m", "LPM", "Lpm", "lpm", "LpM"],
                             "millimeter_of_mercury" => ["mmHg", "mmhg", "MMHG"],
-                            "beat_per_minute" => ["B/m", "b/m", "bpm", "BPM", "BpM"],
+                            "beat_per_minute" => ["B/m", "b/m", "bpm", "BPM", "BpM", "Bpm"],
                             "centimeter_of_water" => ["cmH2O", "cmh2o"],
-                            "unknown" => [""])
+                            "unknown" => ["", "\"\"", "#", "u"],
+                            "relative" => ["rel."])
 
 # The case-sensitivity of EDF physical dimension names means you can't/shouldn't
 # naively convert/lowercase them to compliant Onda unit names, so we have to be
 # very conservative here and error if we don't recognize the input.
-function edf_to_onda_unit(edf_physical_dimension::AbstractString)
+function edf_to_onda_unit(edf_physical_dimension::AbstractString, unit_alternatives=STANDARD_UNITS)
     edf_physical_dimension = replace(edf_physical_dimension, r"\s"=>"")
-    for (onda_unit, potential_edf_matches) in STANDARD_UNITS
+    for (onda_unit, potential_edf_matches) in unit_alternatives
         any(==(edf_physical_dimension), potential_edf_matches) && return onda_unit
     end
     error("""
