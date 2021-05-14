@@ -3,6 +3,7 @@
 #####
 
 function edf_type_and_spec(label::AbstractString)
+    label = replace(label, r"\s*-\s*" => "-")
     parsed = split(label; limit=2, keepempty=false)
     if length(parsed) == 2
         type = replace(parsed[1], r"\s"=>"")
@@ -26,13 +27,14 @@ end
 #     - `:` with `_colon_`
 # - returns the entire label if all the parts are canonical names, and `nothing` otherwise.
 function _normalize_references(original_label, canonical_names)
-    label = replace(lowercase(original_label), r"\s"=>"")
+    label = replace(_safe_lowercase(original_label), r"\s"=>"")
     label = replace(replace(label, '('=>""), ')'=>"")
     label = replace(label, r"\*$"=>"")
     label = replace(label, '-'=>'…')
     label = replace(label, '+'=>"…+…")
     label = replace(label, '/'=>"…/…")
     label = replace(label, ':'=>"…:…")
+    label = !isnothing(match(r"^\[.*\]$", label)) ? label[2:end-1] : label
     parts = split(label, '…'; keepempty=false)
     final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
     parts = parts[1:something(final, 0)]
@@ -59,11 +61,23 @@ function _normalize_references(original_label, canonical_names)
     return first(parts), recombined
 end
 
+function _safe_lowercase(c::Char)
+    try
+        return lowercase(c)
+    catch e
+        return c
+    end
+end
+
+_safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
+
 function match_edf_label(label, signal_names, channel_name, canonical_names)
-    type, spec = edf_type_and_spec(lowercase(label))
+    type, spec = edf_type_and_spec(_safe_lowercase(label))
+    #@show type, spec
     if spec === nothing
         label = type
     else
+        type = replace(type, r"[,\s]" => "")
         any(==(type), signal_names) || return nothing
         label = spec
     end
@@ -200,6 +214,17 @@ function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Sig
     return info
 end
 
+function default_preprocessor(l)
+    l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
+    l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
+    # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
+    m = match(r"^\s*EOG[\s\-](?<lr>[LR])\s*"i, l)
+    if !isnothing(m)
+        l = "EOG$(m[:lr])"
+    end
+    return l
+end
+
 """
     extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
 
@@ -215,24 +240,51 @@ can be either a `String` giving the generated channel name, or a `Pair` mapping
 a canonical name to a list of alternatives that it should be substituted for
 (e.g., `"canonical_name" => ["alt1", "alt2", ...]`).
 
+`unit_alternatives` lists standardized unit names and alternatives that map to them.
+See `OndaEDF.STANDAR_UNITS` for defaults.
+
+`preprocess_labels(label::String)` is applied to raw edf signal header labels
+beforehand; defaults to `identity`.
+
 See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
 `Pair`s) that are used to extract EDF signals by default.
 
 """
-function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS)
+function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS, preprocess_labels=default_preprocessor)
     matcher = x -> begin
         # yo I heard you like closures
-        return s -> match_edf_label(s.header.label, signal_names,
-                                    x isa Pair ? first(x) : x,
-                                    channel_names)
+        return s -> begin
+            m = match_edf_label(preprocess_labels(s.header.label),
+                                signal_names,
+                                x isa Pair ? first(x) : x,
+                                channel_names)
+            !isnothing(m) && return m
+            # channel info is sometimes misplaced in transducer_type field; only accept these if corresponding signal_name occurs in channel label
+            m = match_edf_label(preprocess_labels(s.header.transducer_type),
+                                signal_names,
+                                x isa Pair ? first(x) : x,
+                                channel_names)
+            isnothing(m) && return m
+            lowercase_label = _safe_lowercase(s.header.label)
+            any(occursin(name, lowercase_label) for name in signal_names) && return m
+            return nothing
+        end
     end
     #@show signal_names, channel_names
     edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
-    #@show edf_channel_names, [s.header for s in edf_channels]
     isempty(edf_channel_names) && return nothing
+    #@show edf_channel_names, [s.header for s in edf_channels]
 
-    info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), edf_channel_names)
-    return info, edf_channels
+    try
+        info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), edf_channel_names)
+        return info, edf_channels
+    catch e
+        units = [s.header.label => s.header.physical_dimension for s in edf_channels]
+        msg ="""Skipping signal: error while processing units and encodings
+                for $(first(signal_names)) signal with units $units"""
+        @warn msg exception=(e, catch_backtrace())
+        return nothing
+    end
 end
 
 #####
