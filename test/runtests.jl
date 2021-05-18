@@ -85,9 +85,9 @@ end
 include("test_edf_to_samples_info.out")
 
 @testset "OndaEDF" begin
-    #include("signal_labels.jl")
+    include("signal_labels.jl")
     include("import.jl")
-    #include("export.jl")
+    include("export.jl")
 end
 
 
