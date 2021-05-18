@@ -1,7 +1,6 @@
 using Test, Dates, Random, UUIDs, Statistics
 using OndaEDF, Onda, EDF, Tables
 
-
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,
                          digital_min, digital_max,
@@ -13,6 +12,7 @@ function test_edf_signal(rng, label, transducer, physical_units,
     samples = rand(rng, Int16, n_records * samples_per_record)
     return EDF.Signal(header, samples)
 end
+
 
 function make_test_data(rng, sample_rate, samples_per_record, n_records)
     imin16, imax16 = Float32(typemin(Int16)), Float32(typemax(Int16))
@@ -69,12 +69,25 @@ function make_test_data(rng, sample_rate, samples_per_record, n_records)
                      :ptaf => [17])
 end
 
+mock_edf_signal(header, n_records) = EDF.Signal(header, rand(Int16, n_records * header.samples_per_record))
 
+# turn an entry in `test_edf_to_samples_info.out` into an edf
+function mock_edf(result)
+    n_records = 100
+    sample_rate = 256
+    samples_per_record = first(result.original_edf_headers).samples_per_record
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[mock_edf_signal(t, n_records) for t in result.original_edf_headers]
+    edf_header = EDF.FileHeader("0", "", "", DateTime("2014-10-27T22:24:28"), true, n_records, samples_per_record / sample_rate)
+    edf = EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
+    return edf
+end
+
+include("test_edf_to_samples_info.out")
 
 @testset "OndaEDF" begin
-    include("signal_labels.jl")
+    #include("signal_labels.jl")
     include("import.jl")
-    include("export.jl")
+    #include("export.jl")
 end
 
 

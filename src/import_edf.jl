@@ -54,6 +54,7 @@ function _normalize_references(original_label, canonical_names)
             end
         end
     end
+    #@show original_label, parts, canonical_names
     recombined = '-'^startswith(original_label, '-') * join(parts, '-')
     recombined = replace(recombined, "-+-"=>"_plus_")
     recombined = replace(recombined, "-/-"=>"_over_")
@@ -72,17 +73,17 @@ end
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 
 function match_edf_label(label, signal_names, channel_name, canonical_names)
-    type, spec = edf_type_and_spec(_safe_lowercase(label))
-    #@show type, spec
-    if spec === nothing
-        label = type
-    else
-        type = replace(type, r"[,\s]" => "")
-        any(==(type), signal_names) || return nothing
-        label = spec
+    label = _safe_lowercase(label)
+    for signal_name in signal_names
+        m = match(Regex("[\\s\\[,\\]]*$(signal_name)[\\s,\\]]*\\s+(?<spec>.+)", "i"), label)
+        if !isnothing(m)
+            label = m[:spec]
+        end
     end
+    label = replace(label, r"\s*-\s*" => "-")
     #@show signal_names, label, channel_name
     initial, normalized_label = _normalize_references(label, canonical_names)
+    #@show initial, normalized_label
     initial == channel_name && return normalized_label
     return nothing
 end
