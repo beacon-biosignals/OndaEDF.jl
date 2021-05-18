@@ -2,21 +2,6 @@
 ##### `EDF.Signal` label handling
 #####
 
-function edf_type_and_spec(label::AbstractString)
-    label = replace(label, r"\s*-\s*" => "-")
-    parsed = split(label; limit=2, keepempty=false)
-    if length(parsed) == 2
-        type = replace(parsed[1], r"\s"=>"")
-        spec = replace(parsed[2], r"\s"=>"")
-    else
-        # if no clear specification is present, the whole label
-        # is just considered the "type" by the EDF+ standard
-        type = replace(label, r"\s"=>"")
-        spec = nothing
-    end
-    return type, spec
-end
-
 # This function:
 # - ensures the given label is whitespace-stripped, lowercase, and parens-free
 # - strips trailing generic EDF references (e.g. "ref", "ref2", etc.)
@@ -52,7 +37,6 @@ function _normalize_references(original_label, canonical_names)
             end
         end
     end
-    #@show original_label, parts, canonical_names
     recombined = '-'^startswith(original_label, '-') * join(parts, '-')
     recombined = replace(recombined, "-+-"=>"_plus_")
     recombined = replace(recombined, "-/-"=>"_over_")
@@ -79,9 +63,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
         end
     end
     label = replace(label, r"\s*-\s*" => "-")
-    #@show signal_names, label, channel_name
     initial, normalized_label = _normalize_references(label, canonical_names)
-    #@show initial, normalized_label
     initial == channel_name && return normalized_label
     return nothing
 end
@@ -269,10 +251,8 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
             return nothing
         end
     end
-    #@show signal_names, channel_names
     edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
     isempty(edf_channel_names) && return nothing
-    #@show edf_channel_names, [s.header for s in edf_channels]
 
     try
         info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), edf_channel_names)
