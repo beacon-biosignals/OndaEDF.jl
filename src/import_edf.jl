@@ -215,10 +215,16 @@ function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Sig
 end
 
 function default_preprocessor(l)
+    l = replace(l, "\xf6"[1] => 'o') # remove umlaut (German)
     l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
     l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
     # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
-    m = match(r"^\s*EOG[\s\-](?<lr>[LR])\s*"i, l)
+    m = match(r"^\s*EOG[\s\-]+(?<lr>[LR])\s*"i, l)
+    if !isnothing(m)
+        l = "EOG$(m[:lr])"
+    end
+    # "L - EOG" and "R- EOG" should not be parsed as channel \minus channel
+    m = match(r"^\s*(?<lr>[LR])[\s\-]+EOG\s*"i, l)
     if !isnothing(m)
         l = "EOG$(m[:lr])"
     end
