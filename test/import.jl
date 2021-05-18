@@ -2,6 +2,21 @@ using OndaEDF: validate_arrow_prefix
 
 @testset "Import EDF" begin
 
+    @testset "edf_to_samples_info" begin
+        for (i, r) in enumerate(test_edf_to_samples_info)
+            try
+                edf = mock_edf(r)
+                samples = OndaEDF.edf_to_onda_samples(edf)
+                expected = [(s.kind, c, s.sample_unit) for s in r.samples_infos for c in s.channels]
+                sample_infos = [(s.info.kind, c, s.info.sample_unit) for s in samples for c in s.info.channels]
+                @test (i, setdiff(expected, sample_infos)) == (i, [])
+            catch e
+                @show r
+                throw(e)
+            end
+        end
+    end
+
     n_records = 100
     edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
 
