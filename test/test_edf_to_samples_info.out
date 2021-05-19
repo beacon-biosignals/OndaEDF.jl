@@ -14055,48 +14055,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    #(   # 432
-    #    onda_edf_headers=
-    #        [
-    #            SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #            SamplesInfo("pap_device_cflow", ["pap_device_cflow", "pap_device_cflow"], "microvolt", 0.007707101758569479, 0.0, Int32, 200.0),
-    #            SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
-    #            SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #            SamplesInfo("ptaf", ["ptaf"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #            SamplesInfo("ecg", ["avl"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #            SamplesInfo("eog", ["left-m2", "right-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #            SamplesInfo("emg", ["chin1-chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #            SamplesInfo("sao2", ["sao2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 200.0),
-    #            SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 1.0, 0.0, Int16, 200.0),
-    #        ],
-    #    original_edf_headers=
-    #        [
-    #            EDF.SignalHeader("F3-M2", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("F4-M1", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("C3-M2", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("C4-M1", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("O1-M2", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("O2-M1", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("LOC-M2", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("ROC-M1", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("CHIN1-CHIN3", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("PTAF", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("Airflow", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("Chest", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("ABD", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("Snore", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("EKG", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("LAT", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("RAT", "E", "uV", -32768.0f0, 32767.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("SaO2", "", "%", 0.0f0, 100.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("HR", "", "BpM", -32768.0f0, 32768.0f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("Body", "", "", -12.5004f0, 14.50041f0, -32768.0f0, 32767.0f0, "", 1200),
-    #            EDF.SignalHeader("Cflow", "", "", -252.542f0, 252.5429f0, -32768.0f0, 32767.0f0, "", 1200),
-    #        ],
-    #    error=
-    #        nothing,
-    #),
-    (   # 433
+    (   # 432
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -14131,7 +14090,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 434
+    (   # 433
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 512.0),
@@ -14155,7 +14114,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 435
+    (   # 434
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -14180,7 +14139,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 436
+    (   # 435
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -14217,7 +14176,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 437
+    (   # 436
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.17898832261562347, 0.08935546875, Int16, 256.0),
@@ -14243,7 +14202,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 438
+    (   # 437
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -14279,7 +14238,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 439
+    (   # 438
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f3", "f4-a1", "f4", "a1", "c3-a2", "c3", "c4-a1", "c4", "a2", "o1-a2", "o1", "o2-a1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -14311,7 +14270,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 440
+    (   # 439
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -14343,7 +14302,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 441
+    (   # 440
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.08422122150659561, 0.0, Int32, 250.0),
@@ -14376,7 +14335,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 442
+    (   # 441
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -14401,7 +14360,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 443
+    (   # 442
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -14435,7 +14394,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 444
+    (   # 443
         onda_edf_headers=
             [
                 SamplesInfo("positive_airway_pressure", ["cpap"], "centimeter_of_water", 0.0016174810007214546, 0.0, Int16, 1.0),
@@ -14476,7 +14435,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 445
+    (   # 444
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", -0.48840048909187317, -0.24420166015625, Int16, 256.0),
@@ -14511,7 +14470,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 446
+    (   # 445
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -14549,7 +14508,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 447
+    (   # 446
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -14577,7 +14536,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 448
+    (   # 447
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.17898832261562347, 0.08935546875, Int16, 256.0),
@@ -14612,7 +14571,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 449
+    (   # 448
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 3.0),
@@ -14664,7 +14623,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 450
+    (   # 449
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -14697,7 +14656,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 451
+    (   # 450
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.16702723503112793, 0.0, Int32, 250.0),
@@ -14731,7 +14690,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 452
+    (   # 451
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -14769,7 +14728,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 453
+    (   # 452
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -14798,7 +14757,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 454
+    (   # 453
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -14831,7 +14790,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 455
+    (   # 454
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -14861,7 +14820,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 456
+    (   # 455
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.7843137383460999, -100.0, Int16, 500.0),
@@ -14904,7 +14863,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 457
+    (   # 456
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -14936,7 +14895,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 458
+    (   # 457
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -14972,7 +14931,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 459
+    (   # 458
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -15004,7 +14963,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 460
+    (   # 459
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -15037,7 +14996,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 461
+    (   # 460
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -15072,7 +15031,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 462
+    (   # 461
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.2797951400279999, -239.3125, Int16, 250.0),
@@ -15103,7 +15062,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 463
+    (   # 462
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -15136,7 +15095,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 464
+    (   # 463
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -15171,7 +15130,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 465
+    (   # 464
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -15195,7 +15154,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 466
+    (   # 465
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "millivolt", 0.00018295084009878337, 0.0, Int16, 200.0),
@@ -15228,7 +15187,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 467
+    (   # 466
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -15252,7 +15211,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 468
+    (   # 467
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -15291,7 +15250,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 469
+    (   # 468
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -15314,7 +15273,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 470
+    (   # 469
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m1", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", 0.04623729735612869, 0.0, Int32, 256.0),
@@ -15343,7 +15302,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 471
+    (   # 470
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -15378,7 +15337,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 472
+    (   # 471
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -15405,7 +15364,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 473
+    (   # 472
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 200.0),
@@ -15439,7 +15398,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 474
+    (   # 473
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3", "f4-m1", "f4", "c3-m2", "c3", "c4-m1", "c4", "o1-m2", "o1", "o2-m1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -15467,7 +15426,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 475
+    (   # 474
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -15495,7 +15454,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 476
+    (   # 475
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -15522,7 +15481,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 477
+    (   # 476
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -15559,7 +15518,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 478
+    (   # 477
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -15595,7 +15554,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 479
+    (   # 478
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -15623,7 +15582,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 480
+    (   # 479
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -15649,7 +15608,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 481
+    (   # 480
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -15681,7 +15640,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 482
+    (   # 481
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -15715,7 +15674,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 483
+    (   # 482
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -15738,7 +15697,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 484
+    (   # 483
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09155552834272385, 0.0, Int16, 500.0),
@@ -15766,7 +15725,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 485
+    (   # 484
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -15788,7 +15747,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 486
+    (   # 485
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -15821,7 +15780,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 487
+    (   # 486
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -15855,7 +15814,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 488
+    (   # 487
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "o1-m2", "o2-m1"], "millivolt", 0.00017144902085419744, 0.0, Int16, 200.0),
@@ -15886,7 +15845,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 489
+    (   # 488
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -15921,7 +15880,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 490
+    (   # 489
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -15944,7 +15903,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 491
+    (   # 490
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2-m2", "f4-m1-m1", "c3-m2-m2", "c4-m1-m1", "o1-m2-m2", "o2-m1-m1"], "microvolt", 0.02799340896308422, 0.0, Int32, 256.0),
@@ -15969,7 +15928,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 492
+    (   # 491
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -16015,7 +15974,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 493
+    (   # 492
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -16041,7 +16000,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 494
+    (   # 493
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -16069,7 +16028,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 495
+    (   # 494
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -16092,7 +16051,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 496
+    (   # 495
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f3", "f4-a1", "f4", "f4-a2", "a1", "c3-a2", "c3", "c4-a1", "c4", "c4-a2", "a2", "o1-a2", "o1", "o2-a1", "o2", "o2-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16131,7 +16090,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 497
+    (   # 496
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -16162,7 +16121,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 498
+    (   # 497
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -16198,7 +16157,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 499
+    (   # 498
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a1", "f4-a1", "c3-a1", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -16221,7 +16180,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 500
+    (   # 499
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16245,7 +16204,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 501
+    (   # 500
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0, Int32, 256.0),
@@ -16275,7 +16234,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 502
+    (   # 501
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 200.0),
@@ -16308,7 +16267,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 503
+    (   # 502
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -16335,7 +16294,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 504
+    (   # 503
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -16368,7 +16327,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 505
+    (   # 504
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16396,7 +16355,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 506
+    (   # 505
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16425,7 +16384,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 507
+    (   # 506
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -16458,7 +16417,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 508
+    (   # 507
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -16494,7 +16453,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 509
+    (   # 508
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.07696939259767532, 0.0, Int32, 250.0),
@@ -16527,7 +16486,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 510
+    (   # 509
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -16566,7 +16525,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 511
+    (   # 510
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4-a1", "c3-a2", "c4-a1", "o1-a2"], "millivolt", 0.00023842585505917668, 0.0, Int16, 200.0),
@@ -16608,7 +16567,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 512
+    (   # 511
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.465201497077942, 0.732666015625, Int16, 200.0),
@@ -16636,7 +16595,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 513
+    (   # 512
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16665,7 +16624,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 514
+    (   # 513
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -16709,7 +16668,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 515
+    (   # 514
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -16734,7 +16693,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 516
+    (   # 515
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16756,7 +16715,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 517
+    (   # 516
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009155413135886192, 0.00457763671875, Int16, 200.0),
@@ -16791,7 +16750,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 518
+    (   # 517
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -16815,7 +16774,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 519
+    (   # 518
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f3-a2", "f4", "f4-a1", "a1", "c3", "c3-a2", "c4-a1", "c4", "a2", "o1", "o1-a2", "o2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -16868,7 +16827,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 520
+    (   # 519
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["a1-f4", "a1-c4", "a1-o2", "cz-fz", "a2-f3", "a2-c3", "a2-o1", "pz", "t6-t5"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 200.0),
@@ -16900,7 +16859,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 521
+    (   # 520
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f3-a2", "f4", "f4-a1", "a1", "c3-a2", "c3", "c4-a1", "c4", "a2", "o1", "o1-a2", "o2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -16952,7 +16911,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 522
+    (   # 521
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m1", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", 0.08705037087202072, 0.0, Int32, 250.0),
@@ -16979,7 +16938,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 523
+    (   # 522
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp1-fp2", "fp1-p3", "f7-f8", "f3-m2", "f4-m1", "t3-t5", "c3-m2", "c4-m1", "t4-t6", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 500.0),
@@ -17010,7 +16969,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 524
+    (   # 523
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -17042,7 +17001,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 525
+    (   # 524
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -17083,7 +17042,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 526
+    (   # 525
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp1-fp2", "f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 500.0),
@@ -17118,7 +17077,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 527
+    (   # 526
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -17142,7 +17101,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 528
+    (   # 527
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_leak", ["pap_device_leak"], "microvolt", -157.2167510986328, -78.5, Int16, 512.0),
@@ -17214,7 +17173,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 529
+    (   # 528
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["pg1-a2", "pg2-a2", "fp1-fp2", "fp1-f7", "f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -17243,7 +17202,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 530
+    (   # 529
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -17271,7 +17230,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 531
+    (   # 530
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -17321,7 +17280,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 532
+    (   # 531
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "volt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
@@ -17358,7 +17317,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 533
+    (   # 532
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-a1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -17381,7 +17340,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 534
+    (   # 533
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -17415,7 +17374,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 535
+    (   # 534
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -17442,7 +17401,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 536
+    (   # 535
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -17475,7 +17434,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 537
+    (   # 536
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.10000000149011612, 0.0, Int16, 256.0),
@@ -17507,7 +17466,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 538
+    (   # 537
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -17548,7 +17507,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 539
+    (   # 538
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -17582,7 +17541,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 540
+    (   # 539
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -17605,7 +17564,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 541
+    (   # 540
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -17629,7 +17588,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 542
+    (   # 541
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3", "f4-m1", "f4", "m1", "c3-m2", "c3", "c4-m1", "c4", "m2", "o1-m2", "o1", "o2-m1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -17668,7 +17627,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 543
+    (   # 542
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -17715,7 +17674,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 544
+    (   # 543
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -17747,7 +17706,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 545
+    (   # 544
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.10458637028932571, 0.0, Int32, 250.0),
@@ -17780,7 +17739,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 546
+    (   # 545
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.1367521435022354, 0.068389892578125, Int16, 256.0),
@@ -17825,7 +17784,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 547
+    (   # 546
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-e2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -17850,7 +17809,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 548
+    (   # 547
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -17887,7 +17846,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 549
+    (   # 548
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -17923,7 +17882,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 550
+    (   # 549
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -17960,7 +17919,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 551
+    (   # 550
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -17991,7 +17950,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 552
+    (   # 551
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -18026,7 +17985,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 553
+    (   # 552
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -18058,7 +18017,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 554
+    (   # 553
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -18092,7 +18051,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 555
+    (   # 554
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -18116,7 +18075,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 556
+    (   # 555
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -18139,7 +18098,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 557
+    (   # 556
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["a1-pg2", "a1-pg1", "a1-f4", "a1-c4", "a1-o2", "a2-f3", "a2-c3", "a2-o1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -18169,7 +18128,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 558
+    (   # 557
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -18192,7 +18151,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 559
+    (   # 558
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 200.0),
@@ -18228,7 +18187,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 560
+    (   # 559
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -18262,7 +18221,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 561
+    (   # 560
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -18293,7 +18252,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 562
+    (   # 561
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -18327,7 +18286,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 563
+    (   # 562
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 200.0),
@@ -18354,7 +18313,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 564
+    (   # 563
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -18380,7 +18339,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 565
+    (   # 564
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 500.0),
@@ -18440,7 +18399,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 566
+    (   # 565
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
@@ -18475,7 +18434,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 567
+    (   # 566
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.183066263794899, 0.00244140625, Int16, 200.0),
@@ -18499,7 +18458,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 568
+    (   # 567
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030637255404144526, -0.39215850830078125, Int16, 200.0),
@@ -18534,7 +18493,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 569
+    (   # 568
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -18575,7 +18534,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 570
+    (   # 569
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-a2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -18607,7 +18566,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 571
+    (   # 570
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009155413135886192, 0.00457763671875, Int16, 200.0),
@@ -18641,7 +18600,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 572
+    (   # 571
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -18664,7 +18623,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 573
+    (   # 572
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.20273692905902863, 0.0, Int32, 200.0),
@@ -18697,7 +18656,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 574
+    (   # 573
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -18749,7 +18708,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 575
+    (   # 574
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -18776,7 +18735,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 576
+    (   # 575
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4-a1", "c3-a2", "c4-a1", "o1-a2"], "millivolt", 0.00023842585505917668, 0.0, Int16, 200.0),
@@ -18808,7 +18767,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 577
+    (   # 576
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -18843,7 +18802,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 578
+    (   # 577
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -18881,7 +18840,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 579
+    (   # 578
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -18914,7 +18873,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 580
+    (   # 579
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -18966,7 +18925,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 581
+    (   # 580
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -18988,7 +18947,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 582
+    (   # 581
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
@@ -19022,7 +18981,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 583
+    (   # 582
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -19064,7 +19023,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 584
+    (   # 583
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -19098,7 +19057,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 585
+    (   # 584
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -19126,7 +19085,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 586
+    (   # 585
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4-a1", "c3-a2", "c4-a1", "o1-a2"], "millivolt", 0.00023842585505917668, 0.0, Int16, 200.0),
@@ -19148,7 +19107,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 587
+    (   # 586
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 200.0),
@@ -19186,7 +19145,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 588
+    (   # 587
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -19222,7 +19181,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 589
+    (   # 588
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.10261218994855881, 0.0, Int32, 200.0),
@@ -19254,7 +19213,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 590
+    (   # 589
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -19289,7 +19248,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 591
+    (   # 590
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -19313,7 +19272,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 592
+    (   # 591
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09155552834272385, 0.0, Int16, 500.0),
@@ -19340,7 +19299,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 593
+    (   # 592
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -19373,7 +19332,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 594
+    (   # 593
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -19396,7 +19355,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 595
+    (   # 594
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2-m2", "f4-m1-m1", "c3-m2-m2", "c4-m1-m1", "o1-m2-m2", "o2-m2-m2"], "microvolt", 0.18171672523021698, 0.0, Int32, 500.0),
@@ -19421,7 +19380,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 596
+    (   # 595
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -19457,7 +19416,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 597
+    (   # 596
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -19491,7 +19450,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 598
+    (   # 597
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.1474532186985016, 0.0, Int32, 250.0),
@@ -19516,7 +19475,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 599
+    (   # 598
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.14305120706558228, 0.001953125, Int16, 256.0),
@@ -19540,7 +19499,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 600
+    (   # 599
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -19571,7 +19530,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 601
+    (   # 600
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -19595,7 +19554,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 602
+    (   # 601
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -19633,7 +19592,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 603
+    (   # 602
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -19656,7 +19615,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 604
+    (   # 603
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.7843137383460999, -100.0, Int16, 200.0),
@@ -19705,7 +19664,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 605
+    (   # 604
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -19729,7 +19688,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 606
+    (   # 605
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -19766,7 +19725,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 607
+    (   # 606
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -19802,7 +19761,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 608
+    (   # 607
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -19834,7 +19793,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 609
+    (   # 608
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "volt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 32.0),
@@ -19868,7 +19827,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 610
+    (   # 609
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -19907,7 +19866,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 611
+    (   # 610
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -19939,7 +19898,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 612
+    (   # 611
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -19979,7 +19938,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 613
+    (   # 612
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -20017,7 +19976,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 614
+    (   # 613
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.1543211042881012, 0.0, Int32, 200.0),
@@ -20049,7 +20008,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 615
+    (   # 614
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -20081,7 +20040,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 616
+    (   # 615
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -20104,7 +20063,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 617
+    (   # 616
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4", "c3", "c4", "o1"], "millivolt", 0.0002305264351889491, 0.0, Int16, 200.0),
@@ -20126,7 +20085,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 618
+    (   # 617
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.15432095527648926, 0.0, Int32, 200.0),
@@ -20151,7 +20110,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 619
+    (   # 618
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "millivolt", 0.00018281166558153927, 0.0, Int16, 200.0),
@@ -20186,7 +20145,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 620
+    (   # 619
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -20211,7 +20170,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 621
+    (   # 620
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -20247,7 +20206,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 622
+    (   # 621
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -20279,7 +20238,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 623
+    (   # 622
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -20304,7 +20263,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 624
+    (   # 623
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.010122129693627357, 0.0, Int32, 250.0),
@@ -20336,7 +20295,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 625
+    (   # 624
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -20373,7 +20332,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 626
+    (   # 625
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -20399,7 +20358,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 627
+    (   # 626
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -20434,7 +20393,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 628
+    (   # 627
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -20469,7 +20428,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 629
+    (   # 628
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
@@ -20495,7 +20454,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 630
+    (   # 629
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -20521,7 +20480,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 631
+    (   # 630
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -20558,7 +20517,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 632
+    (   # 631
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09765625, 0.0, Int16, 200.0),
@@ -20593,7 +20552,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 633
+    (   # 632
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -20627,7 +20586,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 634
+    (   # 633
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -20650,7 +20609,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 635
+    (   # 634
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -20684,7 +20643,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 636
+    (   # 635
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -20722,7 +20681,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 637
+    (   # 636
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -20757,7 +20716,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 638
+    (   # 637
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 1.0, 0.0, Int16, 200.0),
@@ -20815,7 +20774,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 639
+    (   # 638
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 128.0),
@@ -20849,7 +20808,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 640
+    (   # 639
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -20882,7 +20841,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 641
+    (   # 640
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.030526291579008102, 0.0, Int32, 256.0),
@@ -20906,7 +20865,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 642
+    (   # 641
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -20929,7 +20888,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 643
+    (   # 642
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -20956,7 +20915,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 644
+    (   # 643
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -20990,7 +20949,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 645
+    (   # 644
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -21015,7 +20974,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 646
+    (   # 645
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -21046,7 +21005,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 647
+    (   # 646
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -21078,7 +21037,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 648
+    (   # 647
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -21120,7 +21079,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 649
+    (   # 648
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030637255404144526, -0.39215850830078125, Int16, 200.0),
@@ -21158,7 +21117,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 650
+    (   # 649
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -21196,7 +21155,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 651
+    (   # 650
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -21224,7 +21183,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 652
+    (   # 651
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -21253,7 +21212,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 653
+    (   # 652
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 256.0),
@@ -21307,7 +21266,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 654
+    (   # 653
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3-o1", "c4-m1", "c4-o1", "o1-m2"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -21326,7 +21285,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 655
+    (   # 654
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -21355,7 +21314,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 656
+    (   # 655
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -21382,7 +21341,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 657
+    (   # 656
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -21416,7 +21375,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 658
+    (   # 657
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.0015259021893143654, 0.000762939453125, Int16, 200.0),
@@ -21450,7 +21409,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 659
+    (   # 658
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -21477,7 +21436,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 660
+    (   # 659
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0, Int32, 256.0),
@@ -21507,7 +21466,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 661
+    (   # 660
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -21536,7 +21495,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 662
+    (   # 661
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -21576,7 +21535,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 663
+    (   # 662
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -21610,7 +21569,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 664
+    (   # 663
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 512.0),
@@ -21634,7 +21593,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 665
+    (   # 664
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_leak", ["pap_device_leak"], "volt", 0.007630106061697006, 4.0023193359375, Int16, 200.0),
@@ -21673,7 +21632,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 666
+    (   # 665
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -21717,7 +21676,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 667
+    (   # 666
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -21751,7 +21710,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 668
+    (   # 667
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_leak", ["pap_device_leak"], "liter_per_minute", 0.0013733119703829288, 45.00068664550781, Int16, 32.0),
@@ -21809,7 +21768,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 669
+    (   # 668
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -21830,7 +21789,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 670
+    (   # 669
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -21854,7 +21813,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 671
+    (   # 670
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -21877,7 +21836,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 672
+    (   # 671
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -21902,7 +21861,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 673
+    (   # 672
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_leak", ["pap_device_leak"], "volt", 0.011446172371506691, 21.50518798828125, Int16, 200.0),
@@ -21944,7 +21903,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 674
+    (   # 673
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-a1", "o1-m2"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -21976,7 +21935,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 675
+    (   # 674
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 128.0),
@@ -22010,7 +21969,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 676
+    (   # 675
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 3.0),
@@ -22061,7 +22020,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 677
+    (   # 676
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -22096,7 +22055,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 678
+    (   # 677
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030637255404144526, -0.39215850830078125, Int16, 200.0),
@@ -22139,7 +22098,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 679
+    (   # 678
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -22166,7 +22125,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 680
+    (   # 679
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["a1", "t3", "c3", "c4", "a2", "o1", "o2"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -22201,7 +22160,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 681
+    (   # 680
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -22231,7 +22190,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 682
+    (   # 681
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp1-m2", "fp2-m1", "f3-m2", "f4-m1", "t3-m2", "c3-m2", "c4-m1", "t4-m1", "p3-p4", "p4-pz", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -22274,7 +22233,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 683
+    (   # 682
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -22306,7 +22265,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 684
+    (   # 683
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -22336,7 +22295,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 685
+    (   # 684
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -22371,7 +22330,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 686
+    (   # 685
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 300.0),
@@ -22394,7 +22353,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 687
+    (   # 686
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -22427,7 +22386,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 688
+    (   # 687
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -22463,7 +22422,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 689
+    (   # 688
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -22497,7 +22456,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 690
+    (   # 689
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -22530,7 +22489,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 691
+    (   # 690
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.02442002482712269, 0.012210845947265625, Int16, 32.0),
@@ -22570,7 +22529,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 692
+    (   # 691
         onda_edf_headers=
             [
             ],
@@ -22590,7 +22549,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 693
+    (   # 692
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 300.0),
@@ -22613,7 +22572,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 694
+    (   # 693
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.14921751618385315, 0.0, Int16, 200.0),
@@ -22637,7 +22596,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 695
+    (   # 694
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", -2.0833332538604736, 0.0, Int16, 16.0),
@@ -22670,7 +22629,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 696
+    (   # 695
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -22702,7 +22661,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 697
+    (   # 696
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 128.0),
@@ -22736,7 +22695,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 698
+    (   # 697
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -22771,7 +22730,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 699
+    (   # 698
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -22801,7 +22760,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 700
+    (   # 699
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -22842,7 +22801,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 701
+    (   # 700
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 512.0),
@@ -22866,7 +22825,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 702
+    (   # 701
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
@@ -22894,7 +22853,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 703
+    (   # 702
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.061036087572574615, 0.030517578125, Int16, 200.0),
@@ -22934,7 +22893,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 704
+    (   # 703
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.0038910505827516317, 127.50194549560547, Int16, 100.0),
@@ -22974,7 +22933,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 705
+    (   # 704
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "fz-cz", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 500.0),
@@ -23010,7 +22969,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 706
+    (   # 705
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -23046,7 +23005,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 707
+    (   # 706
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -23076,7 +23035,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 708
+    (   # 707
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -23103,7 +23062,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 709
+    (   # 708
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -23138,7 +23097,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 710
+    (   # 709
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -23161,7 +23120,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 711
+    (   # 710
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -23200,7 +23159,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 712
+    (   # 711
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "volt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
@@ -23236,7 +23195,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 713
+    (   # 712
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -23259,7 +23218,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 714
+    (   # 713
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -23287,7 +23246,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 715
+    (   # 714
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -23309,7 +23268,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 716
+    (   # 715
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -23342,7 +23301,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 717
+    (   # 716
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -23366,7 +23325,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 718
+    (   # 717
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -23393,7 +23352,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 719
+    (   # 718
         onda_edf_headers=
             [
                 SamplesInfo("ecg", ["avl"], "volt", 3.125095463474281e-5, 0.0, Int16, 200.0),
@@ -23416,7 +23375,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 720
+    (   # 719
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -23450,7 +23409,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 721
+    (   # 720
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp1-fp2", "f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -23485,7 +23444,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 722
+    (   # 721
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -23518,7 +23477,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 723
+    (   # 722
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -23543,7 +23502,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 724
+    (   # 723
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.061460211873054504, 0.0, Int32, 250.0),
@@ -23567,7 +23526,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 725
+    (   # 724
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -23599,7 +23558,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 726
+    (   # 725
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 128.0),
@@ -23633,7 +23592,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 727
+    (   # 726
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 3.0),
@@ -23685,7 +23644,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 728
+    (   # 727
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp2-m1", "f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -23710,7 +23669,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 729
+    (   # 728
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -23745,7 +23704,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 730
+    (   # 729
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09182250499725342, 0.0, Int32, 250.0),
@@ -23775,7 +23734,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 731
+    (   # 730
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -23809,7 +23768,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 732
+    (   # 731
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -23843,7 +23802,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 733
+    (   # 732
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.10000000149011612, 0.0, Int16, 256.0),
@@ -23872,7 +23831,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 734
+    (   # 733
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -23907,7 +23866,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 735
+    (   # 734
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -23935,7 +23894,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 736
+    (   # 735
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -23969,7 +23928,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 737
+    (   # 736
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -24007,7 +23966,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 738
+    (   # 737
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -24029,7 +23988,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 739
+    (   # 738
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -24070,7 +24029,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 740
+    (   # 739
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -24091,7 +24050,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 741
+    (   # 740
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -24129,7 +24088,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 742
+    (   # 741
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -24159,7 +24118,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 743
+    (   # 742
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4_over_m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -24192,7 +24151,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 744
+    (   # 743
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -24231,7 +24190,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 745
+    (   # 744
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -24265,7 +24224,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 746
+    (   # 745
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -24300,7 +24259,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 747
+    (   # 746
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -24333,7 +24292,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 748
+    (   # 747
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009155413135886192, 0.00457763671875, Int16, 200.0),
@@ -24368,7 +24327,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 749
+    (   # 748
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m1", "f4-m1", "c3-m1", "c4-m1", "o1-m1", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -24390,7 +24349,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 750
+    (   # 749
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -24425,7 +24384,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 751
+    (   # 750
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.07592684775590897, -21.635009765625, Int16, 32.0),
@@ -24463,7 +24422,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 752
+    (   # 751
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -24498,7 +24457,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 753
+    (   # 752
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -24521,7 +24480,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 754
+    (   # 753
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -24553,7 +24512,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 755
+    (   # 754
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -24582,7 +24541,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 756
+    (   # 755
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.1401391625404358, 0.0, Int16, 200.0),
@@ -24616,7 +24575,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 757
+    (   # 756
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -24656,7 +24615,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 758
+    (   # 757
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -24681,7 +24640,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 759
+    (   # 758
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.14305120706558228, 0.001953125, Int16, 256.0),
@@ -24708,7 +24667,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 760
+    (   # 759
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -24731,7 +24690,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 761
+    (   # 760
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -24769,7 +24728,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 762
+    (   # 761
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -24794,7 +24753,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 763
+    (   # 762
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -24819,7 +24778,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 764
+    (   # 763
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -24863,7 +24822,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 765
+    (   # 764
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -24893,7 +24852,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 766
+    (   # 765
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3-o1", "c4-m1", "c4-o1", "o1-m2"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -24913,7 +24872,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 767
+    (   # 766
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -24943,7 +24902,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 768
+    (   # 767
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009155413135886192, 0.00457763671875, Int16, 200.0),
@@ -24978,7 +24937,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 769
+    (   # 768
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -25001,7 +24960,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 770
+    (   # 769
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f3", "f4-a1", "f4", "c3-a2", "c3", "c4-a1", "c4", "o1-a2", "o1", "o2-a1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -25029,7 +24988,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 771
+    (   # 770
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.5316853523254395, 0.265625, Int16, 256.0),
@@ -25054,7 +25013,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 772
+    (   # 771
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -25079,7 +25038,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 773
+    (   # 772
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -25111,7 +25070,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 774
+    (   # 773
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.04884004965424538, -100.0, Int16, 500.0),
@@ -25153,7 +25112,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 775
+    (   # 774
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -25186,7 +25145,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 776
+    (   # 775
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4-a1", "c3-a2", "c4-a1", "o1-a2"], "millivolt", 0.00023842585505917668, 0.0, Int16, 200.0),
@@ -25227,7 +25186,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 777
+    (   # 776
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "millivolt", 0.00018306374840904027, 0.0, Int16, 200.0),
@@ -25259,7 +25218,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 778
+    (   # 777
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -25284,7 +25243,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 779
+    (   # 778
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.24415552616119385, 0.1220703125, Int16, 200.0),
@@ -25341,7 +25300,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 780
+    (   # 779
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -25364,7 +25323,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 781
+    (   # 780
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -25401,7 +25360,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 782
+    (   # 781
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 200.0),
@@ -25434,7 +25393,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 783
+    (   # 782
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -25472,7 +25431,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 784
+    (   # 783
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", 0.2087218165397644, 0.0, Int32, 200.0),
@@ -25500,7 +25459,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 785
+    (   # 784
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["a1-pg2", "a1-pg1", "a1-f4", "a1-c4", "a1-o2", "a2-f3", "a2-c3", "a2-o1", "pz-fz"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -25532,7 +25491,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 786
+    (   # 785
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -25569,7 +25528,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 787
+    (   # 786
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -25603,7 +25562,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 788
+    (   # 787
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", -0.12210012227296829, -0.0610504150390625, Int16, 256.0),
@@ -25628,7 +25587,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 789
+    (   # 788
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "volt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
@@ -25666,7 +25625,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 790
+    (   # 789
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.20453903079032898, 0.0, Int32, 200.0),
@@ -25690,7 +25649,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 791
+    (   # 790
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -25722,7 +25681,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 792
+    (   # 791
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "volt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
@@ -25757,7 +25716,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 793
+    (   # 792
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -25788,7 +25747,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 794
+    (   # 793
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -25835,7 +25794,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 795
+    (   # 794
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "fz-cz", "f4-m1", "t3-t4", "c3-m2", "cz-pz", "c4-m1", "p3-t5", "p4-t6", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -25867,7 +25826,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 796
+    (   # 795
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m1", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -25897,7 +25856,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 797
+    (   # 796
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 0.00012207217514514923, 6.103515625e-5, Int16, 32.0),
@@ -25931,7 +25890,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 798
+    (   # 797
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -25958,7 +25917,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 799
+    (   # 798
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 200.0),
@@ -25991,7 +25950,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 800
+    (   # 799
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4-m1", "c3-m2", "c4-m1", "o2-m1"], "microvolt", 0.0019073777366429567, 0.00095367431640625, Int16, 256.0),
@@ -26022,7 +25981,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 801
+    (   # 800
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.013074144721031189, 0.0, Int32, 128.0),
@@ -26046,7 +26005,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 802
+    (   # 801
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["a1-f4", "a1-c4", "a1-o2", "cz-fz", "a2-t1", "a2-t2", "a2-f3", "a2-c3", "a2-o1", "pz-t5", "t6-t5"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 200.0),
@@ -26068,7 +26027,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 803
+    (   # 802
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-a1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -26091,7 +26050,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 804
+    (   # 803
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -26114,7 +26073,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 805
+    (   # 804
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -26142,7 +26101,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 806
+    (   # 805
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -26179,7 +26138,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 807
+    (   # 806
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -26230,7 +26189,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 808
+    (   # 807
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp1-m2", "fp2-m1", "f3-m2", "f4-m1", "t3-m2", "c3-m2", "c4-m1", "t4-m1", "p3-p4", "p4-pz", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -26273,7 +26232,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 809
+    (   # 808
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -26305,7 +26264,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 810
+    (   # 809
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -26342,7 +26301,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 811
+    (   # 810
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -26366,7 +26325,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 812
+    (   # 811
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -26411,7 +26370,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 813
+    (   # 812
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -26445,7 +26404,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 814
+    (   # 813
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
@@ -26470,7 +26429,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 815
+    (   # 814
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -26501,7 +26460,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 816
+    (   # 815
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
@@ -26529,7 +26488,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 817
+    (   # 816
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -26556,7 +26515,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 818
+    (   # 817
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 200.0),
@@ -26592,7 +26551,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 819
+    (   # 818
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -26616,7 +26575,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 820
+    (   # 819
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.31757763028144836, 0.18359375, Int16, 500.0),
@@ -26650,7 +26609,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 821
+    (   # 820
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -26684,7 +26643,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 822
+    (   # 821
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -26719,7 +26678,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 823
+    (   # 822
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -26751,7 +26710,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 824
+    (   # 823
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -26786,7 +26745,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 825
+    (   # 824
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -26819,7 +26778,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 826
+    (   # 825
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -26858,7 +26817,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 827
+    (   # 826
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "millivolt", 0.00017724448116496205, 0.0, Int16, 200.0),
@@ -26882,7 +26841,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 828
+    (   # 827
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -26910,7 +26869,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 829
+    (   # 828
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -26944,7 +26903,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 830
+    (   # 829
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 500.0),
@@ -26971,54 +26930,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    #(   # 831
-    #    onda_edf_headers=
-    #        [
-    #            SamplesInfo("snore", ["snore"], "microvolt", 0.0039072041399776936, 0.0019540786743164062, Int16, 500.0),
-    #            SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.005372405517846346, 0.0026865005493164062, Int16, 50.0),
-    #            SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "m2", "o1-m2", "o2-m2", "o2-m1", "o2-m2", "o2"], "microvolt", -Inf, 0.0, Int32, 500.0),
-    #            SamplesInfo("ecg", ["avr-lsubclavicle"], "microvolt", 1.9536019563674927, 0.976806640625, Int16, 500.0),
-    #            SamplesInfo("eog", ["left-m2", "right-lsubclavicle", "right-m2"], "microvolt", 1.465201497077942, 0.0, Int32, 500.0),
-    #            SamplesInfo("emg", ["right_anterior_tibialis-lsubclavicle"], "microvolt", 1.9536019563674927, 0.976806640625, Int16, 500.0),
-    #            SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.0019536020699888468, 0.0009770393371582031, Int16, 500.0),
-    #        ],
-    #    original_edf_headers=
-    #        [
-    #            EDF.SignalHeader("Right leg", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("R-L Sub clavicle", "", "uV", -4000.0f0, 4000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("EEG", "", "uV", -0.35f0, 0.35f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Left leg", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Snore", "", "uV", -8.0f0, 8.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("M1", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("C3-M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("C4-M1", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("O2-M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("E1-M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("E2-M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("O1-M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Submental 1", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Submental 2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("EMG", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("F3-M2", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("F4-M1", "", "uV", -3000.0f0, 3000.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Nasal pressure T", "", "V", -23.1f0, 23.1f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Chest", "", "uV", -4.0f0, 4.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Abdomen", "", "uV", -4.0f0, 4.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Airflow", "", "uV", -11.0f0, 11.0f0, -2048.0f0, 2047.0f0, "", 100),
-    #            EDF.SignalHeader("non", "", "uV", 50.0f0, -50.0f0, 0.0f0, 0.0f0, "", 1000),
-    #            EDF.SignalHeader("02-m1", "", "uV", 50.0f0, -50.0f0, 0.0f0, 0.0f0, "", 1000),
-    #            EDF.SignalHeader("02-M2", "", "uV", 50.0f0, -50.0f0, 0.0f0, 0.0f0, "", 1000),
-    #            EDF.SignalHeader("02", "", "uV", 50.0f0, -50.0f0, 0.0f0, 0.0f0, "", 1000),
-    #            EDF.SignalHeader("EKG 2", "", "uV", -2048.0f0, 2047.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Oximetry", "", "%", -2048.0f0, 2047.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Heart Rate", "", "uV", -2048.0f0, 2047.0f0, -2048.0f0, 2047.0f0, "", 1000),
-    #            EDF.SignalHeader("Ambient Light", "", "uV", 0.0f0, 1.0f0, -2048.0f0, 2047.0f0, "", 4),
-    #        ],
-    #    error=
-    #        nothing,
-    #),
-    (   # 832
+    (   # 830
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -27041,7 +26953,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 833
+    (   # 831
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -27077,7 +26989,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 834
+    (   # 832
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -27117,7 +27029,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 835
+    (   # 833
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a2", "o1-a2", "o2-a1"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -27141,7 +27053,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 836
+    (   # 834
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -27164,7 +27076,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 837
+    (   # 835
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -27197,7 +27109,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 838
+    (   # 836
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -27220,7 +27132,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 839
+    (   # 837
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.09765625, 0.0, Int16, 300.0),
@@ -27257,7 +27169,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 840
+    (   # 838
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -27290,7 +27202,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 841
+    (   # 839
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -27324,7 +27236,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 842
+    (   # 840
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "millivolt", 1.5259021893143654e-5, 7.62939453125e-6, Int16, 256.0),
@@ -27362,7 +27274,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 843
+    (   # 841
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -27398,7 +27310,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 844
+    (   # 842
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -27431,7 +27343,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 845
+    (   # 843
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.04884004965424538, -100.0, Int16, 200.0),
@@ -27472,7 +27384,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 846
+    (   # 844
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015259021893143654, 0.00762939453125, Int16, 256.0),
@@ -27497,7 +27409,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 847
+    (   # 845
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0, Int32, 256.0),
@@ -27527,7 +27439,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 848
+    (   # 846
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -27564,7 +27476,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 849
+    (   # 847
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -27599,7 +27511,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 850
+    (   # 848
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -27626,7 +27538,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 851
+    (   # 849
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -27660,7 +27572,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 852
+    (   # 850
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.5316853523254395, 0.265625, Int16, 256.0),
@@ -27684,7 +27596,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 853
+    (   # 851
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
@@ -27726,7 +27638,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 854
+    (   # 852
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.13412155210971832, 0.0, Int32, 250.0),
@@ -27750,7 +27662,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 855
+    (   # 853
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.04884004965424538, -100.0, Int16, 200.0),
@@ -27791,7 +27703,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 856
+    (   # 854
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 300.0),
@@ -27813,7 +27725,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 857
+    (   # 855
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -27846,7 +27758,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 858
+    (   # 856
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -27883,7 +27795,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 859
+    (   # 857
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -27907,7 +27819,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 860
+    (   # 858
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.0038910505827516317, 127.50194549560547, Int16, 100.0),
@@ -27949,7 +27861,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 861
+    (   # 859
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.16336558759212494, 0.0, Int16, 16.0),
@@ -27984,7 +27896,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 862
+    (   # 860
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -28019,7 +27931,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 863
+    (   # 861
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "o1", "o2"], "microvolt", 1.465201497077942, 0.732666015625, Int16, 250.0),
@@ -28047,7 +27959,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 864
+    (   # 862
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.5865102410316467, -300.0, Int16, 100.0),
@@ -28079,7 +27991,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 865
+    (   # 863
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -28116,7 +28028,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 866
+    (   # 864
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.05111772194504738, -0.0255126953125, Int16, 200.12808197246238),
@@ -28153,7 +28065,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 867
+    (   # 865
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -28185,7 +28097,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 868
+    (   # 866
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -28217,7 +28129,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 869
+    (   # 867
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -28253,7 +28165,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 870
+    (   # 868
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_leak", ["pap_device_leak"], "microvolt", -164.7974395751953, -82.5, Int16, 256.0),
@@ -28322,7 +28234,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 871
+    (   # 869
         onda_edf_headers=
             [
                 SamplesInfo("positive_airway_pressure", ["ipap", "epap", "cpap"], "centimeter_of_water", 0.009999999776482582, 327.67999267578125, Int16, 1.0),
@@ -28360,7 +28272,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 872
+    (   # 870
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c3-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 512.0),
@@ -28384,7 +28296,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 873
+    (   # 871
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -28419,7 +28331,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 874
+    (   # 872
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 500.0),
@@ -28479,7 +28391,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 875
+    (   # 873
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -28513,7 +28425,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 876
+    (   # 874
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 0.00012207217514514923, 6.103515625e-5, Int16, 32.0),
@@ -28547,7 +28459,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 877
+    (   # 875
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -28586,7 +28498,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 878
+    (   # 876
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 200.0),
@@ -28611,7 +28523,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 879
+    (   # 877
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -28633,7 +28545,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 880
+    (   # 878
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -28672,7 +28584,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 881
+    (   # 879
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -28701,7 +28613,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 882
+    (   # 880
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -28744,7 +28656,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 883
+    (   # 881
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 500.0),
@@ -28782,7 +28694,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 884
+    (   # 882
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 512.0),
@@ -28808,7 +28720,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 885
+    (   # 883
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -28834,7 +28746,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 886
+    (   # 884
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -28864,7 +28776,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 887
+    (   # 885
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -28905,7 +28817,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 888
+    (   # 886
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -28945,7 +28857,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 889
+    (   # 887
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
@@ -29012,7 +28924,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 890
+    (   # 888
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -29042,7 +28954,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 891
+    (   # 889
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -29074,7 +28986,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 892
+    (   # 890
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -29099,7 +29011,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 893
+    (   # 891
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -29136,7 +29048,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 894
+    (   # 892
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -29169,7 +29081,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 895
+    (   # 893
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "c3-m2", "o1-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -29188,7 +29100,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 896
+    (   # 894
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "t4", "a2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -29224,7 +29136,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 897
+    (   # 895
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -29266,7 +29178,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 898
+    (   # 896
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -29300,7 +29212,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 899
+    (   # 897
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
@@ -29343,7 +29255,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 900
+    (   # 898
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 0.49900200963020325, 0.0, Int16, 500.0),
@@ -29389,7 +29301,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 901
+    (   # 899
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -29431,7 +29343,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 902
+    (   # 900
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 512.0),
@@ -29455,7 +29367,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 903
+    (   # 901
         onda_edf_headers=
             [
                 SamplesInfo("positive_airway_pressure", ["epap"], "centimeter_of_water", 0.01831500418484211, -37.50910186767578, Int16, 1.0),
@@ -29490,7 +29402,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 904
+    (   # 902
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.15258777141571045, 0.00390625, Int16, 500.0),
@@ -29521,7 +29433,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 905
+    (   # 903
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -29558,7 +29470,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 906
+    (   # 904
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.465201497077942, 0.732666015625, Int16, 250.0),
@@ -29595,7 +29507,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 907
+    (   # 905
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -29630,7 +29542,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 908
+    (   # 906
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -29667,7 +29579,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 909
+    (   # 907
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 512.0),
@@ -29703,7 +29615,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 910
+    (   # 908
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -29727,7 +29639,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 911
+    (   # 909
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f3", "f4-a1", "f4", "a1", "c3-a2", "c3", "c4-a1", "c4", "a2", "o1-a2", "o1", "o2-a1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -29781,7 +29693,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 912
+    (   # 910
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -29804,7 +29716,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 913
+    (   # 911
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3", "f4-m1", "f4", "c3-m2", "c3", "c4-m1", "c4", "o1-m2", "o1", "o2-m1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -29833,7 +29745,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 914
+    (   # 912
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -29874,7 +29786,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 915
+    (   # 913
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -29898,7 +29810,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 916
+    (   # 914
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.02442002482712269, 0.012210845947265625, Int16, 32.0),
@@ -29936,7 +29848,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 917
+    (   # 915
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -29961,7 +29873,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 918
+    (   # 916
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.14305120706558228, 0.001953125, Int16, 256.0),
@@ -29994,7 +29906,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 919
+    (   # 917
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 200.0),
@@ -30028,7 +29940,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 920
+    (   # 918
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "unknown", -0.5050504803657532, 3.814697265625e-6, Int16, 256.0),
@@ -30055,7 +29967,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 921
+    (   # 919
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.05111772194504738, -0.0255126953125, Int16, 255.78054029642567),
@@ -30092,7 +30004,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 922
+    (   # 920
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -30124,7 +30036,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 923
+    (   # 921
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.09200262278318405, 0.0, Int16, 200.0),
@@ -30160,7 +30072,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 924
+    (   # 922
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -30186,7 +30098,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 925
+    (   # 923
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
@@ -30225,7 +30137,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 926
+    (   # 924
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.015626907348632812, 0.0078125, Int16, 256.0),
@@ -30246,7 +30158,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 927
+    (   # 925
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 256.0),
@@ -30291,7 +30203,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 928
+    (   # 926
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14075683057308197, 0.0, Int32, 250.0),
@@ -30315,7 +30227,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 929
+    (   # 927
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -30348,7 +30260,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 930
+    (   # 928
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.5, 0.0, Int16, 256.0),
@@ -30389,7 +30301,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 931
+    (   # 929
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -30420,7 +30332,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 932
+    (   # 930
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 256.0),
@@ -30463,7 +30375,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 933
+    (   # 931
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "fz-cz", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 500.0),
@@ -30502,7 +30414,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 934
+    (   # 932
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "millivolt", 0.0002284820075146854, 0.0, Int16, 200.0),
@@ -30526,7 +30438,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 935
+    (   # 933
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 512.0),
@@ -30550,7 +30462,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 936
+    (   # 934
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -30581,7 +30493,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 937
+    (   # 935
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", 0.0038910505827516317, 127.50194549560547, Int16, 100.0),
@@ -30626,7 +30538,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 938
+    (   # 936
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "a1", "c3", "c4", "a2", "o1", "o2"], "microvolt", 0.04470893368124962, 0.0223388671875, Int16, 128.0),
@@ -30664,7 +30576,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 939
+    (   # 937
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f4", "c3", "c4", "o1"], "millivolt", 0.00022985320538282394, 0.0, Int16, 200.0),
@@ -30695,7 +30607,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 940
+    (   # 938
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -30753,7 +30665,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 941
+    (   # 939
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -30785,7 +30697,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 942
+    (   # 940
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -30822,7 +30734,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 943
+    (   # 941
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -30849,7 +30761,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 944
+    (   # 942
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -30885,7 +30797,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 945
+    (   # 943
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -30910,7 +30822,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 946
+    (   # 944
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -30946,7 +30858,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 947
+    (   # 945
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 200.0),
@@ -30971,7 +30883,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 948
+    (   # 946
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 300.0),
@@ -31004,7 +30916,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 949
+    (   # 947
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -31031,7 +30943,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 950
+    (   # 948
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 200.0),
@@ -31067,7 +30979,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 951
+    (   # 949
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.5316853523254395, 0.265625, Int16, 256.0),
@@ -31092,7 +31004,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 952
+    (   # 950
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -31125,7 +31037,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 953
+    (   # 951
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -31150,7 +31062,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 954
+    (   # 952
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 250.0),
@@ -31173,7 +31085,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 955
+    (   # 953
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -31207,7 +31119,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 956
+    (   # 954
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -31242,7 +31154,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 957
+    (   # 955
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.10000000149011612, 0.0, Int16, 256.0),
@@ -31278,7 +31190,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 958
+    (   # 956
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -31323,7 +31235,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 959
+    (   # 957
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -31365,7 +31277,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 960
+    (   # 958
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -31390,7 +31302,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 961
+    (   # 959
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -31428,7 +31340,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 962
+    (   # 960
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "millivolt", 0.00012207217514514923, 6.103515625e-5, Int16, 32.0),
@@ -31462,7 +31374,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 963
+    (   # 961
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -31488,7 +31400,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 964
+    (   # 962
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "cz-f7", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -31510,7 +31422,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 965
+    (   # 963
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -31552,7 +31464,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 966
+    (   # 964
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -31603,7 +31515,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 967
+    (   # 965
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -31651,7 +31563,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 968
+    (   # 966
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["fp1-fp2", "f3-m2", "fz-cz", "f4-m1", "c3-m2", "cz-pz", "c4-m1", "p3-t5", "p4-t6", "o1-m2", "o2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 200.0),
@@ -31683,7 +31595,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 969
+    (   # 967
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "f4-a2", "a1", "c3-a2", "c4-a1", "c4-a2", "a2", "o1-a2", "o2-a1", "o2-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -31715,7 +31627,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 970
+    (   # 968
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", NaN, 0.0, Int32, 200.0),
@@ -31750,7 +31662,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 971
+    (   # 969
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore", "snore"], "unknown", 0.0030518043786287308, 0.00152587890625, Int16, 500.0),
@@ -31790,7 +31702,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 972
+    (   # 970
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f3", "f4-m1", "f4", "c3-m2", "c3", "c4-m1", "c4", "o1-m2", "o1", "o2-m1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -31818,7 +31730,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 973
+    (   # 971
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -31845,7 +31757,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 974
+    (   # 972
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09155552834272385, 0.0, Int16, 200.0),
@@ -31878,7 +31790,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 975
+    (   # 973
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
@@ -31902,7 +31814,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 976
+    (   # 974
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -31925,7 +31837,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 977
+    (   # 975
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["a1-f4", "a1-c4", "a1-o2", "c3-a2", "cz-fz", "a2-f3", "a2-o1", "pz", "t6-t5"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 200.0),
@@ -31957,7 +31869,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 978
+    (   # 976
         onda_edf_headers=
             [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0000152587890625, 0.5, Int16, 200.0),
@@ -31991,7 +31903,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 979
+    (   # 977
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "unknown", 0.18232716619968414, -347.443359375, Int16, 250.0),
@@ -32026,7 +31938,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 980
+    (   # 978
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -32062,7 +31974,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 981
+    (   # 979
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -32096,7 +32008,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 982
+    (   # 980
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_leak", ["pap_device_leak"], "liter_per_minute", 0.5, 0.0, Int16, 0.16666666666666666),
@@ -32138,7 +32050,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 983
+    (   # 981
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", NaN, 0.0, Int32, 200.0),
@@ -32161,7 +32073,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 984
+    (   # 982
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3_over_a2", "f4_over_a1", "c3_over_a2", "c4_over_a1", "o1_over_a2", "o2_over_a1"], "unknown", -0.0030518043786287308, -0.00152587890625, Int16, 200.0),
@@ -32200,7 +32112,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 985
+    (   # 983
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.1367989033460617, 0.0, Int32, 250.0),
@@ -32224,7 +32136,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 986
+    (   # 984
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -32248,7 +32160,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 987
+    (   # 985
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.009552148170769215, 0.004791259765625, Int16, 200.0),
@@ -32282,7 +32194,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 988
+    (   # 986
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-e2", "f4-m1", "c3-e2", "c4-m1", "m2-e2", "o1-e2", "o2-m1"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -32307,7 +32219,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 989
+    (   # 987
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "a1-a2", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.14652015268802643, -300.0, Int16, 200.0),
@@ -32333,7 +32245,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 990
+    (   # 988
         onda_edf_headers=
             [
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.0042764670215547085, 20.511001586914062, Int16, 32.0),
@@ -32371,7 +32283,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 991
+    (   # 989
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 1.0, 0.0, Int16, 200.0),
@@ -32411,7 +32323,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 992
+    (   # 990
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.5316853523254395, 0.265625, Int16, 200.0),
@@ -32436,7 +32348,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 993
+    (   # 991
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-a2", "f3", "f4-a1", "f4", "a1", "c3-a2", "c3", "c4-a1", "c4", "a2", "o1-a2", "o1", "o2-a1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 128.0),
@@ -32491,7 +32403,7 @@ test_edf_to_samples_info = [
         error=
             nothing,
     ),
-    (   # 994
+    (   # 992
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
