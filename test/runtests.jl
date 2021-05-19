@@ -13,7 +13,6 @@ function test_edf_signal(rng, label, transducer, physical_units,
     return EDF.Signal(header, samples)
 end
 
-
 function make_test_data(rng, sample_rate, samples_per_record, n_records)
     imin16, imax16 = Float32(typemin(Int16)), Float32(typemax(Int16))
     anns_1 = [[EDF.TimestampedAnnotationList(i, nothing, []),
@@ -89,5 +88,4 @@ include("test_edf_to_samples_info.out")
     include("import.jl")
     include("export.jl")
 end
-
 
