@@ -75,8 +75,8 @@ mock_edf_signal(header, n_records) = EDF.Signal(header, rand(Int16, n_records * 
 function mock_edf(result)
     n_records = 100
     sample_rate = 256
-    samples_per_record = first(result.edf_headers).samples_per_record
-    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[mock_edf_signal(t, n_records) for t in result.edf_headers]
+    samples_per_record = first(result.original_edf_headers).samples_per_record
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[mock_edf_signal(t, n_records) for t in result.original_edf_headers]
     edf_header = EDF.FileHeader("0", "", "", DateTime("2014-10-27T22:24:28"), true, n_records, samples_per_record / sample_rate)
     edf = EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
     return edf
@@ -87,7 +87,7 @@ include("test_edf_to_samples_info.out")
 @testset "OndaEDF" begin
     include("signal_labels.jl")
     include("import.jl")
- #   include("export.jl")
+    include("export.jl")
 end
 
 

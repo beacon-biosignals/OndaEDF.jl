@@ -1,13 +1,37 @@
 using OndaEDF: validate_arrow_prefix
 
+function test_preprocessor(l)
+    l = replace(l, ':' => '-')
+    l = replace(l, "\xf6"[1] => 'o') # remove umlaut (German)
+    l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
+    l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
+    # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
+    m = match(r"^\s*EOG[\s\-]+(?<lr>[LR])\s*"i, l)
+    if !isnothing(m)
+        l = "EOG$(m[:lr])"
+    end
+    # "L - EOG" and "R- EOG" should not be parsed as channel \minus channel
+    m = match(r"^\s*(?<lr>[LR])[\s\-]+EOG\s*"i, l)
+    if !isnothing(m)
+        l = "EOG$(m[:lr])"
+    end
+    # "C2M1" => "C2-M1" etc
+    m = match(r"\s*(?<channel>[fco][1234])\s*(?<ref>[am][12])\s*"i, l)
+    isnothing(m) && return l
+    return "$(m[:channel])-$(m[:ref])"
+end
+
+custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel_names; preprocess_labels=test_preprocessor)
+                     for (signal_names, channel_names) in OndaEDF.STANDARD_LABELS]
+
 @testset "Import EDF" begin
 
     @testset "edf_to_samples_info" begin
         for (i, r) in enumerate(test_edf_to_samples_info)
             try
                 edf = mock_edf(r)
-                samples = OndaEDF.edf_to_onda_samples(edf)
-                expected = [(s.kind, c, s.sample_unit) for s in r.samples_infos for c in s.channels]
+                samples = OndaEDF.edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+                expected = [(s.kind, c, s.sample_unit) for s in r.onda_edf_headers for c in s.channels]
                 sample_infos = [(s.info.kind, c, s.info.sample_unit) for s in samples for c in s.info.channels]
                 @test (i, setdiff(expected, sample_infos)) == (i, [])
             catch e

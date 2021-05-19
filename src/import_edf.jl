@@ -9,7 +9,6 @@
 # - replaces
 #     - `+` with `_plus_`
 #     - `/` with `_over_`
-#     - `:` with `_colon_`
 # - returns the entire label if all the parts are canonical names, and `nothing` otherwise.
 function _normalize_references(original_label, canonical_names)
     label = replace(_safe_lowercase(original_label), r"\s"=>"")
@@ -18,7 +17,6 @@ function _normalize_references(original_label, canonical_names)
     label = replace(label, '-'=>'…')
     label = replace(label, '+'=>"…+…")
     label = replace(label, '/'=>"…/…")
-    label = replace(label, ':'=>"…:…")
     label = !isnothing(match(r"^\[.*\]$", label)) ? label[2:end-1] : label
     parts = split(label, '…'; keepempty=false)
     final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
@@ -40,7 +38,6 @@ function _normalize_references(original_label, canonical_names)
     recombined = '-'^startswith(original_label, '-') * join(parts, '-')
     recombined = replace(recombined, "-+-"=>"_plus_")
     recombined = replace(recombined, "-/-"=>"_over_")
-    recombined = replace(recombined, "-:-"=>"_colon_")
     return first(parts), recombined
 end
 
@@ -195,16 +192,6 @@ function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Sig
     return info
 end
 
-function default_preprocessor(l)
-    l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
-    l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
-    # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
-    m = match(r"^\s*EOG[\s\-](?<lr>[LR])\s*"i, l)
-    if !isnothing(m)
-        l = "EOG$(m[:lr])"
-    end
-    return l
-end
 
 """
     extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
@@ -231,7 +218,7 @@ See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
 `Pair`s) that are used to extract EDF signals by default.
 
 """
-function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS, preprocess_labels=default_preprocessor)
+function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS, preprocess_labels=identity)
     matcher = x -> begin
         # yo I heard you like closures
         return s -> begin
@@ -301,7 +288,7 @@ end
 
 """
     store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
-                      custom_extractors=(), import_annotations::Bool=true,
+                      custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
                       signals_prefix="edf", annotations_prefix=signals_prefix)
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
@@ -343,7 +330,7 @@ following transformations:
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
-                           custom_extractors=(), import_annotations::Bool=true,
+                           custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
                            signals_prefix="edf", annotations_prefix=signals_prefix)
     EDF.read!(edf)
     file_format = "lpcm.zst"
@@ -409,10 +396,10 @@ following transformations:
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
-function edf_to_onda_samples(edf::EDF.File; custom_extractors=())
+function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
     EDF.read!(edf)
     edf_samples = Samples[]
-    for extractor in Iterators.flatten((custom_extractors, STANDARD_EXTRACTORS))
+    for extractor in custom_extractors
         extracted = extractor(edf)
         extracted === nothing && continue
         samples_info, edf_signals = extracted
