@@ -49,6 +49,7 @@ function _safe_lowercase(c::Char)
     end
 end
 
+# malformed UTF-8 chars are a choking hazard
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 
 function match_edf_label(label, signal_names, channel_name, canonical_names)
