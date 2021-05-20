@@ -88,7 +88,7 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                                          "left_anterior_tibialis"=> ["lat", "l"],
                                          "right_anterior_tibialis"=> ["rat", "r"]],
                              ["heart_rate"] => ["heart_rate"=> ["hr", "pulso"]],
-                             ["snore"] => ["snore", "ronquido", "ronquido derivad", "schnarchen"],
+                             ["snore"] => ["snore" => ["ronquido", "ronquido derivad", "schnarchen"]],
                              ["positive_airway_pressure", "pap"] => ["ipap", "epap", "cpap"],
                              ["pap_device_cflow"] => ["pap_device_cflow"=> ["cflow", "airflow", "flow"]],
                              ["pap_device_cpres"] => ["pap_device_cpres"=> ["cpres"]],
