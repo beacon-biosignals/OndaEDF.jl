@@ -58,6 +58,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
         if !isnothing(m)
             label = m[:spec]
         end
+        # if signal type does not match, use the entire label
     end
     label = replace(label, r"\s*-\s*" => "-")
     initial, normalized_label = _normalize_references(label, canonical_names)
