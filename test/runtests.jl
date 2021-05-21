@@ -85,7 +85,12 @@ include("test_edf_to_samples_info.out")
 
 @testset "OndaEDF" begin
     include("signal_labels.jl")
+    include("pretty_print_results.jl")
     include("import.jl")
     include("export.jl")
 end
 
+@info """
+    To look for the effect of any modifications made to OndaEDF, look at:
+    `diff test/test_edf_to_samples_info.{out,tested}`
+"""

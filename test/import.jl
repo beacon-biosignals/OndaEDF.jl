@@ -27,17 +27,34 @@ custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel
 @testset "Import EDF" begin
 
     @testset "edf_to_samples_info" begin
-        for (i, r) in enumerate(test_edf_to_samples_info)
+        results = map(test_edf_to_samples_info) do r
+            edf = mock_edf(r)
+            original_edf_headers = [s.header for s in edf.signals]
             try
-                edf = mock_edf(r)
-                samples = OndaEDF.edf_to_onda_samples(edf; custom_extractors=custom_extractors)
-                expected = [(s.kind, c, s.sample_unit) for s in r.onda_edf_headers for c in s.channels]
-                sample_infos = [(s.info.kind, c, s.info.sample_unit) for s in samples for c in s.info.channels]
-                @test (i, setdiff(expected, sample_infos)) == (i, [])
+                samples, errors = OndaEDF.edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+                return ((onda_edf_headers=[s.info for s in samples],
+                         original_edf_headers=original_edf_headers,
+                         error=errors),
+                        r.onda_edf_headers)
             catch e
-                @show r
-                throw(e)
+                return ((onda_edf_headers=[],
+                         original_edf_headers=original_edf_headers,
+                         error=[e]),
+                        r.onda_edf_headers)
             end
+        end
+        # print result of mapping `edf_to_onda_samples` over `test_edf_to_samples_info.out`
+        # this makes it easy to see effects of any changes made to OndaEDF by looking at
+        # `diff test_edf_to_samples_info.out test_edf_to_samples_info.tested.out`
+        print_results("test_edf_to_samples_info_tested", map(first, results))
+        print_results("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", nt.onda_edf_headers), map(first, results)))
+        print_results("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", nt.onda_edf_headers), map(first, results)))
+        print_results("no_emg_tested", filter(nt -> !any(h -> h.kind == "emg", nt.onda_edf_headers), map(first, results)))
+        print_results("no_ekg_tested", filter(nt -> !any(h -> h.kind ∈ Set(("ecg", "ekg")), nt.onda_edf_headers), map(first, results)))
+        for (i, (r, expected_samples_info)) in enumerate(results)
+            expected = [(s.kind, c, s.sample_unit) for s in expected_samples_info for c in s.channels]
+            sample_infos = [(s.kind, c, s.sample_unit) for s in r.onda_edf_headers for c in s.channels]
+            @test (i, setdiff(expected, sample_infos)) == (i, [])
         end
     end
 
@@ -45,7 +62,7 @@ custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel
     edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
 
     @testset "edf_to_onda_samples" begin
-        returned_samples = OndaEDF.edf_to_onda_samples(edf)
+        returned_samples, errors = OndaEDF.edf_to_onda_samples(edf)
         @test length(returned_samples) == 13
 
         samples_info = Dict(s.info.kind => s.info for s in returned_samples)
