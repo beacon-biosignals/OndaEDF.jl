@@ -199,7 +199,6 @@ end
 struct SamplesInfoError <: Exception
     msg::String
     cause::Exception
-    backtrace
 end 
 
 """
@@ -263,7 +262,7 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
         units = [s.header.label => s.header.physical_dimension for s in edf_channels]
         msg ="""Skipping signal: error while processing units and encodings
                 for $(first(signal_names)) signal with units $units"""
-        return SamplesInfoError(msg, e, catch_backtrace())
+        return SamplesInfoError(msg, e)
     end
 end
 
@@ -353,7 +352,7 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
     edf_samples, errors = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
     for error in errors
         if isa(e, SamplesInfoError)
-            @warn e.msg excpetion=(e.cause, e.backtrace)
+            @warn e.msg exception=e.cause
         else
             @warn exception=e
         end
