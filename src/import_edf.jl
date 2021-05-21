@@ -9,7 +9,9 @@
 # - replaces
 #     - `+` with `_plus_`
 #     - `/` with `_over_`
-# - returns the entire label if all the parts are canonical names, and `nothing` otherwise.
+# - returns `nothing` if no non-`ref` parts are found, otherwise returns
+# `(first_part, recombined)`, where `first_part` should match the canonical
+# channel name.
 function _normalize_references(original_label, canonical_names)
     label = replace(_safe_lowercase(original_label), r"\s"=>"")
     label = replace(replace(label, '('=>""), ')'=>"")
@@ -194,13 +196,22 @@ function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Sig
     return info
 end
 
+struct SamplesInfoError <: Exception
+    msg::String
+    cause::Exception
+    backtrace
+end 
 
 """
     extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
 
-For one or more signal names and one or more channel names, return all matching
-signals from an `EDF.File`, and the `Onda.SamplesInfo` struct that describes the
-extracted channels.
+For one or more signal names and one or more channel names, return :
+- all matching signals from an `EDF.File`, and the `Onda.SamplesInfo`
+  struct that describes the extracted channels, if any
+- `nothing` if no signals matched
+- or a `SamplesInfoError` if channels corresponding to a signal 
+  were extracted but an error occured while interpreting physical units,
+  while promoting sample encodings, or otherwise constructing a `SamplesInfo`.
 
 `signal_names` should be an iterable of `String`s naming the signal types to
 extract (e.g., `["ecg", "ekg"]`; `["eeg"]`).
@@ -250,8 +261,7 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
         units = [s.header.label => s.header.physical_dimension for s in edf_channels]
         msg ="""Skipping signal: error while processing units and encodings
                 for $(first(signal_names)) signal with units $units"""
-        @warn msg exception=(e, catch_backtrace())
-        return nothing
+        return SamplesInfoError(msg, e, catch_backtrace())
     end
 end
 
@@ -338,7 +348,14 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
     file_format = "lpcm.zst"
 
     signals = Any[]
-    edf_samples = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+    edf_samples, errors = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+    for error in errors
+        if isa(e, SamplesInfoError)
+            @warn e.msg excpetion=(e.cause, e.backtrace)
+        else
+            @warn exception=e
+        end
+    end
     for samples in edf_samples
         file_path = joinpath(path, "samples", string(uuid, "_", samples.info.kind, ".", file_format))
         signal = rowmerge(store(file_path, file_format, samples, uuid, Second(0)); file_path=string(file_path))
@@ -401,14 +418,19 @@ See the OndaEDF README for additional details regarding EDF formatting expectati
 function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
     EDF.read!(edf)
     edf_samples = Samples[]
+    errors = Exception[]
     for extractor in custom_extractors
         extracted = extractor(edf)
         extracted === nothing && continue
+        if isa(extracted, Exception)
+            push!(errors, extracted)
+            continue
+        end
         samples_info, edf_signals = extracted
         samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
         push!(edf_samples, samples)
     end
-    return edf_samples
+    return edf_samples, errors
 end
 
 """
