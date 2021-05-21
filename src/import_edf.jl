@@ -21,6 +21,7 @@ function _normalize_references(original_label, canonical_names)
     label = replace(label, '/'=>"…/…")
     label = !isnothing(match(r"^\[.*\]$", label)) ? label[2:end-1] : label
     parts = split(label, '…'; keepempty=false)
+    #@show parts, label
     final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
     parts = parts[1:something(final, 0)]
     isempty(parts) && return ("", "")
@@ -43,13 +44,7 @@ function _normalize_references(original_label, canonical_names)
     return first(parts), recombined
 end
 
-function _safe_lowercase(c::Char)
-    try
-        return lowercase(c)
-    catch e
-        return c
-    end
-end
+_safe_lowercase(c::Char) = isvalid(c) ? lowercase(c) : c
 
 # malformed UTF-8 chars are a choking hazard
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
@@ -152,19 +147,17 @@ end
 #####
 
 function extract_channels(edf_signals, channel_matchers)
-    extracted_channel_names = String[]
-    extracted_channels = EDF.Signal[]
+    extracted_channels = Pair{String,EDF.Signal}[]
     for channel_matcher in channel_matchers
         for edf_signal in edf_signals
             edf_signal isa EDF.Signal || continue
-            any(x -> x === edf_signal, extracted_channels) && continue
+            any(x -> x === edf_signal, map(last, extracted_channels)) && continue
             channel_name = channel_matcher(edf_signal)
             channel_name === nothing && continue
-            push!(extracted_channel_names, channel_name)
-            push!(extracted_channels, edf_signal)
+            push!(extracted_channels, channel_name => edf_signal)
         end
     end
-    return extracted_channel_names, extracted_channels
+    return extracted_channels
 end
 
 """
@@ -200,6 +193,14 @@ struct SamplesInfoError <: Exception
     msg::String
     cause::Exception
 end 
+
+function groupby(f, list)
+    d = Dict()
+    foreach(list) do v
+        push!(get!(d, f(v), []), v)
+    end
+    return d
+end
 
 """
     extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
@@ -240,18 +241,28 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
                                     this_channel_name,
                                     channel_names)
     end
-    edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
-    isempty(edf_channel_names) && return nothing
+    edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
 
-    try
-        info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), edf_channel_names)
-        return info, edf_channels
-    catch e
-        units = [s.header.label => s.header.physical_dimension for s in edf_channels]
-        msg ="""Skipping signal: error while processing units and encodings
-                for $(first(signal_names)) signal with units $units"""
-        return SamplesInfoError(msg, e)
+    grouped = groupby(edf_channels) do p
+        edf_signal = last(p)
+        return ((edf_signal.header.samples_per_record / edf.header.seconds_per_record), edf_signal.header.physical_dimension)
     end
+
+    results = map(values(grouped)) do pairs
+        edf_channel_names, edf_channels = zip(pairs...)
+        try
+            info = edf_signals_to_samplesinfo(edf, collect(edf_channels), first(signal_names), collect(edf_channel_names))
+            return info, edf_channels
+        catch e
+            units = [s.header.label => s.header.physical_dimension for s in edf_channels]
+            msg ="""Skipping signal: error while processing units and encodings
+                    for $(first(signal_names)) signal with units $units"""
+            return SamplesInfoError(msg, e)
+        end
+    end
+
+    return ([info_channels for info_channels in results if !isa(info_channels, Exception)], 
+            [e for e in results if isa(e, Exception)])
 end
 
 #####
@@ -409,15 +420,13 @@ function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTOR
     edf_samples = Samples[]
     errors = Exception[]
     for extractor in custom_extractors
-        extracted = extractor(edf)
-        extracted === nothing && continue
-        if isa(extracted, Exception)
-            push!(errors, extracted)
-            continue
+        extracteds, errs = extractor(edf)
+        append!(errors, errs)
+        for extracted in extracteds
+            samples_info, edf_signals = extracted
+            samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
+            push!(edf_samples, samples)
         end
-        samples_info, edf_signals = extracted
-        samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
-        push!(edf_samples, samples)
     end
     return edf_samples, errors
 end

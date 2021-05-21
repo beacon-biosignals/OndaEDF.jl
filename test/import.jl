@@ -5,24 +5,68 @@ function test_preprocessor(l)
     l = replace(l, "\xf6"[1] => 'o') # remove umlaut (German)
     l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
     l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
+
     # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
     m = match(r"^\s*EOG[\s\-]+(?<lr>[LR])\s*"i, l)
     if !isnothing(m)
         l = "EOG$(m[:lr])"
     end
+
     # "L - EOG" and "R- EOG" should not be parsed as channel \minus channel
     m = match(r"^\s*(?<lr>[LR])[\s\-]+EOG\s*"i, l)
     if !isnothing(m)
         l = "EOG$(m[:lr])"
     end
+
     # "C2M1" => "C2-M1" etc
     m = match(r"\s*(?<channel>[fco][1234])\s*(?<ref>[am][12])\s*"i, l)
-    isnothing(m) && return l
-    return "$(m[:channel])-$(m[:ref])"
+    l = isnothing(m) ? l : "$(m[:channel])-$(m[:ref])"
+
+    # Chin[LR]?.* => chin[lr]?
+    m = match(r"\s*chin(?<side>[lr]?).*"i, l)
+    l = isnothing(m) ? l : "chin$(m[:side])"
+
+    # "Menton (cen.)" => chin3
+    m = match(r"\s*menton.*cen.*"i, l)
+    l = isnothing(m) ? l : "chin3"
+
+    # "Chin EMG[12]" => "EMG chin[12]"
+    m = match(r"\s*chin\s+emg(?<n>[12])\s*"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:n])"
+
+    # "Lower.Left-Upper" => "EMG chin1"
+    l = startswith(OndaEDF._safe_lowercase(l), "lower.left-upp") ? "emg chin1" : l 
+    l = startswith(OndaEDF._safe_lowercase(l), "lower.right-upp") ? "emg chin2" : l 
+
+    # how to denote that sign is inverted???
+    # "Upper-Lower.Left" => "EMG chin1"
+    l = OndaEDF._safe_lowercase(l) == "upper-lower.left" ? "emg chin1" : l 
+    l = OndaEDF._safe_lowercase(l) == "upper-lower.righ" ? "emg chin2" : l 
+
+    # deutsch
+    l = OndaEDF._safe_lowercase(l) == "emg li" ? "emg chin1" : l 
+    l = OndaEDF._safe_lowercase(l) == "emg re" ? "emg chin2" : l 
+    l = OndaEDF._safe_lowercase(l) == "emg mitte" ? "emg chin3" : l 
+    l = OndaEDF._safe_lowercase(l) == "emg1 kinn" ? "emg chin1" : l 
+    l = OndaEDF._safe_lowercase(l) == "emg2 kinn" ? "emg chin2" : l 
+
+    # DUBIOUS ONES
+    #
+    # # "EMG\s*Aux[123]" => EMG chin[123]
+    # m = match(r"\s*emg\s*aux(?<n>[123])\s*"i, l)
+    # l = isnothing(m) ? l : "emg chin$(m[:n])"
+    #
+    # # EMG => EMG chin
+    # l = OndaEDF._safe_lowercase(l) == "emg" ? "emg chin" : l 
+
+    return l
 end
 
+custom_labels = deepcopy(OndaEDF.STANDARD_LABELS)
+#custom_labels[["emg"]] = [p for p in custom_labels[["emg"]] if startswith(first(p), "chin")]
+
 custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel_names; preprocess_labels=test_preprocessor)
-                     for (signal_names, channel_names) in OndaEDF.STANDARD_LABELS]
+                     for (signal_names, channel_names) in custom_labels]
 
 @testset "Import EDF" begin
 
