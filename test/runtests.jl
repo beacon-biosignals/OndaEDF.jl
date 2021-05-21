@@ -92,5 +92,5 @@ end
 
 @info """
     To look for the effect of any modifications made to OndaEDF, look at:
-    `diff test/test_edf_to_samples_info.{out,tested}`
+    `diff test/test_edf_to_samples_info(,_tested}.out`
 """

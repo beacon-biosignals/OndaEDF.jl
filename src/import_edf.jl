@@ -235,22 +235,10 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
         # yo I heard you like closures
         # x is either a channel name (string), or a channel_name => alternatives Pair.
         this_channel_name = x isa Pair ? first(x) : x
-        return s -> begin
-            m = match_edf_label(preprocess_labels(s.header.label),
-                                signal_names,
-                                this_channel_name,
-                                channel_names)
-            !isnothing(m) && return m
-            # channel info is sometimes misplaced in transducer_type field; only accept these if corresponding signal_name occurs in channel label
-            m = match_edf_label(preprocess_labels(s.header.transducer_type),
-                                signal_names,
-                                this_channel_name,
-                                channel_names)
-            !isnothing(m) && return m
-            lowercase_label = _safe_lowercase(s.header.label)
-            any(occursin(name, lowercase_label) for name in signal_names) && return m
-            return nothing
-        end
+        return s -> match_edf_label(preprocess_labels(s.header.label),
+                                    signal_names,
+                                    this_channel_name,
+                                    channel_names)
     end
     edf_channel_names, edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
     isempty(edf_channel_names) && return nothing
