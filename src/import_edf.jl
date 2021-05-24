@@ -224,19 +224,19 @@ a canonical name to a list of alternatives that it should be substituted for
 `unit_alternatives` lists standardized unit names and alternatives that map to them.
 See `OndaEDF.STANDAR_UNITS` for defaults.
 
-`preprocess_labels(label::String)` is applied to raw edf signal header labels
-beforehand; defaults to `identity`.
+`preprocess_labels(label::String, transducer_type::String)` is applied to raw edf signal header labels
+beforehand; defaults to returning `label`.
 
 See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
 `Pair`s) that are used to extract EDF signals by default.
 
 """
-function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS, preprocess_labels=identity)
+function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
     matcher = x -> begin
         # yo I heard you like closures
         # x is either a channel name (string), or a channel_name => alternatives Pair.
         this_channel_name = x isa Pair ? first(x) : x
-        return s -> match_edf_label(preprocess_labels(s.header.label),
+        return s -> match_edf_label(preprocess_labels(s.header.label, s.header.transducer_type),
                                     signal_names,
                                     this_channel_name,
                                     channel_names)

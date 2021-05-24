@@ -1,30 +1,33 @@
 using OndaEDF: validate_arrow_prefix
 
-function test_preprocessor(l)
+function test_preprocessor(l, t)
     l = replace(l, ':' => '-')
     l = replace(l, "\xf6"[1] => 'o') # remove umlaut (German)
     l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
     l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
 
+    l = OndaEDF._safe_lowercase(l)
+    t = OndaEDF._safe_lowercase(t)
+
     # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
     m = match(r"^\s*EOG[\s\-]+(?<lr>[LR])\s*"i, l)
     if !isnothing(m)
-        l = "EOG$(m[:lr])"
+        l = "EOG $(m[:lr])"
     end
 
     # "L - EOG" and "R- EOG" should not be parsed as channel \minus channel
-    m = match(r"^\s*(?<lr>[LR])[\s\-]+EOG\s*"i, l)
+    m = match(r"^[\[\s,\(]*(?<lr>[LR])[\s\-]+EOG(?<rest>[^\]\),]*)\s*[\]\s,\)]*$"i, l)
     if !isnothing(m)
-        l = "EOG$(m[:lr])"
+        l = "EOG $(m[:lr])$(m[:rest])"
     end
 
     # "C2M1" => "C2-M1" etc
-    m = match(r"\s*(?<channel>[fco][1234])\s*(?<ref>[am][12])\s*"i, l)
+    m = match(r"\s*(?<channel>[fco][1234])\s*(?<ref>[am][12])\s*$"i, l)
     l = isnothing(m) ? l : "$(m[:channel])-$(m[:ref])"
 
-    # Chin[LR]?.* => chin[lr]?
-    m = match(r"\s*chin(?<side>[lr]?).*"i, l)
-    l = isnothing(m) ? l : "chin$(m[:side])"
+    # Chin[LR123]?.* => chin[lr123]?
+    m = match(r"\s*chin(?<side>[lr123]?)\s*(?<rest>.*)\s*$"i, l)
+    l = isnothing(m) ? l : "chin$(m[:side])$(m[:rest])"
 
     # "Menton (cen.)" => chin3
     m = match(r"\s*menton.*cen.*"i, l)
@@ -35,29 +38,69 @@ function test_preprocessor(l)
     l = isnothing(m) ? l : "emg chin$(m[:n])"
 
     # "Lower.Left-Upper" => "EMG chin1"
-    l = startswith(OndaEDF._safe_lowercase(l), "lower.left-upp") ? "emg chin1" : l 
-    l = startswith(OndaEDF._safe_lowercase(l), "lower.right-upp") ? "emg chin2" : l 
+    l = startswith(l, "lower.left-upp") ? "emg chin1" : l 
+    l = startswith(l, "lower.right-upp") ? "emg chin2" : l 
 
     # how to denote that sign is inverted???
     # "Upper-Lower.Left" => "EMG chin1"
-    l = OndaEDF._safe_lowercase(l) == "upper-lower.left" ? "emg chin1" : l 
-    l = OndaEDF._safe_lowercase(l) == "upper-lower.righ" ? "emg chin2" : l 
+    l = l == "upper-lower.left" ? "emg chin1" : l 
+    l = l == "upper-lower.righ" ? "emg chin2" : l 
 
     # deutsch
-    l = OndaEDF._safe_lowercase(l) == "emg li" ? "emg chin1" : l 
-    l = OndaEDF._safe_lowercase(l) == "emg re" ? "emg chin2" : l 
-    l = OndaEDF._safe_lowercase(l) == "emg mitte" ? "emg chin3" : l 
-    l = OndaEDF._safe_lowercase(l) == "emg1 kinn" ? "emg chin1" : l 
-    l = OndaEDF._safe_lowercase(l) == "emg2 kinn" ? "emg chin2" : l 
+    l = l == "emg li" ? "emg chin1" : l 
+    l = l == "emg re" ? "emg chin2" : l 
+    l = l == "emg mitte" ? "emg chin3" : l 
+    l = l == "emg1 kinn" ? "emg chin1" : l 
+    l = l == "emg2 kinn" ? "emg chin2" : l 
 
-    # DUBIOUS ONES
-    #
-    # # "EMG\s*Aux[123]" => EMG chin[123]
-    # m = match(r"\s*emg\s*aux(?<n>[123])\s*"i, l)
-    # l = isnothing(m) ? l : "emg chin$(m[:n])"
-    #
-    # # EMG => EMG chin
-    # l = OndaEDF._safe_lowercase(l) == "emg" ? "emg chin" : l 
+    # EMG-subm[12] => EMG chin[12]
+    m = match(r"\s*emg\-subm(?<n>[12])\s*"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:n])"
+
+    # label = "EMG", transducer_type = "FP1-FP2" => label = "EMG FP1-FP2"
+    l = (l == "emg" && t == "fp1-fp2") ? "emg fp1-fp2" : l
+    l = (l == "emg" && t == "fp2-fp1") ? "emg fp2-fp1" : l
+
+    # label = "EMG", transducer_type = "1A-1R" => label = "EMG chin1"
+    l = (l == "emg" && t == "1a-1r") ? "emg chin1" : l
+
+    # {left,right,l,r}[\s-_]*leg
+    m = match(r"^(\s*emg\s*)?(left|l)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
+    l = isnothing(m) ? l : "emg left_anterior_tibialis$(m[:rest])"
+    m = match(r"^(\s*emg\s*)?(right|r)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
+    l = isnothing(m) ? l : "emg right_anterior_tibialis$(m[:rest])"
+
+    # leg[\s-_]*{left,right,l,r}
+    m = match(r"^(\s*emg\s*)?(?<lr>left|l)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
+    l = isnothing(m) ? l : "emg left_anterior_tibialis$(m[:rest])"
+    m = match(r"^(\s*emg\s*)?(?<lr>right|r)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
+    l = isnothing(m) ? l : "emg right_anterior_tibialis$(m[:rest])"
+
+    # (Tib|Leg)(-|/)[LR]
+    m = match(r"^\s*(leg|tib)[/\-](?<lr>l|left|right|r)\s*$"i, l)
+    l = isnothing(m) ? l : "$(startswith(m[:lr], "l") ? "left" : "right")_anterior_tibialis"
+
+    # AMBIGUOUS ONES
+    # these will only be kept if recording also has leg EMG in separate channels
+
+    # "EMG[123]" => emg_ambiguous [123]
+    m = match(r"^\s*emg(?<n>[123])\s*$"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
+
+    # "EMG\s*Aux[123]" => emg_ambiguous [123]
+    m = match(r"^\s*emg\s*aux(?<n>[123])\s*$"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
+
+    # EMG[+-]? => EMG Aux[123]
+    l = l == "emg+" ? "emg_ambiguous 1" : l 
+    l = l == "emg-" ? "emg_ambiguous 2" : l 
+    l = l == "emg" ? "emg_ambiguous 3" : l    # postprocess: if only "emg_ambiguous 3" + legs present, replace with "EMG chin1"
+
+    # other ambiguous forms
+    l = l == "emg1-emg2" ? "emg_ambiguous 1" : l 
+    l = l == "emg2-emg1" ? "emg_ambiguous 2" : l 
+    l = l == "emg-a1" ? "emg_ambiguous 1" : l 
+    l = l == "emg emg" ? "emg_ambiguous 1" : l
 
     return l
 end
@@ -67,6 +110,11 @@ custom_labels = deepcopy(OndaEDF.STANDARD_LABELS)
 
 custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel_names; preprocess_labels=test_preprocessor)
                      for (signal_names, channel_names) in custom_labels]
+
+function has_leg(h)
+    h.kind != "emg" && return false
+    return any(c -> startswith(c, "left_anterior_tibialis") || startswith(c, "right_anterior_tibialis"), h.channels)
+end
 
 @testset "Import EDF" begin
 
@@ -93,7 +141,8 @@ custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel
         print_results("test_edf_to_samples_info_tested", map(first, results))
         print_results("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", nt.onda_edf_headers), map(first, results)))
         print_results("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", nt.onda_edf_headers), map(first, results)))
-        print_results("no_emg_tested", filter(nt -> !any(h -> h.kind == "emg", nt.onda_edf_headers), map(first, results)))
+        print_results("no_emg_tested", filter(nt -> !any(h -> startswith(h.kind, "emg"), nt.onda_edf_headers), map(first, results)))
+        print_results("no_leg_tested", filter(nt -> !any(has_leg, nt.onda_edf_headers), map(first, results)))
         print_results("no_ekg_tested", filter(nt -> !any(h -> h.kind ∈ Set(("ecg", "ekg")), nt.onda_edf_headers), map(first, results)))
         for (i, (r, expected_samples_info)) in enumerate(results)
             expected = [(s.kind, c, s.sample_unit) for s in expected_samples_info for c in s.channels]
