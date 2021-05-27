@@ -9,6 +9,12 @@ function test_preprocessor(l, t)
     l = OndaEDF._safe_lowercase(l)
     t = OndaEDF._safe_lowercase(t)
 
+    m = match(r"\[chin-(?<lr>[lr])-chin-a\]"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:lr])"
+
+    # recordings with label in the transducer field
+    l = l == "spectrum eeg" ? t : l
+
     # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
     m = match(r"^\s*EOG[\s\-]+(?<lr>[LR])\s*"i, l)
     if !isnothing(m)
@@ -25,6 +31,10 @@ function test_preprocessor(l, t)
     m = match(r"\s*(?<channel>[fco][1234])\s*(?<ref>[am][12])\s*$"i, l)
     l = isnothing(m) ? l : "$(m[:channel])-$(m[:ref])"
 
+    # "Chin EMG[12]?" => "EMG chin[12]?"
+    m = match(r"\s*chin\s+emg(?<n>[12]?)\s*"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:n])"
+
     # Chin[LR123]?.* => chin[lr123]?
     m = match(r"\s*chin(?<side>[lr123]?)\s*(?<rest>.*)\s*$"i, l)
     l = isnothing(m) ? l : "chin$(m[:side])$(m[:rest])"
@@ -33,13 +43,11 @@ function test_preprocessor(l, t)
     m = match(r"\s*menton.*cen.*"i, l)
     l = isnothing(m) ? l : "chin3"
 
-    # "Chin EMG[12]" => "EMG chin[12]"
-    m = match(r"\s*chin\s+emg(?<n>[12])\s*"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:n])"
-
     # "Lower.Left-Upper" => "EMG chin1"
     l = startswith(l, "lower.left-upp") ? "emg chin1" : l 
     l = startswith(l, "lower.right-upp") ? "emg chin2" : l 
+    l = startswith(l, "lower.left-low") ? "emg chin1" : l    # dipole; dubious assignment
+    l = startswith(l, "lower.right-low") ? "emg chin2" : l   # dipole; dubious assignment
 
     # how to denote that sign is inverted???
     # "Upper-Lower.Left" => "EMG chin1"
@@ -64,6 +72,28 @@ function test_preprocessor(l, t)
     # label = "EMG", transducer_type = "1A-1R" => label = "EMG chin1"
     l = (l == "emg" && t == "1a-1r") ? "emg chin1" : l
 
+    # EKG
+
+    # EKG1, ECG2, etc are ambiguous
+    # pick same default as for "ECG"
+    # TODO should I instead pick[B another default,
+    #      or make a new ambiguous ECG signal type for these cases?
+    m = match(r"[\s\[,]*e[ck]g([123])[\s\-]*e[ck]g([123])[\]\s,]*"i, l)
+    l = isnothing(m) ? l : "ecg $(m[1])"
+
+    m = match(r"[\s\[,]*e[ck]g([123])[\]\s,]*"i, l)
+    l = isnothing(m) ? l : "ecg $(m[1])"
+
+    # [LR] ECG
+    m = match(r"^[\[\s,]*(?<lr>[lr])\s*E[ck]g"i, l)
+    l = isnothing(m) ? l : "ecg av$(m[:lr])"
+
+    # [LR]-Leg[12]?
+    m = match(r"^[\[\s,]*(?<lr>[lr])\s*\-\s*leg[1-2][\s\],]?"i, l)
+    l = isnothing(m) ? l : "ecg av$(m[:lr])"
+
+    # EMG Leg
+
     # {left,right,l,r}[\s-_]*leg
     m = match(r"^(\s*emg\s*)?(left|l)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
     l = isnothing(m) ? l : "emg left_anterior_tibialis$(m[:rest])"
@@ -80,6 +110,77 @@ function test_preprocessor(l, t)
     m = match(r"^\s*(leg|tib)[/\-](?<lr>l|left|right|r)\s*$"i, l)
     l = isnothing(m) ? l : "$(startswith(m[:lr], "l") ? "left" : "right")_anterior_tibialis"
 
+    # [LR]Leg1 - [LR]Leg2
+    m = match(r"[\s\[,]*(?<lr>[lr])leg([12]?)[\s\-lr]*leg([12]?)[\]\s,]*"i, l)
+    l = isnothing(m) ? l : "emg $(m[:lr])leg"
+
+    # [LR] LEG[12]?  # with a minus `-`, this would be interpreted as ECG
+    m = match(r"^[\[\s,]*(?<lr>[lr])\s*leg[1234]?"i, l)
+    l = isnothing(m) ? l : "emg leg$(m[:lr])"
+
+    ###############
+    # ODDBALLS
+    l = l == "ekg8" ? "ekg v8" : l
+    l = replace(l, r"^e1 14" => "e1")
+    l = replace(l, r"^e2 18" => "e2")
+    
+    l = endswith(l, "clavicle") ? "ecg avl" : l
+    l = endswith(l, "cardiogr") ? "ecg avl" : l
+
+    l = l == "ecg+" ? "ecg" : l
+    l = l == "ecg-" ? "ecg" : l
+
+    if t == "ekg_channel"
+        l = "ecg"
+    end
+
+    if l == "eog" && t == ""
+        l = "eog l"  # recording will have 2 left eogs, no way to say which is which
+    end
+
+    # CHIN1I-CHIN[23][]
+    l = replace(l, r"^chin1i-chin.*"i => "emg chin1")
+
+    if t == "leg_channel" && l == "25"
+        l = "left_anterior_tibialis"
+    end
+
+    if t == "leg2_channel" && l == "26"
+        l = "right_anterior_tibialis"
+    end
+
+    if t == "chin_channel" && l ∈ ["fz-cz", "24"]
+        l = "emg chin1"
+    end
+
+    if t == "chin2_channel" && l == "25"
+        l = "emg chin1"
+    end
+
+    m = match(r"chin(?<lr>[lr])[\(\s]+ment.*"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:lr])"
+
+    l = l == "emg x1-x6" ? "emg chin1" : l
+    
+    m = match(r"emg\s+(?<lr>[lr])at\s+.*"i, l)
+    l = isnothing(m) ? l : "emg $(m[:lr])at"
+
+    m = match(r"[lr]leg[\+\-]"i, l)
+    l = isnothing(m) ? l : "ignorame"
+
+    m = match(r"^(?<lr>[lr])t\. eye"i, l)
+    l = isnothing(m) ? l : "eog $(m[:lr])"
+
+    l = l == "e1 (l)-m2" ? "eog l" : l
+    l = l == "e2 (r)-m2" ? "eog r" : l
+
+    l = l == "chinz-chin1" ? "emg chinl" : l
+    l = l == "chinz-chin2" ? "eog chinr" : l
+
+    l = l == "eog x4-a2" ? "eog r" : l
+    l = l == "eog x9-a2" ? "eog l" : l
+
+    ###############
     # AMBIGUOUS ONES
     # these will only be kept if recording also has leg EMG in separate channels
 
@@ -101,6 +202,9 @@ function test_preprocessor(l, t)
     l = l == "emg2-emg1" ? "emg_ambiguous 2" : l 
     l = l == "emg-a1" ? "emg_ambiguous 1" : l 
     l = l == "emg emg" ? "emg_ambiguous 1" : l
+
+    m = match(r"[\s\[,]*emg(?<i>[123]?)[\s\-]+emg([123]?)[\]\s,]*"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:i])"
 
     return l
 end
