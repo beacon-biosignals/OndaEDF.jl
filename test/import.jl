@@ -5,12 +5,120 @@ function test_preprocessor(l, t)
     l = replace(l, "\xf6"[1] => 'o') # remove umlaut (German)
     l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
     l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
-
     l = OndaEDF._safe_lowercase(l)
     t = OndaEDF._safe_lowercase(t)
 
-    m = match(r"\[chin-(?<lr>[lr])-chin-a\]"i, l)
+    l = replace(l, r"\.$"i => "")
+
+    ####
+    # ODDBALLS
+
+    m = match(r"\[chin-(?<lr>[lr])-chin-[ar]\]"i, l)
     l = isnothing(m) ? l : "emg chin$(m[:lr])"
+    
+    l = endswith(l, "clavicle") ? "ecg avl" : l
+
+    l = l == "ekg8" ? "ekg v8" : l
+    l = replace(l, r"^e1 14" => "e1")
+    l = replace(l, r"^e2 18" => "e2")
+    
+    l = endswith(l, "cardiogr") ? "ecg avl" : l
+
+    l = l == "ecg+" ? "ecg" : l
+    l = l == "ecg-" ? "ecg" : l
+
+    if t == "ekg_channel"
+        l = "ecg"
+    end
+
+    if l == "eog" && t == ""
+        l = "eog l"  # recording will have 2 left eogs, no way to say which is which
+    end
+
+    l = startswith(l, "eog horz") ? "eog l" : l
+
+    # CHIN1I-CHIN[23][]
+    l = replace(l, r"^chin1i-chin.*"i => "emg chin1")
+
+    if t == "leg_channel" && l == "25"
+        l = "left_anterior_tibialis"
+    end
+
+    if t == "leg2_channel" && l == "26"
+        l = "right_anterior_tibialis"
+    end
+
+    if t == "chin_channel" && l ∈ ["fz-cz", "24", "p3-p4", "fp1-fp2"]
+        l = "emg chin1"
+    end
+
+    if t == "chin2_channel" && l ∈ ["25", "p4-pz"]
+        l = "emg chin2"
+    end
+
+    m = match(r"chin(?<lr>[lr])[\(\s]+ment.*"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:lr])"
+
+    l = l == "emg x1-x6" ? "emg chin1" : l
+    
+    m = match(r"emg\s+(?<lr>[lr])at\s+.*"i, l)
+    l = isnothing(m) ? l : "emg $(m[:lr])at"
+
+    m = match(r"[lr]leg[\+\-]"i, l)
+    l = isnothing(m) ? l : "ignorame"
+
+    m = match(r"^(?<lr>[lr])t\. eye"i, l)
+    l = isnothing(m) ? l : "eog $(m[:lr])"
+
+    l = l == "e1 (l)-m2" ? "eog l" : l
+    l = l == "e2 (r)-m2" ? "eog r" : l
+
+    l = l == "chinz-chin1" ? "emg chinl" : l
+    l = l == "chinz-chin2" ? "emg chinr" : l
+
+    l = l == "eog x4-a2" ? "eog r" : l
+    l = l == "eog x9-a2" ? "eog l" : l
+
+    #m = match(r"^eeg (?<lr>[lr]oc)(?<rest>.*)$"i, l)
+    #l = isnothing(m) ? l : "eog $(m[:lr])$(m[:rest])"
+
+    l = l == "e.left" ? "eog loc" : l
+    l = l == "e.right" ? "eog roc" : l
+
+    ###############
+    # AMBIGUOUS ONES
+    # these will only be kept if recording also has leg EMG in separate channels
+
+    # "EMG[123]" => emg_ambiguous [123]
+    m = match(r"^\s*emg_?(?<n>[lr123])\s*$"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
+
+    # "EMG\s*Aux[123]" => emg_ambiguous [123]
+    m = match(r"^\s*emg\s*aux(?<n>[123])\s*$"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
+
+    # "EMG_[LR]" => emg_ambiguous [12]
+    m = match(r"^\s*emg(?<n>[123])\s*$"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
+
+    l = l == "emg" && t == "fp1-fp2" ? "emg fp1-fp2" : l
+
+    # EMG[+-]? => EMG Aux[123]
+    l = l == "emg+" ? "emg_ambiguous 1" : l 
+    l = l == "emg-" ? "emg_ambiguous 2" : l 
+    l = l == "emg" ? "emg_ambiguous 3" : l    # postprocess: if only "emg_ambiguous 3" + legs present, replace with "EMG chin1"
+
+    # other ambiguous forms
+    l = l == "emg1-emg2" ? "emg_ambiguous 1" : l 
+    l = l == "emg2-emg1" ? "emg_ambiguous 2" : l 
+    l = l == "emg-a1" ? "emg_ambiguous 1" : l 
+    l = l == "emg emg" ? "emg_ambiguous 1" : l
+
+    m = match(r"[\s\[,]*emg(?<i>[123]?)[\s\-]+emg([123]?)[\]\s,]*"i, l)
+    l = isnothing(m) ? l : "emg_ambiguous $(m[:i])"
+
+    ####
+    ####
 
     # recordings with label in the transducer field
     l = l == "spectrum eeg" ? t : l
@@ -36,8 +144,8 @@ function test_preprocessor(l, t)
     l = isnothing(m) ? l : "emg chin$(m[:n])"
 
     # Chin[LR123]?.* => chin[lr123]?
-    m = match(r"\s*chin(?<side>[lr123]?)\s*(?<rest>.*)\s*$"i, l)
-    l = isnothing(m) ? l : "chin$(m[:side])$(m[:rest])"
+    m = match(r"\s*chin(?<side>[lr123]?)\s*(?<rest>[\-chinlr123]*)\s*$"i, l)
+    l = isnothing(m) ? l : "emg chin$(m[:side])$(m[:rest])"
 
     # "Menton (cen.)" => chin3
     m = match(r"\s*menton.*cen.*"i, l)
@@ -118,93 +226,6 @@ function test_preprocessor(l, t)
     m = match(r"^[\[\s,]*(?<lr>[lr])\s*leg[1234]?"i, l)
     l = isnothing(m) ? l : "emg leg$(m[:lr])"
 
-    ###############
-    # ODDBALLS
-    l = l == "ekg8" ? "ekg v8" : l
-    l = replace(l, r"^e1 14" => "e1")
-    l = replace(l, r"^e2 18" => "e2")
-    
-    l = endswith(l, "clavicle") ? "ecg avl" : l
-    l = endswith(l, "cardiogr") ? "ecg avl" : l
-
-    l = l == "ecg+" ? "ecg" : l
-    l = l == "ecg-" ? "ecg" : l
-
-    if t == "ekg_channel"
-        l = "ecg"
-    end
-
-    if l == "eog" && t == ""
-        l = "eog l"  # recording will have 2 left eogs, no way to say which is which
-    end
-
-    # CHIN1I-CHIN[23][]
-    l = replace(l, r"^chin1i-chin.*"i => "emg chin1")
-
-    if t == "leg_channel" && l == "25"
-        l = "left_anterior_tibialis"
-    end
-
-    if t == "leg2_channel" && l == "26"
-        l = "right_anterior_tibialis"
-    end
-
-    if t == "chin_channel" && l ∈ ["fz-cz", "24"]
-        l = "emg chin1"
-    end
-
-    if t == "chin2_channel" && l == "25"
-        l = "emg chin1"
-    end
-
-    m = match(r"chin(?<lr>[lr])[\(\s]+ment.*"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:lr])"
-
-    l = l == "emg x1-x6" ? "emg chin1" : l
-    
-    m = match(r"emg\s+(?<lr>[lr])at\s+.*"i, l)
-    l = isnothing(m) ? l : "emg $(m[:lr])at"
-
-    m = match(r"[lr]leg[\+\-]"i, l)
-    l = isnothing(m) ? l : "ignorame"
-
-    m = match(r"^(?<lr>[lr])t\. eye"i, l)
-    l = isnothing(m) ? l : "eog $(m[:lr])"
-
-    l = l == "e1 (l)-m2" ? "eog l" : l
-    l = l == "e2 (r)-m2" ? "eog r" : l
-
-    l = l == "chinz-chin1" ? "emg chinl" : l
-    l = l == "chinz-chin2" ? "eog chinr" : l
-
-    l = l == "eog x4-a2" ? "eog r" : l
-    l = l == "eog x9-a2" ? "eog l" : l
-
-    ###############
-    # AMBIGUOUS ONES
-    # these will only be kept if recording also has leg EMG in separate channels
-
-    # "EMG[123]" => emg_ambiguous [123]
-    m = match(r"^\s*emg(?<n>[123])\s*$"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
-
-    # "EMG\s*Aux[123]" => emg_ambiguous [123]
-    m = match(r"^\s*emg\s*aux(?<n>[123])\s*$"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
-
-    # EMG[+-]? => EMG Aux[123]
-    l = l == "emg+" ? "emg_ambiguous 1" : l 
-    l = l == "emg-" ? "emg_ambiguous 2" : l 
-    l = l == "emg" ? "emg_ambiguous 3" : l    # postprocess: if only "emg_ambiguous 3" + legs present, replace with "EMG chin1"
-
-    # other ambiguous forms
-    l = l == "emg1-emg2" ? "emg_ambiguous 1" : l 
-    l = l == "emg2-emg1" ? "emg_ambiguous 2" : l 
-    l = l == "emg-a1" ? "emg_ambiguous 1" : l 
-    l = l == "emg emg" ? "emg_ambiguous 1" : l
-
-    m = match(r"[\s\[,]*emg(?<i>[123]?)[\s\-]+emg([123]?)[\]\s,]*"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:i])"
 
     return l
 end
@@ -245,7 +266,7 @@ end
         print_results("test_edf_to_samples_info_tested", map(first, results))
         print_results("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", nt.onda_edf_headers), map(first, results)))
         print_results("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", nt.onda_edf_headers), map(first, results)))
-        print_results("no_emg_tested", filter(nt -> !any(h -> startswith(h.kind, "emg"), nt.onda_edf_headers), map(first, results)))
+        print_results("no_chin_tested", filter(nt -> !any(h -> startswith(h.kind, "emg") && (h.kind == "emg_ambiguous" || any(c -> startswith(c, "chin"), h.channels)), nt.onda_edf_headers), map(first, results)))
         print_results("no_leg_tested", filter(nt -> !any(has_leg, nt.onda_edf_headers), map(first, results)))
         print_results("no_ekg_tested", filter(nt -> !any(h -> h.kind ∈ Set(("ecg", "ekg")), nt.onda_edf_headers), map(first, results)))
         for (i, (r, expected_samples_info)) in enumerate(results)

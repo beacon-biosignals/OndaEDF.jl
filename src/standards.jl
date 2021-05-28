@@ -82,10 +82,11 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                                                 "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9",
                                                 "v1r", "v2r", "v3r", "v4r", "v5r", "v6r", "v7r", "v8r", "v9r",
                                                 "x", "y", "z"],
-                             ["eog"] => ["left"=> ["eogl", "loc", "lefteye", "leye", "e1", "eog1", "l", "left eye", "leog", "log", "li"],
-                                         "right"=> ["eogr", "roc", "righteye", "reye", "e2", "eog2", "r", "right eye", "reog", "rog", "re"]],
-                             ["emg"] => ["chin1" => ["chn", "chn1", "kinn", "menton", "submental", "submentalis", "submental1", "subm1", "chin", "mentalis", "chinl", "chinli", "chinleft", "subm_1"],
-                                         "chin2" => ["chn2", "submental2", "subm2", "chinr", "chinre", "chinright", "subm_2"],
+                             # EOG should not have any channel names overlapping with EEG channel names
+                             ["eog", "eeg"] => ["left"=> ["eogl", "loc", "lefteye", "leye", "e1", "eog1", "l", "left eye", "leog", "log", "li"],
+                                                "right"=> ["eogr", "roc", "righteye", "reye", "e2", "eog2", "r", "right eye", "reog", "rog", "re"]],
+                             ["emg"] => ["chin1" => ["chn", "chin_1", "chn1", "kinn", "menton", "submental", "submentalis", "submental1", "subm1", "chin", "mentalis", "chinl", "chinli", "chinleft", "subm_1", "subment"],
+                                         "chin2" => ["chn2", "chin_2", "submental2", "subm2", "chinr", "chinre", "chinright", "subm_2"],
                                          "chin3" => ["chn3", "submental3", "subm3", "chincenter"],
                                          "fp1", "fp2",
                                          "intercostal"=> ["ic"],
@@ -95,11 +96,11 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              # if leg EMG is present in separate channels,
                              # post-processing might map "emg_ambiguous"
                              # to chin channels (for example)
-                             ["emg_ambiguous", "emg"] => ["1" => ["Aux1"],
-                                                          "2" => ["Aux2"],
-                                                          "3" => ["Aux3"]],
+                             ["emg_ambiguous", "emg"] => ["1" => ["aux1", "l"],
+                                                          "2" => ["aux2", "r"],
+                                                          "3" => ["aux3"]],
                              ["heart_rate"] => ["heart_rate"=> ["hr", "pulse", "pulso", "pr", "pulserate"]],
-                             ["snore"] => ["snore" => ["ronquido", "ronquido derivad", "schnarchen", "ronfl"]],
+                             ["snore"] => ["snore" => ["ronquido", "ronquido derivad", "schnarchen", "ronfl", "schnarchmikro"]],
                              ["positive_airway_pressure", "pap"] => ["ipap", "epap", "cpap"],
                              ["pap_device_cflow"] => ["pap_device_cflow"=> ["cflow", "airflow", "flow"]],
                              ["pap_device_cpres"] => ["pap_device_cpres"=> ["cpres"]],
@@ -108,7 +109,7 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              ["respiratory_effort"] => ["chest" => ["thorax", "torax", "brust", "thor"], "abdomen"=> ["abd", "abdo", "bauch"]],
                              ["tidal_volume"] => ["tidal_volume"=> ["tvol", "tidal"]],
                              ["spo2"] => ["spo2"],
-                             ["sao2"] => ["sao2"],
+                             ["sao2"] => ["sao2", "osat"],
                              ["etco2"] => ["etco2 "=> ["capno"]])
 
 const STANDARD_EXTRACTORS = [edf -> extract_channels_by_label(edf, signal_names, channel_names)
