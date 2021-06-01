@@ -21,7 +21,7 @@ const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
                             "millimeter_of_mercury" => ["mmHg", "mmhg", "MMHG"],
                             "beat_per_minute" => ["B/m", "b/m", "bpm", "BPM", "BpM", "Bpm"],
                             "centimeter_of_water" => ["cmH2O", "cmh2o", "cmH20"],
-                            "ohm" => ["Ohm", "ohms"],
+                            "ohm" => ["Ohm", "ohms", "Ohms", "ohm"],
                             "unknown" => ["", "\"\"", "#", "u", "none", "---"],
                             "relative" => ["rel."])
 

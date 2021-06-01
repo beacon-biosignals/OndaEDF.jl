@@ -350,6 +350,8 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
     for error in errors
         if isa(e, SamplesInfoError)
             @warn e.msg exception=e.cause
+        elseif isa(e, AmbiguousChannelError)
+            @warn e.summary exception=e
         else
             @warn exception=e
         end
@@ -464,7 +466,7 @@ function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTOR
                                                  edf_signals,
                                                  edf.header.seconds_per_record)
                    for (info, edf_signals) in matched if !isempty(info.channels)]
-    return edf_samples, errors
+    return edf_samples, sort(errors; by=string)
 end
 
 

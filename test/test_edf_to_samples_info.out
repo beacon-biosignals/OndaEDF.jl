@@ -1300,8 +1300,8 @@ test_edf_to_samples_info = [
         error=
             [
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
-                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
             ],
     ),
     (   # 38
@@ -1536,8 +1536,8 @@ test_edf_to_samples_info = [
             [
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-F (Imp)", "", "Ohm") => [("emg_ambiguous", "1-fimp", "ohm"), ("ecg", "i-fimp", "ohm")]),
-                OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
                 OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
             ],
     ),
     (   # 45
@@ -9684,8 +9684,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
@@ -9838,8 +9838,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 280
@@ -10051,8 +10051,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
             ],
     ),
@@ -12182,8 +12182,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 347
@@ -16743,8 +16743,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 476
@@ -17030,8 +17030,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 485
@@ -19665,9 +19665,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
-                OndaEDF.AmbiguousChannelError(("1-F (Imp)", "", "Ohm") => [("emg_ambiguous", "1-fimp", "ohm"), ("ecg", "i-fimp", "ohm")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F (Imp)", "", "Ohm") => [("emg_ambiguous", "1-fimp", "ohm"), ("ecg", "i-fimp", "ohm")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
             ],
     ),
@@ -20693,9 +20693,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
             ],
     ),
     (   # 587
@@ -22145,10 +22145,10 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
-                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 630
@@ -23586,8 +23586,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 670
@@ -26808,9 +26808,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
-                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 763
@@ -27210,9 +27210,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
-                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 775
@@ -28080,8 +28080,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 799
@@ -32235,8 +32235,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 914
@@ -33383,8 +33383,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
-                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
                 OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 946
