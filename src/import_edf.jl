@@ -240,18 +240,21 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
     end
     edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
 
+    # place channels with different physical units or sample rates in separate Onda signals
     grouped = groupby(edf_channels) do p
         channel_name, edf_signal = p
         return ((edf_signal.header.samples_per_record / edf.header.seconds_per_record), edf_signal.header.physical_dimension)
     end
 
     results = map(values(grouped)) do pairs
+        # pairs is a vector of `standard_onda_name::String => EDF.Signal` pairs
         edf_channel_names, edf_channels = zip(pairs...)
         try
             edf_channels = collect(edf_channels)
             info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), collect(edf_channel_names))
             return info, edf_channels
         catch e
+            # do not throw, but return any errors
             units = [s.header.label => s.header.physical_dimension for s in edf_channels]
             msg ="""Skipping signal: error while processing units and encodings
                     for $(first(signal_names)) signal with units $units"""
