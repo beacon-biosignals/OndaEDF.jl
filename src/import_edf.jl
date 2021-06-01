@@ -169,10 +169,7 @@ No conversion of the actual signals is performed at this step.
 """
 function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Signal}, kind, channel_names; unit_alternatives=STANDARD_UNITS)
     onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension, unit_alternatives), edf_signals)
-    onda_sample_units = Set(u for u in onda_units if u != "unknown")
-    onda_sample_units = isempty(onda_sample_units) ? Set(["unknown"]) : onda_sample_units
-    length(onda_sample_units) == 1 || error("multiple possible units found for same signal: $onda_sample_units")
-    onda_sample_unit = first(onda_sample_units)
+    onda_sample_unit = first(onda_units)
 
     edf_encodings = map(s -> edf_signal_encoding(s.header, edf.header.seconds_per_record), edf_signals)
     onda_encoding = promote_encodings(edf_encodings)
@@ -203,9 +200,11 @@ end
     extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
 
 For one or more signal names and one or more channel names,
-return `(infos, errors)` where `errors` is a vector of errors that occurred,
+return a list of `[(infos, errors)...]` where `errors` is a vector of errors that occurred,
 and `infos` is a vector of `(si::Onda.SamplesInfo, edf_signals::Vector{EDF.Signal})`,
-where `edf_signals` align with `si.channel`.
+where `edf_signals` align with `si.channel`. This list can have more than one pair
+if channels with the same signal kind/type have different sample rates or
+physical units.
 
 `errors` contains `SamplesInfoError`s thrown if channels corresponding to a signal 
 were extracted but an error occured while interpreting physical units,
