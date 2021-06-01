@@ -191,7 +191,7 @@ end
 function groupby(f, list)
     d = Dict()
     for v in list
-        push!(get!(d, f(v), []), v)
+        push!(get!(d, f(v), Vector{eltype(list)}()), v)
     end
     return d
 end
