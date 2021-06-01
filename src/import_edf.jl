@@ -219,7 +219,7 @@ a canonical name to a list of alternatives that it should be substituted for
 (e.g., `"canonical_name" => ["alt1", "alt2", ...]`).
 
 `unit_alternatives` lists standardized unit names and alternatives that map to them.
-See `OndaEDF.STANDAR_UNITS` for defaults.
+See `OndaEDF.STANDARD_UNITS` for defaults.
 
 `preprocess_labels(label::String, transducer_type::String)` is applied to raw edf signal header labels
 beforehand; defaults to returning `label`.
