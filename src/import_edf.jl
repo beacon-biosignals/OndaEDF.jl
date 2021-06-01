@@ -6,12 +6,10 @@
 # - ensures the given label is whitespace-stripped, lowercase, and parens-free
 # - strips trailing generic EDF references (e.g. "ref", "ref2", etc.)
 # - replaces all references with the appropriate name as specified by `canonical_names`
-# - replaces
-#     - `+` with `_plus_`
-#     - `/` with `_over_`
-# - returns `nothing` if no non-`ref` parts are found, otherwise returns
-# `(first_part, recombined)`, where `first_part` should match the canonical
-# channel name.
+# - replaces `+` with `_plus_` and `/` with `_over_`
+# - returns the initial reference name (w/o prefix sign, if present) and the entire label;
+#   the initial reference name should match the canonical channel name,
+#   otherwise the channel extraction will be rejected.
 function _normalize_references(original_label, canonical_names)
     label = replace(_safe_lowercase(original_label), r"\s"=>"")
     label = replace(replace(label, '('=>""), ')'=>"")
@@ -21,7 +19,6 @@ function _normalize_references(original_label, canonical_names)
     label = replace(label, '/'=>"…/…")
     label = !isnothing(match(r"^\[.*\]$", label)) ? label[2:end-1] : label
     parts = split(label, '…'; keepempty=false)
-    #@show parts, label
     final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
     parts = parts[1:something(final, 0)]
     isempty(parts) && return ("", "")
