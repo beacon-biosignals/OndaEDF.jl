@@ -88,7 +88,6 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              ["emg"] => ["chin1" => ["chn", "chin_1", "chn1", "kinn", "menton", "submental", "submentalis", "submental1", "subm1", "chin", "mentalis", "chinl", "chinli", "chinleft", "subm_1", "subment"],
                                          "chin2" => ["chn2", "chin_2", "submental2", "subm2", "chinr", "chinre", "chinright", "subm_2"],
                                          "chin3" => ["chn3", "submental3", "subm3", "chincenter"],
-                                         "fp1", "fp2",
                                          "intercostal"=> ["ic"],
                                          "left_anterior_tibialis"=> ["lat", "lat1", "l", "left", "leftlimb", "tibl", "tibli", "plml", "leg1", "lleg", "lleg1", "legl", "jambe_l", "leftleg"],
                                          "right_anterior_tibialis"=> ["rat", "rat1", "r", "right", "rightlimb", "tibr", "tibre", "plmr", "leg2", "leg3", "rleg", "rleg1", "legr", "jambe_r", "rightleg"]],

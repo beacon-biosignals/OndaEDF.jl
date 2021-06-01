@@ -101,8 +101,6 @@ function test_preprocessor(l, t)
     m = match(r"^\s*emg(?<n>[123])\s*$"i, l)
     l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
 
-    l = l == "emg" && t == "fp1-fp2" ? "emg fp1-fp2" : l
-
     # EMG[+-]? => EMG Aux[123]
     l = l == "emg+" ? "emg_ambiguous 1" : l 
     l = l == "emg-" ? "emg_ambiguous 2" : l 
@@ -119,6 +117,18 @@ function test_preprocessor(l, t)
 
     ####
     ####
+
+    # [sub][clavi]?
+    m = match(r"l[^r]*sub"i, l)
+    l = (isnothing(m) || occursin("subm", l)) ? l : "ecg avl"
+    m = match(r"r[^l]*sub"i, l)
+    l = (isnothing(m) || occursin("subm", l)) ? l : "ecg avr"
+
+    # [sub]?[clav]
+    m = match(r"l[^r]*clav"i, l)
+    l = isnothing(m) ? l : "ecg avl"
+    m = match(r"r[^l]*clav"i, l)
+    l = isnothing(m) ? l : "ecg avr"
 
     # recordings with label in the transducer field
     l = l == "spectrum eeg" ? t : l
@@ -173,9 +183,9 @@ function test_preprocessor(l, t)
     m = match(r"\s*emg\-subm(?<n>[12])\s*"i, l)
     l = isnothing(m) ? l : "emg chin$(m[:n])"
 
-    # label = "EMG", transducer_type = "FP1-FP2" => label = "EMG FP1-FP2"
-    l = (l == "emg" && t == "fp1-fp2") ? "emg fp1-fp2" : l
-    l = (l == "emg" && t == "fp2-fp1") ? "emg fp2-fp1" : l
+    # label = "EMG", transducer_type = "FP1-FP2" => label = "EEG FP1-FP2"
+    l = (l == "emg" && t == "fp1-fp2") ? "eeg fp1-fp2" : l
+    l = (l == "emg" && t == "fp2-fp1") ? "eeg fp2-fp1" : l
 
     # label = "EMG", transducer_type = "1A-1R" => label = "EMG chin1"
     l = (l == "emg" && t == "1a-1r") ? "emg chin1" : l
@@ -225,7 +235,6 @@ function test_preprocessor(l, t)
     # [LR] LEG[12]?  # with a minus `-`, this would be interpreted as ECG
     m = match(r"^[\[\s,]*(?<lr>[lr])\s*leg[1234]?"i, l)
     l = isnothing(m) ? l : "emg leg$(m[:lr])"
-
 
     return l
 end

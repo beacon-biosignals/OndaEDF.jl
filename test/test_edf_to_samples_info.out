@@ -746,11 +746,10 @@ test_edf_to_samples_info = [
     (   # 23
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -970,14 +969,13 @@ test_edf_to_samples_info = [
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
-                SamplesInfo("emg_ambiguous", ["2-2"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
                 SamplesInfo("positive_airway_pressure", ["cpap"], "centimeter", 0.0003662165254354477, 0.00018310546875, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
                 SamplesInfo("eeg", ["c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
-                SamplesInfo("ecg", ["avl", "avr-avr"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
-                SamplesInfo("eog", ["left", "right", "right-right"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0003662165254354477, 0.00018310546875, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-right_anterior_tibialis"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
             ],
         original_edf_headers=
@@ -1003,6 +1001,7 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("R-R", "Unknown", "uV") => [("emg_ambiguous", "2-2", "microvolt"), ("ecg", "avr-avr", "microvolt"), ("eog", "right-right", "microvolt"), ("emg", "right_anterior_tibialis-right_anterior_tibialis", "microvolt")]),
             ],
     ),
     (   # 30
@@ -1014,7 +1013,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp1", "fp2", "f7", "f3", "fz", "f4", "f8", "a1", "t3", "c3", "cz", "c4", "t4", "a2", "t5", "p3", "pz", "p4", "t6", "o1", "o2"], "microvolt", 0.16336558759212494, 0.0, Int16, 256.0),
                 SamplesInfo("ecg", ["i", "ii"], "microvolt", 0.16336558759212494, 0.0, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", 0.16336558759212494, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.16336558759212494, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.16336558759212494, 0.0, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.008545182645320892, 0.0, Int16, 1.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.16336558759212494, 0.0, Int16, 16.0),
             ],
@@ -1279,9 +1278,8 @@ test_edf_to_samples_info = [
     (   # 37
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2", "2-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "ii-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -1301,6 +1299,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 38
@@ -1513,11 +1514,7 @@ test_edf_to_samples_info = [
     (   # 44
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-fimp", "2-fimp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-fimp", "ii-fimp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
-                SamplesInfo("ecg", ["i", "ii"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -1537,6 +1534,10 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F (Imp)", "", "Ohm") => [("emg_ambiguous", "1-fimp", "ohm"), ("ecg", "i-fimp", "ohm")]),
+                OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 45
@@ -2320,11 +2321,11 @@ test_edf_to_samples_info = [
     (   # 69
         onda_edf_headers=
             [
+                SamplesInfo("emg_ambiguous", ["3"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("ecg", ["avl"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left", "right"], "unknown", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0, 0.0, Int16, 12.8),
-                SamplesInfo("emg", ["fp1-fp2"], "microvolt", NaN, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
             [
@@ -2349,11 +2350,10 @@ test_edf_to_samples_info = [
     (   # 70
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubcl"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubcl"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubcl"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis-lsubcl", "right_anterior_tibialis"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.09743589907884598, -0.4512786865234375, Int16, 256.0),
             ],
@@ -2691,11 +2691,10 @@ test_edf_to_samples_info = [
     (   # 80
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -3147,10 +3146,8 @@ test_edf_to_samples_info = [
     (   # 93
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f4-m1imp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
                 SamplesInfo("eeg", ["f3-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -3168,6 +3165,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 94
@@ -3404,11 +3403,10 @@ test_edf_to_samples_info = [
     (   # 101
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubcl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubcl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubcl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis-lsubcl", "right_anterior_tibialis"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
             ],
@@ -3968,11 +3966,10 @@ test_edf_to_samples_info = [
     (   # 117
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -4535,10 +4532,9 @@ test_edf_to_samples_info = [
     (   # 133
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left", "right"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.10000152885913849, -0.050048828125, Int16, 3.84),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.125095463474281e-5, 0.0, Int16, 256.0),
@@ -4570,6 +4566,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 134
@@ -4781,8 +4779,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 128.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
                 SamplesInfo("ecg", ["i", "ii", "avl", "avl", "avr", "avr"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("eog", ["left", "right-masseter1", "right"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("emg", ["right_anterior_tibialis-masseter1"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 128.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -1.0204081535339355, 0.0, Int16, 256.0),
             ],
@@ -4827,6 +4824,7 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("Right-Masseter1", "", "uV") => [("eog", "right-masseter1", "microvolt"), ("emg", "right_anterior_tibialis-masseter1", "microvolt")]),
             ],
     ),
     (   # 141
@@ -4916,7 +4914,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp1", "fpz", "fp2", "f7", "f3", "fz", "f4", "f8", "a1", "t3", "c3", "cz", "c4", "t4", "a2", "t5", "pz", "p4", "t6", "o1", "o2"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("ecg", ["avl", "avr"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("sao2", ["osat"], "percent", 0.003122043563053012, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
             ],
@@ -5256,7 +5254,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp1", "fpz", "fp2", "f7", "f3", "fz", "f4", "f8", "a1", "t3", "c3", "cz", "c4", "t4", "a2", "t5", "p3", "pz", "p4", "t6", "o1", "o2"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
                 SamplesInfo("ecg", ["avl", "avr"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
                 SamplesInfo("sao2", ["osat"], "percent", 0.0015625000232830644, 51.20000076293945, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
             ],
@@ -5391,11 +5389,10 @@ test_edf_to_samples_info = [
     (   # 155
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -5564,9 +5561,8 @@ test_edf_to_samples_info = [
     (   # 160
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -5595,6 +5591,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 161
@@ -5686,11 +5684,10 @@ test_edf_to_samples_info = [
     (   # 164
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -6436,7 +6433,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ptaf", ["ptaf"], "unknown", 0.043220404535532, 27.1861572265625, Int16, 40.96),
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.2651510536670685, -242.5498046875, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 4.096),
-                SamplesInfo("emg", ["fp1-m1_plus_m2", "fp2-m1_plus_m2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.1672399491071701, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.1672399491071701, 0.0, Int32, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.15187916159629822, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
@@ -6733,11 +6730,10 @@ test_edf_to_samples_info = [
     (   # 195
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -7053,7 +7049,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ptaf", ["ptaf"], "unknown", 0.02873978577554226, 315.4873046875, Int16, 40.96),
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.2887194752693176, 636.8193359375, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.001495384145528078, 49.00074768066406, Int16, 4.096),
-                SamplesInfo("emg", ["fp1-m1_plus_m2", "fp2-m1_plus_m2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.22836726903915405, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.22836726903915405, 0.0, Int32, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.15428216755390167, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
@@ -7352,12 +7348,10 @@ test_edf_to_samples_info = [
     (   # 212
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicul"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.061036087572574615, 0.030517578125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavicul"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
-                SamplesInfo("eog", ["right-lsubclavicul"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.061036087572574615, 0.030517578125, Int16, 256.0),
-                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis-lsubclavicul", "right_anterior_tibialis"], "millivolt", 6.103608757257462e-5, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "millivolt", 6.103608757257462e-5, 3.0517578125e-5, Int16, 256.0),
                 SamplesInfo("emg", ["chin1", "chin2"], "microvolt", 0.061036087572574615, 0.030517578125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 1.28),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 32.0),
@@ -8108,10 +8102,9 @@ test_edf_to_samples_info = [
     (   # 235
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-f", "2-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-f", "ii-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -8138,6 +8131,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
             ],
     ),
     (   # 236
@@ -9657,10 +9652,9 @@ test_edf_to_samples_info = [
     (   # 274
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "1-f", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "i-f", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -9690,14 +9684,16 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 275
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -9717,6 +9713,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 276
@@ -9784,11 +9782,10 @@ test_edf_to_samples_info = [
     (   # 278
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicl"], "microvolt", 0.08994770050048828, -635.18359375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2-m2", "f4-m1-m2", "c3-m2-m2", "c4-m1-m2", "o1-m2-m2", "o2-m1-m2"], "microvolt", 0.0679474025964737, 0.0, Int32, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavicl"], "microvolt", 0.08994770050048828, -635.18359375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2-m2", "right-m2-m2", "right-lsubclavicl"], "microvolt", 0.08439602702856064, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1-su", "chin2-em", "right_anterior_tibialis-lsubclavicl"], "microvolt", 0.053665414452552795, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.08994770050048828, -635.18359375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2-m2", "right-m2-m2"], "microvolt", 0.08439602702856064, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["chin1-su", "chin2-em"], "microvolt", 0.053665414452552795, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
             [
@@ -9811,10 +9808,9 @@ test_edf_to_samples_info = [
     (   # 279
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -9842,6 +9838,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 280
@@ -9955,7 +9953,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 64.0),
-                SamplesInfo("emg", ["chin1", "chin2", "fp1-m2", "fp2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -10021,10 +10019,9 @@ test_edf_to_samples_info = [
     (   # 285
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2", "2-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "ii-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -10054,6 +10051,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
             ],
     ),
     (   # 286
@@ -10162,7 +10162,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp1", "fp2", "f7", "f3", "fz", "f4", "f8", "a1", "t3", "c3", "cz", "c4", "t4", "a2", "pz", "o1", "o2"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("ecg", ["avl", "avr"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("sao2", ["osat"], "percent", 0.003122043563053012, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
             ],
@@ -10546,11 +10546,10 @@ test_edf_to_samples_info = [
     (   # 299
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m1", "f4-m1", "m1", "c3-m1", "c4-m1", "m2", "o1-m1", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -10680,11 +10679,10 @@ test_edf_to_samples_info = [
     (   # 304
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -10747,12 +10745,11 @@ test_edf_to_samples_info = [
     (   # 306
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicl"], "microvolt", 0.061144810169935226, -64.137939453125, Int16, 4096.0),
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", -0.5050504803657532, 0.0, Int32, 4096.0),
-                SamplesInfo("ecg", ["avl", "avr-lsubclavicl"], "microvolt", -0.5102040767669678, 0.0, Int32, 4096.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubclavicl"], "microvolt", 0.061144810169935226, 0.0, Int32, 4096.0),
-                SamplesInfo("emg", ["chin1-su", "chin2-su", "chin3", "right_anterior_tibialis-lsubclavicl"], "microvolt", -0.5102040767669678, 0.0, Int32, 4096.0),
+                SamplesInfo("ecg", ["avl", "avl"], "microvolt", -0.5102040767669678, 0.0, Int32, 4096.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.06262832134962082, 0.252197265625, Int16, 4096.0),
+                SamplesInfo("emg", ["chin1-su", "chin2-su", "chin3"], "microvolt", -0.5102040767669678, 0.0, Int32, 4096.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -2.17391300201416, 0.0, Int16, 256.0),
             ],
@@ -11528,11 +11525,10 @@ test_edf_to_samples_info = [
     (   # 328
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("ecg", ["avr_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("eog", ["left", "right", "right_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "right_anterior_tibialis_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3"], "microvolt", 1.0, 0.0, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -11709,9 +11705,8 @@ test_edf_to_samples_info = [
     (   # 333
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -11739,13 +11734,14 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 334
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["pg1-a2", "pg2-a2", "fp1-fp2", "fp1-f7", "f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
-                SamplesInfo("emg", ["fp1-fp2", "fp1-f7"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -11959,11 +11955,10 @@ test_edf_to_samples_info = [
     (   # 340
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicl"], "microvolt", 0.06310230493545532, 0.00341796875, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1", "c3-m2", "c4-m1", "m2", "o1-m2", "o2-m1"], "microvolt", -0.5050504803657532, 0.0, Int32, 256.0),
-                SamplesInfo("ecg", ["avl", "avr-lsubclavicl"], "microvolt", -0.5102040767669678, 0.0, Int32, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubclavicl"], "microvolt", 0.06262829154729843, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1-su", "chin2-su", "chin3", "right_anterior_tibialis-lsubclavicl"], "microvolt", -0.5102040767669678, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl", "avl"], "microvolt", -0.5102040767669678, 0.0, Int32, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.06262829154729843, -0.248779296875, Int16, 256.0),
+                SamplesInfo("emg", ["chin1-su", "chin2-su", "chin3"], "microvolt", -0.5102040767669678, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
             [
@@ -12157,10 +12152,9 @@ test_edf_to_samples_info = [
     (   # 346
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -12188,6 +12182,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 347
@@ -13810,7 +13806,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp1", "fp2", "f7", "f3", "fz", "f4", "f8", "a1", "t3", "c3", "cz", "c4", "t4", "a2", "pz", "o1", "o2"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("ecg", ["avl", "avr"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("sao2", ["osat"], "percent", 0.003122043563053012, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
             ],
@@ -14030,11 +14026,10 @@ test_edf_to_samples_info = [
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("emg_ambiguous", ["2-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("eog", ["left", "left", "right-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "left_anterior_tibialis", "right_anterior_tibialis-lsubclavile", "right_anterior_tibialis"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("eog", ["left", "left"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.3662775754928589, 0.18359375, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
             ],
@@ -14136,12 +14131,10 @@ test_edf_to_samples_info = [
     (   # 400
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicul"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.0015259021893143654, 0.000762939453125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavicul"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
-                SamplesInfo("eog", ["right-lsubclavicul"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.0015259021893143654, 0.000762939453125, Int16, 256.0),
-                SamplesInfo("emg", ["chin1-subm", "chin2-subm", "left_anterior_tibialis-leftle", "right_anterior_tibialis-lsubclavicul", "right_anterior_tibialis-right_anterior_tibialis"], "millivolt", 1.5259022347891005e-6, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["chin1-subm", "chin2-subm", "left_anterior_tibialis-leftle", "right_anterior_tibialis-right_anterior_tibialis"], "millivolt", 1.5259022347891005e-6, 7.636845111846924e-7, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 16.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.007629510946571827, 0.003814697265625, Int16, 64.0),
             ],
@@ -14214,11 +14207,10 @@ test_edf_to_samples_info = [
     (   # 402
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -15461,11 +15453,10 @@ test_edf_to_samples_info = [
     (   # 439
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -15949,11 +15940,10 @@ test_edf_to_samples_info = [
     (   # 452
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -16633,11 +16623,10 @@ test_edf_to_samples_info = [
     (   # 472
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis-lsubclavile", "right_anterior_tibialis"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.3662775754928589, 0.18359375, Int16, 32.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
             ],
@@ -16731,9 +16720,8 @@ test_edf_to_samples_info = [
     (   # 475
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left", "right"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -16755,6 +16743,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 476
@@ -17022,9 +17012,8 @@ test_edf_to_samples_info = [
     (   # 484
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -17041,14 +17030,15 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 485
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -17077,6 +17067,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 486
@@ -17211,11 +17203,10 @@ test_edf_to_samples_info = [
     (   # 490
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicl"], "microvolt", 0.052182070910930634, 108.6099853515625, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2-m2", "f4-m1-m1", "c3-m2-m2", "c4-m1-m1", "o1-m2-m2", "o2-m1-m1"], "microvolt", 0.02799340896308422, 0.0, Int32, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavicl"], "microvolt", 0.052182070910930634, 108.6099853515625, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2-m2", "right-m2-m1", "right-lsubclavicl"], "microvolt", 0.034409329295158386, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1-su", "chin2-em", "right_anterior_tibialis-lsubclavicl"], "microvolt", 0.052182070910930634, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.052182070910930634, 108.6099853515625, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2-m2", "right-m2-m1"], "microvolt", 0.034409329295158386, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["chin1-su", "chin2-em"], "microvolt", 0.05698619410395622, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
             [
@@ -17315,11 +17306,10 @@ test_edf_to_samples_info = [
     (   # 493
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2_over_lsubclav-avg"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("ecg", ["avr_over_lsubclav-avg"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("eog", ["left", "right", "right_over_lsubclav-avg"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "right_anterior_tibialis_over_lsubclav-avg"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3"], "microvolt", 1.0, 0.0, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -17670,11 +17660,10 @@ test_edf_to_samples_info = [
     (   # 504
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -17700,11 +17689,10 @@ test_edf_to_samples_info = [
     (   # 505
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -17956,11 +17944,10 @@ test_edf_to_samples_info = [
     (   # 512
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -18333,7 +18320,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 25.6),
-                SamplesInfo("emg", ["chin1", "fp1-p3"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -18585,7 +18572,6 @@ test_edf_to_samples_info = [
         onda_edf_headers=
             [
                 SamplesInfo("eeg", ["pg1-a2", "pg2-a2", "fp1-fp2", "fp1-f7", "f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
-                SamplesInfo("emg", ["fp1-fp2", "fp1-f7"], "microvolt", 0.09765774011611938, 0.048828125, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -19646,12 +19632,9 @@ test_edf_to_samples_info = [
     (   # 558
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-fimp", "2-fimp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-fimp", "ii-fimp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -19682,6 +19665,10 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F (Imp)", "", "Ohm") => [("emg_ambiguous", "1-fimp", "ohm"), ("ecg", "i-fimp", "ohm")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
             ],
     ),
     (   # 559
@@ -20249,11 +20236,10 @@ test_edf_to_samples_info = [
     (   # 574
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -20672,10 +20658,9 @@ test_edf_to_samples_info = [
     (   # 586
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f", "2-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "ii-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -20708,6 +20693,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 587
@@ -20939,11 +20927,10 @@ test_edf_to_samples_info = [
     (   # 594
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicl"], "microvolt", 0.09415900707244873, -373.98193359375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2-m2", "f4-m1-m1", "c3-m2-m2", "c4-m1-m1", "o1-m2-m2", "o2-m2-m2"], "microvolt", 0.18171672523021698, 0.0, Int32, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavicl"], "microvolt", 0.09415900707244873, -373.98193359375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2-m2", "right-lsubclavicl", "right-m2-m2"], "microvolt", 0.09415900707244873, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1-em", "chin2-em", "right_anterior_tibialis-lsubclavicl"], "microvolt", 0.09415900707244873, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09415900707244873, -373.98193359375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2-m2", "right-m2-m2"], "microvolt", 0.1817689687013626, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["chin1-em", "chin2-em"], "microvolt", 0.10129017382860184, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
             [
@@ -21378,9 +21365,8 @@ test_edf_to_samples_info = [
     (   # 607
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -21408,6 +21394,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 608
@@ -22135,11 +22123,8 @@ test_edf_to_samples_info = [
     (   # 629
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-fimp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
-                SamplesInfo("emg_ambiguous", ["1", "1-f", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["ii-fimp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
-                SamplesInfo("ecg", ["i", "i-f", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -22160,6 +22145,10 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F (Imp)", "", "Ohm") => [("emg_ambiguous", "2-fimp", "ohm"), ("ecg", "ii-fimp", "ohm")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 630
@@ -22205,11 +22194,10 @@ test_edf_to_samples_info = [
     (   # 631
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubcl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "m1-m2", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubcl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubcl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis-lsubcl", "right_anterior_tibialis"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.09765625, 0.0, Int16, 256.0),
             ],
@@ -22242,11 +22230,10 @@ test_edf_to_samples_info = [
     (   # 632
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -22609,11 +22596,10 @@ test_edf_to_samples_info = [
     (   # 642
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -22638,11 +22624,10 @@ test_edf_to_samples_info = [
     (   # 643
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -22769,12 +22754,10 @@ test_edf_to_samples_info = [
     (   # 647
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicul"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
-                SamplesInfo("ecg", ["ii", "avr-lsubclavicul"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
-                SamplesInfo("eog", ["right-lsubclavicul"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
+                SamplesInfo("ecg", ["ii", "avl"], "millivolt", 0.00015259021893143654, 7.62939453125e-5, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", 0.030518043786287308, 0.0152587890625, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis-lsubclavicul", "right_anterior_tibialis"], "millivolt", 3.051804378628731e-5, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 16.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.007629510946571827, 0.003814697265625, Int16, 64.0),
             ],
@@ -22898,11 +22881,10 @@ test_edf_to_samples_info = [
     (   # 650
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "c3", "c4", "o1", "o2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left", "right", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -22965,8 +22947,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 128.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
                 SamplesInfo("ecg", ["i", "ii", "avl", "avl", "avr", "avr"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("eog", ["left", "right-masseter1", "right"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("emg", ["right_anterior_tibialis-masseter1"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 128.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -1.0204081535339355, 0.0, Int16, 256.0),
             ],
@@ -23011,6 +22992,7 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("Right-Masseter1", "", "uV") => [("eog", "right-masseter1", "microvolt"), ("emg", "right_anterior_tibialis-masseter1", "microvolt")]),
             ],
     ),
     (   # 653
@@ -23134,12 +23116,10 @@ test_edf_to_samples_info = [
     (   # 657
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavicul"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.0015259021893143654, 0.000762939453125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavicul"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
-                SamplesInfo("eog", ["right-lsubclavicul"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "millivolt", 3.051804378628731e-5, 1.52587890625e-5, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.0015259021893143654, 0.000762939453125, Int16, 256.0),
-                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis-lsubclavicul", "right_anterior_tibialis"], "millivolt", 1.5259022347891005e-6, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "millivolt", 1.5259022347891005e-6, 7.636845111846924e-7, Int16, 256.0),
                 SamplesInfo("emg", ["chin2", "chin2"], "microvolt", 0.0015259021893143654, 0.000762939453125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 1.28),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "millivolt", 6.103608711782726e-7, 3.0547380447387695e-7, Int16, 32.0),
@@ -23586,9 +23566,8 @@ test_edf_to_samples_info = [
     (   # 669
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -23607,6 +23586,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 670
@@ -24028,7 +24009,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 64.0),
-                SamplesInfo("emg", ["chin1", "fp1-m2", "fp2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -25174,9 +25155,7 @@ test_edf_to_samples_info = [
     (   # 714
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -25194,6 +25173,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
             ],
     ),
     (   # 715
@@ -25235,9 +25216,8 @@ test_edf_to_samples_info = [
     (   # 716
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -25256,6 +25236,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 717
@@ -25290,10 +25272,9 @@ test_edf_to_samples_info = [
     (   # 718
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2imp"], "ohm", 10.000457763671875, -5.0, Int16, 1.28),
                 SamplesInfo("eeg", ["f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -25312,6 +25293,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 719
@@ -25610,7 +25593,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp2-m1", "f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("ecg", ["avl"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1-chin2", "chin2-chin3", "fp2-m1"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1-chin2", "chin2-chin3"], "microvolt", 1.0, 0.0, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -26236,11 +26219,10 @@ test_edf_to_samples_info = [
     (   # 745
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -26805,9 +26787,8 @@ test_edf_to_samples_info = [
     (   # 762
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "1-2", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "i-ii", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -26827,6 +26808,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 763
@@ -27196,9 +27180,8 @@ test_edf_to_samples_info = [
     (   # 774
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f", "2-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "ii-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -27227,6 +27210,9 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 775
@@ -27346,7 +27332,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.24415552616119385, 0.1220703125, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", 0.24415552616119385, 0.1220703125, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.24415552616119385, 0.1220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.24415552616119385, 0.1220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest"], "microvolt", 0.24415552616119385, 0.1220703125, Int16, 256.0),
             ],
         original_edf_headers=
@@ -27465,10 +27451,9 @@ test_edf_to_samples_info = [
     (   # 781
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-f", "2-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-f", "ii-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.1250936444848776e-5, -5.960464477539062e-7, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "volt", 1.5259255192745513e-8, 0.0, Int16, 32.0),
@@ -27496,6 +27481,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("2-F", "", "V") => [("emg_ambiguous", "2-f", "volt"), ("ecg", "ii-f", "volt")]),
             ],
     ),
     (   # 782
@@ -28035,11 +28022,10 @@ test_edf_to_samples_info = [
     (   # 797
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -28064,10 +28050,9 @@ test_edf_to_samples_info = [
     (   # 798
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "centimeter_of_water", 0.0003051896928809583, -0.00014972686767578125, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.10000152885913849, -0.050048828125, Int16, 3.84),
                 SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "volt", 3.125095463474281e-5, 0.0, Int16, 256.0),
@@ -28095,6 +28080,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 799
@@ -28360,7 +28347,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ecg", ["avl"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.0015259021893143654, 50.000762939453125, Int16, 64.0),
-                SamplesInfo("emg", ["chin1", "chin2", "fp1-m2", "fp2-m1"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2"], "microvolt", 0.15298695862293243, 0.07666015625, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -28706,11 +28693,10 @@ test_edf_to_samples_info = [
         onda_edf_headers=
             [
                 SamplesInfo("snore", ["snore"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("emg_ambiguous", ["2-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("eog", ["left", "left", "right-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "left_anterior_tibialis", "right_anterior_tibialis-lsubclavile", "right_anterior_tibialis"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("eog", ["left", "left"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 0.3662775754928589, 0.18359375, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
             ],
@@ -29089,11 +29075,10 @@ test_edf_to_samples_info = [
     (   # 828
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -29442,11 +29427,10 @@ test_edf_to_samples_info = [
     (   # 839
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
@@ -29774,11 +29758,10 @@ test_edf_to_samples_info = [
     (   # 848
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -30488,7 +30471,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("ptaf", ["ptaf"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("ecg", ["avl", "avr"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "fp1", "fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
                 SamplesInfo("sao2", ["osat"], "percent", 0.003122043563053012, 0.0, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -0.3295948803424835, -0.1650390625, Int16, 256.0),
             ],
@@ -30833,11 +30816,10 @@ test_edf_to_samples_info = [
     (   # 876
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("eog", ["left-m2", "right-m2", "right-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "right_anterior_tibialis-lsubclavile"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("eog", ["left-m2", "right-m2"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2"], "microvolt", 0.09764248132705688, -0.451171875, Int16, 256.0),
             ],
         original_edf_headers=
             [
@@ -30860,9 +30842,7 @@ test_edf_to_samples_info = [
     (   # 877
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -30880,6 +30860,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
             ],
     ),
     (   # 878
@@ -30929,11 +30911,10 @@ test_edf_to_samples_info = [
     (   # 879
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "chin1", "chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin1", "chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],
         original_edf_headers=
@@ -31230,7 +31211,7 @@ test_edf_to_samples_info = [
                 SamplesInfo("eeg", ["fp1", "fpz", "fp2", "f7", "f3", "fz", "f4", "f8", "m1", "t3", "c3", "cz", "c4", "t4", "m2", "t5", "p3", "p4", "t6", "o1", "o2"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
                 SamplesInfo("ecg", ["avl", "avr"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
                 SamplesInfo("eog", ["left", "right"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "fp1", "fp2"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 0.2658426761627197, 0.1328125, Int16, 256.0),
             ],
         original_edf_headers=
@@ -32234,9 +32215,8 @@ test_edf_to_samples_info = [
     (   # 913
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1", "2"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i", "ii", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -32255,6 +32235,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("2", "", "V") => [("emg_ambiguous", "2", "volt"), ("ecg", "ii", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1", "", "V") => [("emg_ambiguous", "1", "volt"), ("ecg", "i", "volt")]),
             ],
     ),
     (   # 914
@@ -32637,12 +32619,11 @@ test_edf_to_samples_info = [
     (   # 925
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-subclavian", "2-subclavian"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 128.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("ecg", ["avl-subclavian", "avr-subclavian"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("eog", ["left", "left-subclavian", "right", "right-subclavian"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis-subclavian", "right_anterior_tibialis-subclavian"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
+                SamplesInfo("ecg", ["avl", "avr"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3"], "microvolt", -0.5050504803657532, 3.814697265625e-6, Int16, 2048.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 128.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", -2.0833332538604736, 0.0, Int16, 256.0),
             ],
@@ -33381,9 +33362,8 @@ test_edf_to_samples_info = [
     (   # 945
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["1-2", "1-f"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
-                SamplesInfo("ecg", ["i-ii", "i-f", "avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "volt", 9.988708171704275e-8, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left-m2", "right-m1"], "volt", 9.988708171704275e-8, 3.00002284348011e-6, Int16, 256.0),
             ],
         original_edf_headers=
@@ -33403,6 +33383,8 @@ test_edf_to_samples_info = [
             ],
         error=
             [
+                OndaEDF.AmbiguousChannelError(("1-F", "", "V") => [("emg_ambiguous", "1-f", "volt"), ("ecg", "i-f", "volt")]),
+                OndaEDF.AmbiguousChannelError(("1-2", "", "V") => [("emg_ambiguous", "1-2", "volt"), ("ecg", "i-ii", "volt")]),
             ],
     ),
     (   # 946
@@ -33853,12 +33835,11 @@ test_edf_to_samples_info = [
     (   # 959
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("eeg", ["f3", "f4", "m1", "c3", "c4", "m2", "o1", "o2"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("ptaf", ["ptaf"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("ecg", ["avr_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("eog", ["left", "right", "right_over_lsubclav"], "microvolt", 1.0, 0.0, Int16, 256.0),
-                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis_over_lsubclav", "right_anterior_tibialis"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("eog", ["left", "right"], "microvolt", 1.0, 0.0, Int16, 256.0),
+                SamplesInfo("emg", ["chin1", "chin2", "chin3", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", 1.0, 0.0, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "unknown", 0.0015259021893143654, 50.000762939453125, Int16, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "microvolt", 1.0, 0.0, Int16, 256.0),
             ],
@@ -34203,12 +34184,13 @@ test_edf_to_samples_info = [
     (   # 968
         onda_edf_headers=
             [
+                SamplesInfo("emg_ambiguous", ["3"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("pap_device_cflow", ["pap_device_cflow"], "unknown", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("eeg", ["f3-a2", "f4-a1", "c3-a2", "c4-a1", "o1-a2", "o2-a1"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("ecg", ["avl"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("eog", ["left", "right"], "unknown", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("spo2", ["spo2"], "percent", 0.001495384145528078, 49.00074768066406, Int16, 12.8),
-                SamplesInfo("emg", ["fp1-fp2", "left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", NaN, 0.0, Int32, 256.0),
+                SamplesInfo("emg", ["left_anterior_tibialis", "right_anterior_tibialis"], "microvolt", NaN, 0.0, Int32, 256.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", NaN, 0.0, Int32, 256.0),
             ],
         original_edf_headers=
@@ -35039,12 +35021,11 @@ test_edf_to_samples_info = [
     (   # 992
         onda_edf_headers=
             [
-                SamplesInfo("emg_ambiguous", ["2-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
                 SamplesInfo("heart_rate", ["heart_rate"], "beat_per_minute", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("eeg", ["f3-m2", "f4-m1", "c3-m2", "c4-m1", "o1-m2", "o2-m1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
-                SamplesInfo("ecg", ["avr-lsub"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
-                SamplesInfo("eog", ["left-a2", "right-a2", "right-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
-                SamplesInfo("emg", ["chin1", "right_anterior_tibialis-lsub"], "microvolt", 0.024414435029029846, 0.0, Int32, 256.0),
+                SamplesInfo("ecg", ["avl"], "microvolt", 0.07324330508708954, 0.03662109375, Int16, 256.0),
+                SamplesInfo("eog", ["left-a2", "right-a2"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
+                SamplesInfo("emg", ["chin1"], "microvolt", 0.024414435029029846, 0.01220703125, Int16, 256.0),
                 SamplesInfo("sao2", ["sao2"], "percent", 1.0, 0.0, Int16, 4.0),
                 SamplesInfo("respiratory_effort", ["chest", "abdomen"], "unknown", 0.030518043786287308, 0.0152587890625, Int16, 32.0),
             ],

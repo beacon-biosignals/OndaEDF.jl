@@ -205,13 +205,14 @@ end
 """
     extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
 
-For one or more signal names and one or more channel names, return :
-- all matching signals from an `EDF.File`, and the `Onda.SamplesInfo`
-  struct that describes the extracted channels, if any
-- `nothing` if no signals matched
-- or a `SamplesInfoError` if channels corresponding to a signal 
-  were extracted but an error occured while interpreting physical units,
-  while promoting sample encodings, or otherwise constructing a `SamplesInfo`.
+For one or more signal names and one or more channel names,
+return `(infos, errors)` where `errors` is a vector of errors that occurred,
+and `infos` is a vector of `(si::Onda.SamplesInfo, edf_signals::Vector{EDF.Signal})`,
+where `edf_signals` align with `si.channel`.
+
+`errors` contains `SamplesInfoError`s thrown if channels corresponding to a signal 
+were extracted but an error occured while interpreting physical units,
+while promoting sample encodings, or otherwise constructing a `SamplesInfo`.
 
 `signal_names` should be an iterable of `String`s naming the signal types to
 extract (e.g., `["ecg", "ekg"]`; `["eeg"]`).
@@ -244,14 +245,15 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; u
     edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
 
     grouped = groupby(edf_channels) do p
-        edf_signal = last(p)
+        channel_name, edf_signal = p
         return ((edf_signal.header.samples_per_record / edf.header.seconds_per_record), edf_signal.header.physical_dimension)
     end
 
     results = map(values(grouped)) do pairs
         edf_channel_names, edf_channels = zip(pairs...)
         try
-            info = edf_signals_to_samplesinfo(edf, collect(edf_channels), first(signal_names), collect(edf_channel_names))
+            edf_channels = collect(edf_channels)
+            info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), collect(edf_channel_names))
             return info, edf_channels
         catch e
             units = [s.header.label => s.header.physical_dimension for s in edf_channels]
@@ -388,6 +390,30 @@ function validate_arrow_prefix(prefix)
     return prefix
 end
 
+# the same EDF.Signal was extracted into multiple `Onda.SampleInfos`.
+struct AmbiguousChannelError <: Exception
+    summary
+end
+
+# return a list of tuples describing sample info channels that are ambiguous
+# because they were extracted from the same edf_signal
+# modifies `infos` and associated `edf_signals::Vector{EDF.Signal}` in place to remove ambiguous signals
+function _ambiguous_channels!(extracted, edf_signal)
+    ambiguous = []
+    for (info, edf_signals) in extracted
+        i = findfirst(==(edf_signal), edf_signals)
+        isnothing(i) && continue
+        channel_name = info.channels[i]
+        summary = (info.kind, channel_name, info.sample_unit)
+        push!(ambiguous, (info, edf_signals) => summary)
+    end
+    length(ambiguous) < 2 && return nothing
+    for ((info, edf_signals), (_, channel_name, _)) in ambiguous
+        filter!(!=(channel_name), info.channels)
+        filter!(!=(edf_signal), edf_signals)
+    end
+    return map(last, ambiguous)
+end
 
 """
     edf_to_onda_samples(edf::EDF.File; custom_extractors=())
@@ -417,19 +443,35 @@ See the OndaEDF README for additional details regarding EDF formatting expectati
 """
 function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
     EDF.read!(edf)
-    edf_samples = Samples[]
+    matched = []
     errors = Exception[]
     for extractor in custom_extractors
         extracteds, errs = extractor(edf)
         append!(errors, errs)
         for extracted in extracteds
-            samples_info, edf_signals = extracted
-            samples = onda_samples_from_edf_signals(samples_info, edf_signals, edf.header.seconds_per_record)
-            push!(edf_samples, samples)
+            push!(matched, extracted)
         end
     end
+    # each edf_signal should get extracted into at most one SamplesInfo, otherwise it is ambiguous
+    matched_signals = Set(Iterators.flatten(map(last, matched)))
+    ambiguous_edf_signals = []
+    for edf_signal in matched_signals
+        ambiguous_channels = _ambiguous_channels!(matched, edf_signal)
+        if !isnothing(ambiguous_channels)
+            edf_signal_summary = (edf_signal.header.label,
+                                  edf_signal.header.transducer_type,
+                                  edf_signal.header.physical_dimension)
+            push!(errors, AmbiguousChannelError(edf_signal_summary => ambiguous_channels))
+        end
+    end
+    edf_samples = [onda_samples_from_edf_signals(info,
+                                                 edf_signals,
+                                                 edf.header.seconds_per_record)
+                   for (info, edf_signals) in matched if !isempty(info.channels)]
     return edf_samples, errors
 end
+
+
 
 """
     edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
