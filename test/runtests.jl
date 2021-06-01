@@ -70,7 +70,7 @@ end
 
 mock_edf_signal(header, n_records) = EDF.Signal(header, rand(Int16, n_records * header.samples_per_record))
 
-# turn an entry in `test_edf_to_samples_info.out` into an edf
+# turn an entry in `test_edf_to_samples_info.in` into an edf
 function mock_edf(result)
     n_records = 100
     sample_rate = 256
@@ -81,7 +81,7 @@ function mock_edf(result)
     return edf
 end
 
-include("test_edf_to_samples_info.out")
+include("test_edf_to_samples_info.in")
 
 @testset "OndaEDF" begin
     include("signal_labels.jl")
@@ -92,5 +92,5 @@ end
 
 @info """
     To look for the effect of any modifications made to OndaEDF, look at:
-    `diff test/test_edf_to_samples_info(,_tested}.out`
+    `diff test/test_edf_to_samples_info.{in,out}`
 """

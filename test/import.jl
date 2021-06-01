@@ -269,10 +269,10 @@ end
                         r.onda_edf_headers)
             end
         end
-        # print result of mapping `edf_to_onda_samples` over `test_edf_to_samples_info.out`
+        # print result of mapping `edf_to_onda_samples` over `test_edf_to_samples_info.in`
         # this makes it easy to see effects of any changes made to OndaEDF by looking at
-        # `diff test_edf_to_samples_info.out test_edf_to_samples_info.tested.out`
-        print_results("test_edf_to_samples_info_tested", map(first, results))
+        # `diff test_edf_to_samples_info.{in,out}`
+        print_results("test_edf_to_samples_info", map(first, results))
         print_results("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", nt.onda_edf_headers), map(first, results)))
         print_results("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", nt.onda_edf_headers), map(first, results)))
         print_results("no_chin_tested", filter(nt -> !any(h -> startswith(h.kind, "emg") && (h.kind == "emg_ambiguous" || any(c -> startswith(c, "chin"), h.channels)), nt.onda_edf_headers), map(first, results)))
