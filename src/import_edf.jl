@@ -190,7 +190,7 @@ end
 
 function groupby(f, list)
     d = Dict()
-    foreach(list) do v
+    for v in list
         push!(get!(d, f(v), []), v)
     end
     return d
