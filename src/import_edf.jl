@@ -444,6 +444,23 @@ See the OndaEDF README for additional details regarding EDF formatting expectati
 """
 function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
     EDF.read!(edf)
+    matched, errors = edf_header_to_onda_samples_info(edf; custom_extractors=custom_extractors)
+    edf_samples = [onda_samples_from_edf_signals(info,
+                                                 edf_signals,
+                                                 edf.header.seconds_per_record)
+                   for (info, edf_signals) in matched if !isempty(info.channels)]
+    return edf_samples, errors
+end
+
+"""
+    edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
+
+Read edf header, return `Onda.SamplesInfo`, `Vector{EDF.Signal}` pairs.
+
+`EDF.read!` does not get called, this function will work
+with only the first few bytes--30k should be enough--of the edf file.
+"""
+function edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
     matched = []
     errors = Exception[]
     for extractor in custom_extractors
@@ -465,13 +482,10 @@ function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTOR
             push!(errors, AmbiguousChannelError(edf_signal_summary => ambiguous_channels))
         end
     end
-    edf_samples = [onda_samples_from_edf_signals(info,
-                                                 edf_signals,
-                                                 edf.header.seconds_per_record)
-                   for (info, edf_signals) in matched if !isempty(info.channels)]
-    return edf_samples, sort(errors; by=string)
+    matched = [(info, edf_signals) for (info, edf_signals) in matched if !isempty(info.channels)]
+    errors = sort(errors; by=string)
+    return matched, errors
 end
-
 
 
 """
