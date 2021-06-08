@@ -1,4 +1,4 @@
-using OndaEDF: validate_arrow_prefix
+using OndaEDF: validate_arrow_prefix, prettyprint_diagnostic_info
 
 function test_preprocessor(l, t)
     l = replace(l, ':' => '-')
@@ -255,33 +255,19 @@ end
     @testset "edf_to_samples_info" begin
         results = map(test_edf_to_samples_info) do r
             edf = mock_edf(r)
-            original_edf_headers = [s.header for s in edf.signals]
-            try
-                samples, errors = OndaEDF.edf_to_onda_samples(edf; custom_extractors=custom_extractors)
-                return ((onda_edf_headers=[s.info for s in samples],
-                         original_edf_headers=original_edf_headers,
-                         error=errors),
-                        r.onda_edf_headers)
-            catch e
-                return ((onda_edf_headers=[],
-                         original_edf_headers=original_edf_headers,
-                         error=[e]),
-                        r.onda_edf_headers)
-            end
+            return last(OndaEDF.edf_header_to_onda_samples_info(edf; custom_extractors=custom_extractors))
         end
         # print result of mapping `edf_to_onda_samples` over `test_edf_to_samples_info.in`
         # this makes it easy to see effects of any changes made to OndaEDF by looking at
         # `diff test_edf_to_samples_info.{in,out}`
-        print_results("test_edf_to_samples_info", map(first, results))
-        print_results("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", nt.onda_edf_headers), map(first, results)))
-        print_results("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", nt.onda_edf_headers), map(first, results)))
-        print_results("no_chin_tested", filter(nt -> !any(h -> startswith(h.kind, "emg") && (h.kind == "emg_ambiguous" || any(c -> startswith(c, "chin"), h.channels)), nt.onda_edf_headers), map(first, results)))
-        print_results("no_leg_tested", filter(nt -> !any(has_leg, nt.onda_edf_headers), map(first, results)))
-        print_results("no_ekg_tested", filter(nt -> !any(h -> h.kind ∈ Set(("ecg", "ekg")), nt.onda_edf_headers), map(first, results)))
-        for (i, (r, expected_samples_info)) in enumerate(results)
-            expected = [(s.kind, c, s.sample_unit) for s in expected_samples_info for c in s.channels]
-            sample_infos = [(s.kind, c, s.sample_unit) for s in r.onda_edf_headers for c in s.channels]
-            @test (i, setdiff(expected, sample_infos)) == (i, [])
+        prettyprint_diagnostic_info("test_edf_to_samples_info", results)
+        prettyprint_diagnostic_info("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", map(first, nt.header_map)), results))
+        prettyprint_diagnostic_info("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", map(first, nt.header_map)), results))
+        prettyprint_diagnostic_info("no_chin_tested", filter(nt -> !any(h -> startswith(h.kind, "emg") && (h.kind == "emg_ambiguous" || any(c -> startswith(c, "chin"), h.channels)), map(first, nt.header_map)), results))
+        prettyprint_diagnostic_info("no_leg_tested", filter(nt -> !any(has_leg, map(first, nt.header_map)), results))
+        prettyprint_diagnostic_info("no_ekg_tested", filter(nt -> !any(h -> h.kind ∈ Set(("ecg", "ekg")), map(first, nt.header_map)), results))
+        for (i, (r, expected)) in enumerate(zip(results, test_edf_to_samples_info))
+            @test (i, setdiff(r.unextracted_edf_headers, expected.unextracted_edf_headers)) == (i, [])
         end
     end
 
@@ -289,7 +275,7 @@ end
     edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
 
     @testset "edf_to_onda_samples" begin
-        returned_samples, errors = OndaEDF.edf_to_onda_samples(edf)
+        returned_samples, nt = OndaEDF.edf_to_onda_samples(edf)
         @test length(returned_samples) == 13
 
         samples_info = Dict(s.info.kind => s.info for s in returned_samples)
