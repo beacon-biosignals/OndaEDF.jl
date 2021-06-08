@@ -1,4 +1,4 @@
-using OndaEDF: validate_arrow_prefix, prettyprint_diagnostic_info
+using OndaEDF: validate_arrow_prefix, prettyprint_diagnostic_info, mock_edf
 
 function test_preprocessor(l, t)
     l = replace(l, ':' => '-')
