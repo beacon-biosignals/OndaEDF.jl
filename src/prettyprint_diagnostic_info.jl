@@ -64,7 +64,9 @@ This is used by `test/import.jl`, and an example output can be found at
 """
 function prettyprint_diagnostic_info(filename_base::String, results; dedup=true)
     if dedup
-        results = collect(values(Dict(_groupby(r) => r for r in results)))
+        counts = countmap(map(_groupby, results))
+        grouped = Dict(_groupby(r) => r for r in results)
+        results = collect((;r..., nrecordings=counts[group]) for (group, r) in pairs(grouped))
     end
     filename = "$(filename_base).out"
     open(filename, "w") do f

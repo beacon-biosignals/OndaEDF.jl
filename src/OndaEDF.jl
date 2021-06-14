@@ -3,6 +3,7 @@ module OndaEDF
 using Base.Iterators
 using Dates, UUIDs
 using Onda, EDF
+using StatsBase
 using TimeSpans
 using Tables
 using Tables: rowmerge
