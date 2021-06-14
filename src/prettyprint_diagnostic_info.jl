@@ -57,14 +57,17 @@ of an iterable of `edf_to_onda_samples` or `edf_header_to_onda_samples_info`
 diagnostic `NamedTuples`.
 
 If `dedup == true` (default), the diagnostics will be de-duplicated
-based on the set of original EDF headers they each contain.
+based on the set of original EDF headers they each contain. Each
+input result that does not already have a `:nrecordings` field
+will get one equal to the number of "duplicate" recordings.
 
 This is used by `test/import.jl`, and an example output can be found at
 `test/test_edf_to_samples_info.in`.
 """
 function prettyprint_diagnostic_info(filename_base::String, results; dedup=true)
     if dedup
-        counts = countmap(map(_groupby, results))
+        counts = countmap(map(_groupby, filter(r -> !hasproperty(r, :nrecordings), results)))
+        foreach(r -> counts[_groupby(r)] = r.nrecordings, filter(r -> hasproperty(r, :nrecordings), results))
         grouped = Dict(_groupby(r) => r for r in results)
         results = collect((;r..., nrecordings=counts[group]) for (group, r) in pairs(grouped))
     end
