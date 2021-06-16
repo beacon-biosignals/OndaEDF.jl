@@ -188,6 +188,11 @@ struct SamplesInfoError <: Exception
     cause::Exception
 end 
 
+function Base.showerror(io::IO, e::SamplesInfoError)
+    print(io, "SamplesInfoError: ", e.msg, " caused by: ")
+    Base.showerror(io, e.cause)
+end
+
 function groupby(f, list)
     d = Dict()
     for v in list
@@ -197,7 +202,8 @@ function groupby(f, list)
 end
 
 """
-    extract_channels_by_label(edf::EDF.File, signal_names, channel_names)
+    extract_channels_by_label(edf::EDF.File, signal_names, channel_names;
+                              unit_alternatives=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
 
 For one or more signal names and one or more channel names,
 return a list of `[(infos, errors)...]` where `errors` is a vector of errors that occurred,
@@ -205,6 +211,11 @@ and `infos` is a vector of `(si::Onda.SamplesInfo, edf_signals::Vector{EDF.Signa
 where `edf_signals` align with `si.channel`. This list can have more than one pair
 if channels with the same signal kind/type have different sample rates or
 physical units.
+
+`(label, transducer_type)` pairs will be transformed into labels by `preprocess_labels`
+(default preprocessor returns the original label). An alternate to `STANDARD_UNITS`
+for mapping different spellings of units to their canonical unit name can be passed in
+as `unit_alternatives`. 
 
 `errors` contains `SamplesInfoError`s thrown if channels corresponding to a signal 
 were extracted but an error occured while interpreting physical units,
@@ -228,7 +239,8 @@ See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
 `Pair`s) that are used to extract EDF signals by default.
 
 """
-function extract_channels_by_label(edf::EDF.File, signal_names, channel_names; unit_alternatives=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+function extract_channels_by_label(edf::EDF.File, signal_names, channel_names;
+                                   unit_alternatives=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
     matcher = x -> begin
         # yo I heard you like closures
         # x is either a channel name (string), or a channel_name => alternatives Pair.
@@ -302,6 +314,8 @@ end
 """
     store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
                       custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
+                      postprocess_samples=identity,
+                      arrow_folder=nothing,
                       signals_prefix="edf", annotations_prefix=signals_prefix)
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
@@ -325,40 +339,40 @@ Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
 
 `store_edf_as_onda` automatically uses a variety of default extractors derived
 from the EDF standard texts; see `src/standards.jl` and
-[`extract_channels_by_label`](@ref) for details. The caller can also provide
-additional extractors via the `custom_extractors` keyword argument, and the
+[`extract_channels_by_label`](@ref) for details. The caller can provide
+alternative extractors via the `custom_extractors` keyword argument, and the
 [`edf_signals_to_samplesinfo`](@ref) utility can be used to extract a common
 `Onda.SamplesInfo` from a collection of EDF.Signals.
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
 
-- the label is whitespace-stripped, parens-stripped, and lowercased
+- the label's prepended signal type is matched against known types, if present
+- the remainder of the label is whitespace-stripped, parens-stripped, and lowercased
 - trailing generic EDF references (e.g. "ref", "ref2", etc.) are dropped
 - any instance of `+` is replaced with `_plus_` and `/` with `_over_`
 - all component names are converted to their "canonical names" when possible
   (e.g. for an EOG matched channel, "eogl", "loc", "lefteye", etc. are converted
   to "left").
 
+`EDF.Signal`s which get extracted into more than one `Onda.Samples` are removed
+and a `AmbiguousChannelError` displayed as a warning. 
+
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
                            custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
+                           postprocess_samples=identity,
                            signals_prefix="edf", annotations_prefix=signals_prefix)
     EDF.read!(edf)
     file_format = "lpcm.zst"
 
     signals = Any[]
-    edf_samples, nt = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
-    for error in nt.errors
-        if isa(e, SamplesInfoError)
-            @warn e.msg exception=e.cause
-        elseif isa(e, AmbiguousChannelError)
-            @warn e.summary exception=e
-        else
-            @warn exception=e
-        end
+    edf_samples, diagnostics = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
+    for e in diagnostics.errors
+        @warn sprint(showerror, e)
     end
+    edf_samples = postprocess_samples(edf_samples)
     for samples in edf_samples
         file_path = joinpath(path, "samples", string(uuid, "_", samples.info.kind, ".", file_format))
         signal = rowmerge(store(file_path, file_format, samples, uuid, Second(0)); file_path=string(file_path))
@@ -395,6 +409,8 @@ end
 struct AmbiguousChannelError <: Exception
     summary
 end
+
+Base.showerror(io::IO, e::AmbiguousChannelError) = print(io, "AmbiguousChannelError: the same `EDF.Signal` was extracted into multiple `Onda.SampleInfo`s\n", e.summary)
 
 # return a list of tuples describing sample info channels that are ambiguous
 # because they were extracted from the same edf_signal
