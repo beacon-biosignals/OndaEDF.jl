@@ -151,7 +151,7 @@ function extract_channels(edf_signals, channel_matchers)
     for channel_matcher in channel_matchers
         for edf_signal in edf_signals
             edf_signal isa EDF.Signal || continue
-            any(x -> x === edf_signal, map(last, extracted_channels)) && continue
+            any(x -> last(x) === edf_signal, extracted_channels) && continue
             channel_name = channel_matcher(edf_signal)
             channel_name === nothing && continue
             push!(extracted_channels, channel_name => edf_signal)
