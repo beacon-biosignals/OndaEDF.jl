@@ -4,7 +4,7 @@ function _print_result_value(f, si::SamplesInfo; indent=0, kwargs...)
     print(f, ")")
 end
 
-function _print_result_value(f, p::Pair{A, Vector{B}}; indent=0, tab=4) where {A, B}
+function _print_result_value(f, p::Pair{A,Vector{B}}; indent=0, tab=4) where {A,B}
     _print_result_value(f, first(p); indent=indent, tab=tab)
     println(f, " => [")
     for x in last(p)
@@ -98,4 +98,3 @@ function mock_edf(result)
     edf = EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
     return edf
 end
-
