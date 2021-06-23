@@ -8,7 +8,7 @@ function _print_result_value(f, p::Pair{A,Vector{B}}; indent=0, tab=4) where {A,
     _print_result_value(f, first(p); indent=indent, tab=tab)
     println(f, " => [")
     for x in last(p)
-        _print_result_value(f, x; indent=indent+tab, tab=tab)
+        _print_result_value(f, x; indent=(indent + tab), tab=tab)
         println(f, ",")
     end
     print(f, "$(repeat(' ', indent))]")
