@@ -17,7 +17,10 @@ function _normalize_references(original_label, canonical_names)
     label = replace(label, '-'=>'…')
     label = replace(label, '+'=>"…+…")
     label = replace(label, '/'=>"…/…")
-    label = !isnothing(match(r"^\[.*\]$", label)) ? label[2:end-1] : label
+    m = match(r"^\[(.*)\]$", label)
+    if m !== nothing
+        label = only(match.captures)
+    end
     parts = split(label, '…'; keepempty=false)
     final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
     parts = parts[1:something(final, 0)]
