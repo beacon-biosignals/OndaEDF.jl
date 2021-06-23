@@ -47,7 +47,7 @@ end
 _edf_headers(r) = vcat(map(last, r.header_map)..., r.unextracted_edf_headers)
 
 _groupby(r) = Set((h.label, h.transducer_type, h.physical_dimension)
-                 for h in _edf_headers(r))
+                  for h in _edf_headers(r))
 
 """
     prettyprint_diagnostic_info(filename_base::String, diagnostics; dedup=true)
