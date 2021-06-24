@@ -321,7 +321,6 @@ end
     store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
                       custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
                       postprocess_samples=identity,
-                      arrow_folder=nothing,
                       signals_prefix="edf", annotations_prefix=signals_prefix)
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
