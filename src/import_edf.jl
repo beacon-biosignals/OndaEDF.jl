@@ -522,7 +522,7 @@ function edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDA
     catch e
         [], [e]
     end
-    matched_edf_headers = reduce(∪, last.(info_map); init=[])
+    matched_edf_headers = mapreduce(last, union, info_map; init=[])
     unextracted = [s.header for s in edf.signals if isa(s, EDF.Signal) && s ∉ matched_edf_headers]
     header_map = [info => [s.header for s in edf_signals if isa(s, EDF.Signal)] for (info, edf_signals) in info_map]
     return info_map, (header_map=header_map,
