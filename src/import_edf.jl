@@ -362,7 +362,7 @@ following transformations:
   to "left").
 
 `EDF.Signal`s which get extracted into more than one `Onda.Samples` are removed
-and a `AmbiguousChannelError` displayed as a warning. 
+and an `AmbiguousChannelError` displayed as a warning. 
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
