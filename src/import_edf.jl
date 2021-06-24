@@ -517,7 +517,7 @@ function edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDA
             end
         end
         matched = [(info, edf_signals) for (info, edf_signals) in matched if !isempty(info.channels)]
-        errors = sort(errors; by=string)
+        sort!(errors; by=string)
         matched, errors
     catch e
         [], [e]
