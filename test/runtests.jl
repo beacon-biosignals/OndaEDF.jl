@@ -1,7 +1,6 @@
 using Test, Dates, Random, UUIDs, Statistics
 using OndaEDF, Onda, EDF, Tables
 
-
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,
                          digital_min, digital_max,
@@ -69,7 +68,7 @@ function make_test_data(rng, sample_rate, samples_per_record, n_records)
                      :ptaf => [17])
 end
 
-
+include("test_edf_to_samples_info.in")
 
 @testset "OndaEDF" begin
     include("signal_labels.jl")
@@ -77,4 +76,7 @@ end
     include("export.jl")
 end
 
-
+@info """
+    To look for the effect of any modifications made to OndaEDF, look at:
+    `diff test/test_edf_to_samples_info.{in,out}`
+"""

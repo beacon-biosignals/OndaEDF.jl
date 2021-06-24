@@ -4,7 +4,7 @@
     edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
     uuid = uuid4()
 
-    onda_samples = edf_to_onda_samples(edf)
+    onda_samples, nt = edf_to_onda_samples(edf)
     annotations = edf_to_onda_annotations(edf, uuid)
 
     signal_names = ["eeg", "eog", "ecg", "emg", "heart_rate", "tidal_volume",
