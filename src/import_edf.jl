@@ -52,6 +52,9 @@ _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 function match_edf_label(label, signal_names, channel_name, canonical_names)
     label = _safe_lowercase(label)
     for signal_name in signal_names
+        # match exact STANDARD (or custom) signal types at beginning of label, ignoring case
+        # possibly bracketed by or prepended with `[`, `]`, `,` or whitespace
+        # everything after is included in the spec a.k.a. label
         m = match(Regex("[\\s\\[,\\]]*$(signal_name)[\\s,\\]]*\\s+(?<spec>.+)", "i"), label)
         if !isnothing(m)
             label = m[:spec]
