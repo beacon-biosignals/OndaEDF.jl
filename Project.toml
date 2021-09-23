@@ -13,7 +13,7 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
 EDF = "0.6"
-Onda = "0.12, 0.13"
+Onda = "0.12, 0.13, 0.14"
 Tables = "1.4"
 TimeSpans = "0.2"
 julia = "1.4"
