@@ -11,7 +11,7 @@ end
 
 SignalExtrema(samples::Samples) = SignalExtrema(samples.info)
 function SignalExtrema(info::SamplesInfo)
-    digital_extrema = (typemin(info.sample_type), typemax(info.sample_type))
+    digital_extrema = (typemin(sample_type(info)), typemax(sample_type(info)))
     physical_extrema = @. (info.sample_resolution_in_unit * digital_extrema) + info.sample_offset_in_unit
     return SignalExtrema(physical_extrema..., digital_extrema...)
 end
@@ -100,9 +100,9 @@ function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, se
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
     for samples in onda_samples
         # encode samples, rescaling if necessary
-        if sizeof(samples.info.sample_type) > sizeof(Int16)
+        if sizeof(sample_type(samples.info)) > sizeof(Int16)
             decoded_samples = Onda.decode(samples)
-            scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(samples.info.sample_type) / sizeof(Int16))
+            scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type(samples.info)) / sizeof(Int16))
             encode_info = SamplesInfo(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
             samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
         else
