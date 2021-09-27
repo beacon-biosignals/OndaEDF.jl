@@ -7,6 +7,9 @@ using TimeSpans
 using Tables
 using Tables: rowmerge
 
+# can be dropped if we drop Onda<0.14
+sample_type(x) = isdefined(Onda, :sample_type) ? Onda.sample_type(x) : x.sample_type
+
 include("standards.jl")
 
 include("import_edf.jl")
