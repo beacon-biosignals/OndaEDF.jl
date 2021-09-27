@@ -294,7 +294,7 @@ function onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
     if !all(length(s.samples) == sample_count for s in edf_signals)
         error("mismatched sample counts between `EDF.Signal`s: ", [length(s.samples) for s in edf_signals])
     end
-    sample_data = Matrix{target.sample_type}(undef, length(target.channels), sample_count)
+    sample_data = Matrix{sample_type(target)}(undef, length(target.channels), sample_count)
     for (i, edf_signal) in enumerate(edf_signals)
         edf_encoding = edf_signal_encoding(edf_signal.header, edf_seconds_per_record)
         if target.sample_rate != edf_encoding.sample_rate
@@ -302,11 +302,11 @@ function onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
         end
         if (target.sample_resolution_in_unit != edf_encoding.sample_resolution_in_unit ||
             target.sample_offset_in_unit != edf_encoding.sample_offset_in_unit ||
-            target.sample_type != eltype(edf_signal.samples))
+            sample_type(target) != eltype(edf_signal.samples))
             decoded_samples = Onda.decode(edf_encoding.sample_resolution_in_unit,
                                           edf_encoding.sample_offset_in_unit,
                                           edf_signal.samples)
-            encoded_samples = Onda.encode(target.sample_type, target.sample_resolution_in_unit,
+            encoded_samples = Onda.encode(sample_type(target), target.sample_resolution_in_unit,
                                           target.sample_offset_in_unit, decoded_samples,
                                           missing)
         else
@@ -556,7 +556,8 @@ function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
                 end
                 for annotation_string in tal.annotations
                     isempty(annotation_string) && continue
-                    annotation = Annotation(uuid, uuid4(), TimeSpan(start_nanosecond, stop_nanosecond);
+                    annotation = Annotation(; recording=uuid, id=uuid4(),
+                                            span=TimeSpan(start_nanosecond, stop_nanosecond),
                                             value=annotation_string)
                     push!(annotations, annotation)
                 end

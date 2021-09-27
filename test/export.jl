@@ -96,7 +96,10 @@
         @test getproperty.(round_tripped, :recording) == getproperty.(ann_sorted, :recording)
         # new UUID for each annotation created during import
         @test all(getproperty.(round_tripped, :id) .!= getproperty.(ann_sorted, :id))
-        @test SamplesInfo(first(recordings)) == first(onda_samples).info
+        info_orig = first(onda_samples).info
+        info_round_tripped = SamplesInfo(first(recordings))
+                    
+        @test all(getproperty(info_orig, p) == getproperty(info_round_tripped, p) for p in propertynames(info_orig))
 
         # don't import annotations
         recordings, round_tripped = store_edf_as_onda(mktempdir(), exported_edf, uuid; import_annotations=false).second
