@@ -3,6 +3,7 @@ module OndaEDF
 using Base.Iterators
 using Dates, UUIDs
 using Onda, EDF
+using StatsBase
 using TimeSpans
 using Tables
 using Tables: rowmerge
@@ -18,5 +19,7 @@ export extract_channels_by_label, edf_signals_to_samplesinfo
 
 include("export_edf.jl")
 export onda_to_edf
+
+include("prettyprint_diagnostic_info.jl")
 
 end # module
