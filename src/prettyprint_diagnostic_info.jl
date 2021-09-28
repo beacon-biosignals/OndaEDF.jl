@@ -1,6 +1,6 @@
 function _print_result_value(f, si::SamplesInfo; indent=0, kwargs...)
-    print(f, "$(repeat(' ', indent))SamplesInfo(")
-    print(f, join([repr(getproperty(si, field)) for field in fieldnames(SamplesInfo)], ", "))
+    print(f, "$(repeat(' ', indent))SamplesInfo(;")
+    print(f, join(["$k=$(repr(v))" for (k, v) in pairs(si)], ", "))
     print(f, ")")
 end
 
