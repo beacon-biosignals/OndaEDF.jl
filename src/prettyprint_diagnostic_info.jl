@@ -84,7 +84,7 @@ mock_edf_signal(header, n_records) = EDF.Signal(header, rand(Int16, n_records * 
 """
     mock_edf(diagnostic_info)
 
-Turn a diagnostic info `NamedTuple` as returned by `edf_to_onda_samples` or 
+Turn a diagnostic info `NamedTuple` as returned by `edf_to_onda_samples` or
 `edf_header_to_onda_samples_info` and contained in `test_edf_to_samples_info.in`
 into a mock edf, for testing purposes.
 """
@@ -93,7 +93,7 @@ function mock_edf(result)
     n_records = 100
     sample_rate = 256
     samples_per_record = first(original_edf_headers).samples_per_record
-    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[mock_edf_signal(t, n_records) for t in original_edf_headers]
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[mock_edf_signal(t, n_records) for t in original_edf_headers]
     edf_header = EDF.FileHeader("0", "", "", DateTime("2014-10-27T22:24:28"), true, n_records, samples_per_record / sample_rate)
     edf = EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
     return edf

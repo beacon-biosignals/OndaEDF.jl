@@ -97,7 +97,7 @@ function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
 end
 
 function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
-    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[]
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[]
     for samples in onda_samples
         # encode samples, rescaling if necessary
         if sizeof(sample_type(samples.info)) > sizeof(Int16)

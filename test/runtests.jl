@@ -20,7 +20,7 @@ function make_test_data(rng, sample_rate, samples_per_record, n_records)
                EDF.TimestampedAnnotationList(i, i + 1, ["", "$i a", "$i b"])] for i in 1:n_records]
     anns_2 = [[EDF.TimestampedAnnotationList(i, nothing, []),
                EDF.TimestampedAnnotationList(i, 0, ["", "$i c", "$i d"])] for i in 1:n_records]
-    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[
         test_edf_signal(rng, "EEG F3-M2", "E", "uV",  -32768.0f0, 32767.0f0,   imin16, imax16, samples_per_record, n_records)
         test_edf_signal(rng, "EEG F4-M1", "E", "uV",  -32768.0f0, 32767.0f0,   imin16, imax16, samples_per_record, n_records)
         test_edf_signal(rng, "EEG C3-M2", "E", "uV",  -32768.0f0, 32767.0f0,   imin16, imax16, samples_per_record, n_records)
