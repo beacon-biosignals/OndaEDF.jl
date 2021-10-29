@@ -402,7 +402,7 @@ end
 
 function validate_arrow_prefix(prefix)
     prefix == basename(prefix) || throw(ArgumentError("prefix \"$prefix\" is invalid: cannot contain directory separator"))
-    pm = match(r"(.*).onda.(signals|annotations).arrow", prefix)
+    pm = match(r"(.*)\.onda\.(signals|annotations)\.arrow", prefix)
     if pm !== nothing
         @warn "Extracting prefix \"$(pm.captures[1])\" from provided prefix \"$prefix\""
         prefix = pm.captures[1]
