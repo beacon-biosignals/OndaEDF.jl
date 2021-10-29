@@ -318,7 +318,7 @@ function onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
 end
 
 """
-    store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
+    store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
                       custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
                       postprocess_samples=identity,
                       signals_prefix="edf", annotations_prefix=signals_prefix)
@@ -330,7 +330,7 @@ in `\$path/samples/`, and write the Onda signals and annotations tables to
 "edf", and if a prefix is provided for signals but not annotations both will use
 the signals prefix.  The prefixes cannot reference (sub)directories.
 
-Returns `uuid => (signals, annotations)`.
+Returns `(; recording_uuid, signals, annotations, signals_path, annotations_path)`.
 
 Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
 extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
@@ -365,39 +365,54 @@ and an `AmbiguousChannelError` displayed as a warning.
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
-function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4();
+function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
                            custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
                            postprocess_samples=identity,
                            signals_prefix="edf", annotations_prefix=signals_prefix)
+
+    # Validate input argument early on
+    signals_path = joinpath(onda_dir, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
+    annotations_path = joinpath(onda_dir, "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
+
     EDF.read!(edf)
     file_format = "lpcm.zst"
 
-    signals = Any[]
+    signals = Onda.Signal[]
     edf_samples, diagnostics = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
     for e in diagnostics.errors
         @warn sprint(showerror, e)
     end
     edf_samples = postprocess_samples(edf_samples)
     for samples in edf_samples
-        file_path = joinpath(path, "samples", string(uuid, "_", samples.info.kind, ".", file_format))
-        signal = rowmerge(store(file_path, file_format, samples, uuid, Second(0)); file_path=string(file_path))
+        sample_filename = string(recording_uuid, "_", samples.info.kind, ".", file_format)
+        file_path = joinpath(onda_dir, "samples", sample_filename)
+        signal = rowmerge(store(file_path, file_format, samples, recording_uuid, Second(0)); file_path=string(file_path))
         push!(signals, signal)
     end
 
-    signals_path = joinpath(path, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
     write_signals(signals_path, signals)
     if import_annotations
-        annotations = edf_to_onda_annotations(edf, uuid)
+        annotations = edf_to_onda_annotations(edf, recording_uuid)
         if !isempty(annotations)
-            annotations_path = joinpath(path, "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
             write_annotations(annotations_path, annotations)
         else
-            @warn "No annotations found in $path"
+            @warn "No annotations found in $onda_dir"
+            annotations_path = nothing
         end
     else
-        annotations = Annotation[]                                    
+        annotations = Onda.Annotation[]
     end
-    return uuid => (signals, annotations)
+
+    return (; recording_uuid, signals, annotations, signals_path, annotations_path)
+end
+
+function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4(); kwargs...)
+    Base.depwarn("`store_edf_as_onda(path, edf, ...)` is deprecated, use " *
+                 "`nt = store_edf_as_onda(edf, path, ...); nt.recording_uuid => (nt.signals, nt.annotations)` " *
+                 "instead.",
+                 :store_edf_as_onda)
+    nt = store_edf_as_onda(edf, path, uuid; kwargs...)
+    return nt.recording_uuid => (nt.signals, nt.annotations)
 end
 
 function validate_arrow_prefix(prefix)

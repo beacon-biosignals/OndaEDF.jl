@@ -314,14 +314,16 @@ end
     @testset "store_edf_as_onda" begin
         root = mktempdir()
         uuid = uuid4()
-        returned_uuid, (returned_signals, annotations) = OndaEDF.store_edf_as_onda(root, edf, uuid)
-        signals = Dict(s.kind => s for s in returned_signals)
+        nt = OndaEDF.store_edf_as_onda(edf, root, uuid)
+        signals = Dict(s.kind => s for s in nt.signals)
 
-        @test isfile(joinpath(root, "edf.onda.signals.arrow"))
-        @test isfile(joinpath(root, "edf.onda.annotations.arrow"))
+        @test nt.signals_path == joinpath(root, "edf.onda.signals.arrow")
+        @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
+        @test isfile(nt.signals_path)
+        @test isfile(nt.annotations_path)
 
-        @test returned_uuid == uuid
-        @test length(returned_signals) == 13
+        @test nt.recording_uuid == uuid
+        @test length(nt.signals) == 13
         @testset "samples info" begin
             @test signals["tidal_volume"].channels == ["tidal_volume"]
             @test signals["tidal_volume"].sample_unit == "milliliter"
@@ -392,37 +394,39 @@ end
             @test prefix == "edf"
 
             mktempdir() do root
-                OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="edfff")
-                @test isfile(joinpath(root, "edfff.onda.signals.arrow"))
-                @test isfile(joinpath(root, "edfff.onda.annotations.arrow"))
+                nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edfff")
+                @test nt.signals_path == joinpath(root, "edfff.onda.signals.arrow")
+                @test nt.annotations_path == joinpath(root, "edfff.onda.annotations.arrow")
             end
 
             mktempdir() do root
-                OndaEDF.store_edf_as_onda(root, edf, uuid; annotations_prefix="edff")
-                @test isfile(joinpath(root, "edf.onda.signals.arrow"))
-                @test isfile(joinpath(root, "edff.onda.annotations.arrow"))
+                nt = OndaEDF.store_edf_as_onda(edf, root, uuid; annotations_prefix="edff")
+                @test nt.signals_path == joinpath(root, "edf.onda.signals.arrow")
+                @test nt.annotations_path == joinpath(root, "edff.onda.annotations.arrow")
             end
 
             mktempdir() do root
-                OndaEDF.store_edf_as_onda(root, edf, uuid; annotations_prefix="edff")
-                @test isfile(joinpath(root, "edf.onda.signals.arrow"))
-                @test isfile(joinpath(root, "edff.onda.annotations.arrow"))
+                nt = OndaEDF.store_edf_as_onda(edf, root, uuid; annotations_prefix="edff")
+                @test nt.signals_path == joinpath(root, "edf.onda.signals.arrow")
+                @test nt.annotations_path == joinpath(root, "edff.onda.annotations.arrow")
             end
 
             mktempdir() do root
-                OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="edfff", annotations_prefix="edff")
-                @test isfile(joinpath(root, "edfff.onda.signals.arrow"))
-                @test isfile(joinpath(root, "edff.onda.annotations.arrow"))
+                nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edfff", annotations_prefix="edff")
+                @test nt.signals_path == joinpath(root, "edfff.onda.signals.arrow")
+                @test nt.annotations_path == joinpath(root, "edff.onda.annotations.arrow")
             end
 
             mktempdir() do root
-                @test_logs (:warn, r"Extracting prefix") OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
-                @test isfile(joinpath(root, "edff.onda.signals.arrow"))
-                @test isfile(joinpath(root, "edf.onda.annotations.arrow"))
+                @test_logs (:warn, r"Extracting prefix") begin
+                    nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
+                end
+                @test nt.signals_path == joinpath(root, "edff.onda.signals.arrow")
+                @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
             end
 
             mktempdir() do root
-                @test_throws ArgumentError OndaEDF.store_edf_as_onda(root, edf, uuid; signals_prefix="stuff/edf", annotations_prefix="edf")
+                @test_throws ArgumentError OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="stuff/edf", annotations_prefix="edf")
             end
             
         end
