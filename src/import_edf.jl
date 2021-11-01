@@ -403,7 +403,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         annotations = Onda.Annotation[]
     end
 
-    return (; recording_uuid, signals, annotations, signals_path, annotations_path)
+    return @compat (; recording_uuid, signals, annotations, signals_path, annotations_path)
 end
 
 function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4(); kwargs...)
