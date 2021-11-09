@@ -428,7 +428,20 @@ end
             mktempdir() do root
                 @test_throws ArgumentError OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="stuff/edf", annotations_prefix="edf")
             end
-            
+        end
+
+        @testset "AbstractPath support" begin
+            mktempdir() do dir
+                root = PosixPath(dir)
+                nt = OndaEDF.store_edf_as_onda(edf, root, uuid)
+
+                @test nt.signals_path isa AbstractPath
+                @test isfile(nt.signals_path)
+                @test nt.annotations_path isa AbstractPath
+                @test isfile(nt.annotations_path)
+                @test isdir(joinpath(dirname(nt.signals_path), "samples"))
+                @test all(p -> p isa AbstractPath, (s.file_path for s in nt.signals))
+            end
         end
     end
 
