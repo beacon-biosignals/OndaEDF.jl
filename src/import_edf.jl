@@ -386,8 +386,8 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
     for samples in edf_samples
         sample_filename = string(recording_uuid, "_", samples.info.kind, ".", file_format)
         file_path = joinpath(onda_dir, "samples", sample_filename)
-        signal = rowmerge(store(file_path, file_format, samples, recording_uuid, Second(0)); file_path=string(file_path))
-        push!(signals, Onda.Signal(signal))
+        signal = store(file_path, file_format, samples, recording_uuid, Second(0))
+        push!(signals, signal)
     end
 
     write_signals(signals_path, signals)
@@ -412,6 +412,7 @@ function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4(); kwargs...)
                  "instead.",
                  :store_edf_as_onda)
     nt = store_edf_as_onda(edf, path, uuid; kwargs...)
+    signals = [rowmerge(s; file_path=string(s.file_path)) for s in nt.signals]
     return nt.recording_uuid => (nt.signals, nt.annotations)
 end
 
