@@ -1,6 +1,7 @@
 module OndaEDF
 
 using Base.Iterators
+using Compat: @compat
 using Dates, UUIDs
 using Onda, EDF
 using StatsBase

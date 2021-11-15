@@ -1,9 +1,10 @@
 name = "OndaEDF"
 uuid = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.9.0"
+version = "0.9.1"
 
 [deps]
+Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 EDF = "ccffbfc1-f56e-50fb-a33b-53d1781b2825"
 Onda = "e853f5be-6863-11e9-128d-476edb89bfb5"
@@ -13,7 +14,9 @@ TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
+Compat = "3.32"
 EDF = "0.6"
+FilePathsBase = "0.9"
 Onda = "0.12, 0.13, 0.14"
 StatsBase = "0.33"
 Tables = "1.4"
@@ -21,9 +24,10 @@ TimeSpans = "0.2"
 julia = "1.4"
 
 [extras]
+FilePathsBase = "48062228-2e41-5def-b9a4-89aafe57970f"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "Random", "Statistics"]
+test = ["FilePathsBase", "Test", "Random", "Statistics"]

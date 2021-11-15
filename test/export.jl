@@ -86,29 +86,29 @@
 
     @testset "full service" begin
         # import annotations
-        recordings, round_tripped = store_edf_as_onda(mktempdir(), exported_edf, uuid).second
-        @test round_tripped isa Vector{<:Onda.Annotation}
+        nt = store_edf_as_onda(exported_edf, mktempdir(), uuid)
+        @test nt.annotations isa Vector{<:Onda.Annotation}
         # annotations are sorted by start time on export
         ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
-        @test getproperty.(round_tripped, :span) == getproperty.(ann_sorted, :span)
-        @test getproperty.(round_tripped, :value) == getproperty.(ann_sorted, :value)
+        @test getproperty.(nt.annotations, :span) == getproperty.(ann_sorted, :span)
+        @test getproperty.(nt.annotations, :value) == getproperty.(ann_sorted, :value)
         # same recording UUID passed as original:
-        @test getproperty.(round_tripped, :recording) == getproperty.(ann_sorted, :recording)
+        @test getproperty.(nt.annotations, :recording) == getproperty.(ann_sorted, :recording)
         # new UUID for each annotation created during import
-        @test all(getproperty.(round_tripped, :id) .!= getproperty.(ann_sorted, :id))
+        @test all(getproperty.(nt.annotations, :id) .!= getproperty.(ann_sorted, :id))
         info_orig = first(onda_samples).info
-        info_round_tripped = SamplesInfo(first(recordings))
+        info_round_tripped = SamplesInfo(first(nt.signals))
                     
         @test all(getproperty(info_orig, p) == getproperty(info_round_tripped, p) for p in propertynames(info_orig))
 
         # don't import annotations
-        recordings, round_tripped = store_edf_as_onda(mktempdir(), exported_edf, uuid; import_annotations=false).second
-        @test round_tripped isa Vector{<:Onda.Annotation}
-        @test length(round_tripped) == 0
+        nt = store_edf_as_onda(exported_edf, mktempdir(), uuid; import_annotations=false)
+        @test nt.annotations isa Vector{<:Onda.Annotation}
+        @test length(nt.annotations) == 0
 
         # import empty annotations
         exported_edf2 = onda_to_edf(samples_to_export)
-        @test_logs (:warn, r"No annotations found in") store_edf_as_onda(mktempdir(), exported_edf2, uuid; import_annotations=true)
+        @test_logs (:warn, r"No annotations found in") store_edf_as_onda(exported_edf2, mktempdir(), uuid; import_annotations=true)
     end
 
 end
