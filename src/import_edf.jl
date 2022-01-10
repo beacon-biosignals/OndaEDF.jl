@@ -107,14 +107,15 @@ function edf_signal_encoding(edf_signal_header::EDF.SignalHeader,
     sample_resolution_in_unit = (pmax - pmin) / (dmax - dmin)
     sample_offset_in_unit = pmin - (sample_resolution_in_unit * dmin)
     sample_rate = edf_signal_header.samples_per_record / edf_seconds_per_record
+    sample_type = (dmax > typemax(Int16) || dmin < typemin(Int16)) ? Int32 : Int16
     return (sample_resolution_in_unit=Float64(sample_resolution_in_unit),
             sample_offset_in_unit=Float64(sample_offset_in_unit),
-            sample_rate=Float64(sample_rate))
+            sample_rate=Float64(sample_rate),
+            sample_type=sample_type)
 end
 
-# TODO: implement a more disciplined widening protocol for `sample_type`
 function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
-    sample_type = Int16
+    sample_type = reduce(promote_type, (e.sample_type for e in encodings))
 
     sample_rates = [e.sample_rate for e in encodings]
     if all(==(first(sample_rates)), sample_rates)
@@ -192,7 +193,7 @@ end
 struct SamplesInfoError <: Exception
     msg::String
     cause::Exception
-end 
+end
 
 function Base.showerror(io::IO, e::SamplesInfoError)
     print(io, "SamplesInfoError: ", e.msg, " caused by: ")
@@ -221,9 +222,9 @@ physical units.
 `(label, transducer_type)` pairs will be transformed into labels by `preprocess_labels`
 (default preprocessor returns the original label). An alternate to `STANDARD_UNITS`
 for mapping different spellings of units to their canonical unit name can be passed in
-as `unit_alternatives`. 
+as `unit_alternatives`.
 
-`errors` contains `SamplesInfoError`s thrown if channels corresponding to a signal 
+`errors` contains `SamplesInfoError`s thrown if channels corresponding to a signal
 were extracted but an error occured while interpreting physical units,
 while promoting sample encodings, or otherwise constructing a `SamplesInfo`.
 
@@ -280,7 +281,7 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names;
         end
     end
 
-    return ([info_channels for info_channels in results if !isa(info_channels, Exception)], 
+    return ([info_channels for info_channels in results if !isa(info_channels, Exception)],
             [e for e in results if isa(e, Exception)])
 end
 
@@ -361,7 +362,7 @@ following transformations:
   to "left").
 
 `EDF.Signal`s which get extracted into more than one `Onda.Samples` are removed
-and an `AmbiguousChannelError` displayed as a warning. 
+and an `AmbiguousChannelError` displayed as a warning.
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
@@ -552,11 +553,11 @@ end
     edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
 
 Extract EDF+ annotations from an `EDF.File` for recording with ID `uuid` and
-return them as a vector of `Onda.Annotation`s.  Each returned annotation has 
-a  `value` field that contains the string value of the corresponding EDF+ 
-annotation. 
+return them as a vector of `Onda.Annotation`s.  Each returned annotation has
+a  `value` field that contains the string value of the corresponding EDF+
+annotation.
 
-If no EDF+ annotations are found in `edf`, then an empty `Vector{Annotation}` is 
+If no EDF+ annotations are found in `edf`, then an empty `Vector{Annotation}` is
 returned.
 """
 function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
