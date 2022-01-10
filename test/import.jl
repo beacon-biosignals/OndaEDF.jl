@@ -15,13 +15,13 @@ function test_preprocessor(l, t)
 
     m = match(r"\[chin-(?<lr>[lr])-chin-[ar]\]"i, l)
     l = isnothing(m) ? l : "emg chin$(m[:lr])"
-    
+
     l = endswith(l, "clavicle") ? "ecg avl" : l
 
     l = l == "ekg8" ? "ekg v8" : l
     l = replace(l, r"^e1 14" => "e1")
     l = replace(l, r"^e2 18" => "e2")
-    
+
     l = endswith(l, "cardiogr") ? "ecg avl" : l
 
     l = l == "ecg+" ? "ecg" : l
@@ -60,7 +60,7 @@ function test_preprocessor(l, t)
     l = isnothing(m) ? l : "emg chin$(m[:lr])"
 
     l = l == "emg x1-x6" ? "emg chin1" : l
-    
+
     m = match(r"emg\s+(?<lr>[lr])at\s+.*"i, l)
     l = isnothing(m) ? l : "emg $(m[:lr])at"
 
@@ -102,14 +102,14 @@ function test_preprocessor(l, t)
     l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
 
     # EMG[+-]? => EMG Aux[123]
-    l = l == "emg+" ? "emg_ambiguous 1" : l 
-    l = l == "emg-" ? "emg_ambiguous 2" : l 
+    l = l == "emg+" ? "emg_ambiguous 1" : l
+    l = l == "emg-" ? "emg_ambiguous 2" : l
     l = l == "emg" ? "emg_ambiguous 3" : l    # postprocess: if only "emg_ambiguous 3" + legs present, replace with "EMG chin1"
 
     # other ambiguous forms
-    l = l == "emg1-emg2" ? "emg_ambiguous 1" : l 
-    l = l == "emg2-emg1" ? "emg_ambiguous 2" : l 
-    l = l == "emg-a1" ? "emg_ambiguous 1" : l 
+    l = l == "emg1-emg2" ? "emg_ambiguous 1" : l
+    l = l == "emg2-emg1" ? "emg_ambiguous 2" : l
+    l = l == "emg-a1" ? "emg_ambiguous 1" : l
     l = l == "emg emg" ? "emg_ambiguous 1" : l
 
     m = match(r"[\s\[,]*emg(?<i>[123]?)[\s\-]+emg([123]?)[\]\s,]*"i, l)
@@ -162,22 +162,22 @@ function test_preprocessor(l, t)
     l = isnothing(m) ? l : "chin3"
 
     # "Lower.Left-Upper" => "EMG chin1"
-    l = startswith(l, "lower.left-upp") ? "emg chin1" : l 
-    l = startswith(l, "lower.right-upp") ? "emg chin2" : l 
+    l = startswith(l, "lower.left-upp") ? "emg chin1" : l
+    l = startswith(l, "lower.right-upp") ? "emg chin2" : l
     l = startswith(l, "lower.left-low") ? "emg chin1" : l    # dipole; dubious assignment
     l = startswith(l, "lower.right-low") ? "emg chin2" : l   # dipole; dubious assignment
 
     # how to denote that sign is inverted???
     # "Upper-Lower.Left" => "EMG chin1"
-    l = l == "upper-lower.left" ? "emg chin1" : l 
-    l = l == "upper-lower.righ" ? "emg chin2" : l 
+    l = l == "upper-lower.left" ? "emg chin1" : l
+    l = l == "upper-lower.righ" ? "emg chin2" : l
 
     # deutsch
-    l = l == "emg li" ? "emg chin1" : l 
-    l = l == "emg re" ? "emg chin2" : l 
-    l = l == "emg mitte" ? "emg chin3" : l 
-    l = l == "emg1 kinn" ? "emg chin1" : l 
-    l = l == "emg2 kinn" ? "emg chin2" : l 
+    l = l == "emg li" ? "emg chin1" : l
+    l = l == "emg re" ? "emg chin2" : l
+    l = l == "emg mitte" ? "emg chin3" : l
+    l = l == "emg1 kinn" ? "emg chin1" : l
+    l = l == "emg2 kinn" ? "emg chin2" : l
 
     # EMG-subm[12] => EMG chin[12]
     m = match(r"\s*emg\-subm(?<n>[12])\s*"i, l)
@@ -271,47 +271,51 @@ end
         end
     end
 
-    n_records = 100
-    edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
-
     @testset "edf_to_onda_samples" begin
-        returned_samples, nt = OndaEDF.edf_to_onda_samples(edf)
-        @test length(returned_samples) == 13
+        n_records = 100
+        for T in (Int16, EDF.Int24)
+            edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, T)
 
-        samples_info = Dict(s.info.kind => s.info for s in returned_samples)
-        @test samples_info["tidal_volume"].channels == ["tidal_volume"]
-        @test samples_info["tidal_volume"].sample_unit == "milliliter"
-        @test samples_info["respiratory_effort"].channels == ["chest", "abdomen"]
-        @test samples_info["respiratory_effort"].sample_unit == "microvolt"
-        @test samples_info["snore"].channels == ["snore"]
-        @test samples_info["snore"].sample_unit == "microvolt"
-        @test samples_info["ecg"].channels == ["avl", "avr"]
-        @test samples_info["ecg"].sample_unit == "microvolt"
-        @test samples_info["positive_airway_pressure"].channels == ["ipap", "epap"]
-        @test samples_info["positive_airway_pressure"].sample_unit == "centimeter_of_water"
-        @test samples_info["heart_rate"].channels == ["heart_rate"]
-        @test samples_info["heart_rate"].sample_unit == "beat_per_minute"
-        @test samples_info["emg"].channels == ["intercostal", "left_anterior_tibialis", "right_anterior_tibialis"]
-        @test samples_info["emg"].sample_unit == "microvolt"
-        @test samples_info["eog"].channels == ["left", "right"]
-        @test samples_info["eog"].sample_unit == "microvolt"
-        @test samples_info["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
-                                               "c4-m1", "o1-m2", "o2-a1"]
-        @test samples_info["eeg"].sample_unit == "microvolt"
-        @test samples_info["pap_device_cflow"].channels == ["pap_device_cflow"]
-        @test samples_info["pap_device_cflow"].sample_unit == "liter_per_minute"
-        @test samples_info["pap_device_leak"].channels == ["pap_device_leak"]
-        @test samples_info["pap_device_leak"].sample_unit == "liter_per_minute"
-        @test samples_info["sao2"].channels == ["sao2"]
-        @test samples_info["sao2"].sample_unit == "percent"
-        @test samples_info["ptaf"].channels == ["ptaf"]
-        @test samples_info["ptaf"].sample_unit == "volt"
+            returned_samples, nt = OndaEDF.edf_to_onda_samples(edf)
+            @test length(returned_samples) == 13
 
-        @test all(Onda.duration(s) == Nanosecond(Second(200)) for s in returned_samples)
+            samples_info = Dict(s.info.kind => s.info for s in returned_samples)
+            @test samples_info["tidal_volume"].channels == ["tidal_volume"]
+            @test samples_info["tidal_volume"].sample_unit == "milliliter"
+            @test samples_info["respiratory_effort"].channels == ["chest", "abdomen"]
+            @test samples_info["respiratory_effort"].sample_unit == "microvolt"
+            @test samples_info["snore"].channels == ["snore"]
+            @test samples_info["snore"].sample_unit == "microvolt"
+            @test samples_info["ecg"].channels == ["avl", "avr"]
+            @test samples_info["ecg"].sample_unit == "microvolt"
+            @test samples_info["positive_airway_pressure"].channels == ["ipap", "epap"]
+            @test samples_info["positive_airway_pressure"].sample_unit == "centimeter_of_water"
+            @test samples_info["heart_rate"].channels == ["heart_rate"]
+            @test samples_info["heart_rate"].sample_unit == "beat_per_minute"
+            @test samples_info["emg"].channels == ["intercostal", "left_anterior_tibialis", "right_anterior_tibialis"]
+            @test samples_info["emg"].sample_unit == "microvolt"
+            @test samples_info["eog"].channels == ["left", "right"]
+            @test samples_info["eog"].sample_unit == "microvolt"
+            @test samples_info["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
+                                                "c4-m1", "o1-m2", "o2-a1"]
+            @test samples_info["eeg"].sample_unit == "microvolt"
+            @test samples_info["pap_device_cflow"].channels == ["pap_device_cflow"]
+            @test samples_info["pap_device_cflow"].sample_unit == "liter_per_minute"
+            @test samples_info["pap_device_leak"].channels == ["pap_device_leak"]
+            @test samples_info["pap_device_leak"].sample_unit == "liter_per_minute"
+            @test samples_info["sao2"].channels == ["sao2"]
+            @test samples_info["sao2"].sample_unit == "percent"
+            @test samples_info["ptaf"].channels == ["ptaf"]
+            @test samples_info["ptaf"].sample_unit == "volt"
+
+            @test all(Onda.duration(s) == Nanosecond(Second(200)) for s in returned_samples)
+        end
     end
 
-
     @testset "store_edf_as_onda" begin
+        n_records = 100
+        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
+
         root = mktempdir()
         uuid = uuid4()
         nt = OndaEDF.store_edf_as_onda(edf, root, uuid)
@@ -353,7 +357,7 @@ end
             @test signals["ptaf"].channels == ["ptaf"]
             @test signals["ptaf"].sample_unit == "volt"
         end
-        
+
         for signal in values(signals)
             @test signal.span.start == Nanosecond(0)
             @test signal.span.stop == Nanosecond(Second(200))
