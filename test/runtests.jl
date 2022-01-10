@@ -5,22 +5,22 @@ using FilePathsBase: AbstractPath, PosixPath
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,
                          digital_min, digital_max,
-                         samples_per_record, n_records)
+                         samples_per_record, n_records, ::Type{T}=Int16) where {T}
     header = EDF.SignalHeader(label, transducer, physical_units,
                               physical_min, physical_max,
                               digital_min, digital_max,
-                              "", Int16(samples_per_record))
-    samples = rand(rng, Int16, n_records * samples_per_record)
+                              "", convert(T, samples_per_record))
+    samples = rand(rng, T, n_records * samples_per_record)
     return EDF.Signal(header, samples)
 end
 
-function make_test_data(rng, sample_rate, samples_per_record, n_records)
-    imin16, imax16 = Float32(typemin(Int16)), Float32(typemax(Int16))
+function make_test_data(rng, sample_rate, samples_per_record, n_records, ::Type{T}=Int16) where {T}
+    imin16, imax16 = Float32(typemin(T)), Float32(typemax(T))
     anns_1 = [[EDF.TimestampedAnnotationList(i, nothing, []),
                EDF.TimestampedAnnotationList(i, i + 1, ["", "$i a", "$i b"])] for i in 1:n_records]
     anns_2 = [[EDF.TimestampedAnnotationList(i, nothing, []),
                EDF.TimestampedAnnotationList(i, 0, ["", "$i c", "$i d"])] for i in 1:n_records]
-    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal}[
+    edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{T}}[
         test_edf_signal(rng, "EEG F3-M2", "E", "uV",  -32768.0f0, 32767.0f0,   imin16, imax16, samples_per_record, n_records)
         test_edf_signal(rng, "EEG F4-M1", "E", "uV",  -32768.0f0, 32767.0f0,   imin16, imax16, samples_per_record, n_records)
         test_edf_signal(rng, "EEG C3-M2", "E", "uV",  -32768.0f0, 32767.0f0,   imin16, imax16, samples_per_record, n_records)
