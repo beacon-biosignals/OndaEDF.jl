@@ -378,7 +378,8 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
     EDF.read!(edf)
     file_format = "lpcm.zst"
 
-    mkpath(joinpath(onda_dir, "samples"))
+    # Trailing slash needed for compatibility with AWSS3.jl's `S3Path`
+    mkpath(joinpath(onda_dir, "samples") * '/')
 
     signals = Onda.Signal[]
     edf_samples, diagnostics = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
