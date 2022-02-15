@@ -1,3 +1,44 @@
+#= 
+
+OndaEDF: a manifesto
+
+this is a mess.  there are a two main problems with the current state of things:
+
+1. There is a huge amount of indirection which makes the specification of
+   extractors unnecessarily confusing and opaque.  It's very hard to tell what's
+   going to happen when you make a change, and hard to tell what changes to make
+   to achieve a desired outcome
+
+2. It's harder than it should be to generate a persistent record of how one or
+   more EDFs was converted to Onda format.  We should emit an "audit" table by
+   default, which has one row per input signal, and the corresponding
+   samplesinfo fields that were generated from it, where there's a 1-1 mapping
+   between unique combinations of samplesinfo fields and Onda.Samples that are
+   generated.
+
+My proposal is this: 
+
+1. Channel label extraction proceeds solely one signal at a time, and only takes
+   the signal header or information derived from it.
+
+2. The default extractor is a single function that iterates through a set of
+   patterns, stopping at the first pattern that matches, and then quitting.
+
+3. The output of this initial processing is a table with columns for the union
+   of the fields in EDF.SignalHeader and Onda.SamplesInfo.  The Onda.SamplesInfo
+   columns will be `missing` if extraction failed for some reason.  An
+   additional column may optionally record the status (including any exceptions
+   that occurred during any stage in processing).  
+
+4. This table is The Plan for how to convert to Onda.  It may be manipulated
+   programmatically before actually consuming the EDF.Signal data.  It should
+   be consumed by any functions that actually deal with signal data
+
+=# 
+
+
+
+
 #####
 ##### `EDF.Signal` label handling
 #####
@@ -296,25 +337,110 @@ function extract_channels_by_label(header::EDF.SignalHeader,
                                    units=STANDARD_UNITS,
                                    preprocess_labels=(l,t) -> l)
     edf_label = preprocess_labels(header.label, header.transducer_type)
-    
-    for (signal_names, channel_names) in labels
-        # channel names is iterable of channel specs, which are either "channel"
-        # or "canonical => ["alt1", ...]
-        for canonical in channel_names
-            channel_name = canonical_channel_name(canonical)
 
-            matched = match_edf_label(edf_label, signal_names, channel_name, channel_names)
-            if matched !== nothing
-                # create SamplesInfo and return
-                row = (; _named_tuple(header)...,
-                       channel=matched,
-                       kind=first(signal_names),
-                       sample_unit=edf_to_onda_unit(header.physical_dimension, units),
-                       edf_signal_encoding(header, seconds_per_record)..., )
-                return row
+    try
+        for (signal_names, channel_names) in labels
+            # channel names is iterable of channel specs, which are either "channel"
+            # or "canonical => ["alt1", ...]
+            for canonical in channel_names
+                channel_name = canonical_channel_name(canonical)
+
+                matched = match_edf_label(edf_label, signal_names, channel_name, channel_names)
+                
+                if matched !== nothing
+                    # create SamplesInfo and return
+                    row = (; _named_tuple(header)...,
+                           channel=matched,
+                           kind=first(signal_names),
+                           sample_unit=edf_to_onda_unit(header.physical_dimension, units),
+                           edf_signal_encoding(header, seconds_per_record)..., )
+                    return row
+                end
             end
         end
+    catch e
+        bt = catch_backtrace()
+        st = stacktrace(bt)
+        msg = """Skipping signal $(header.label): error while extracting channels:\n\n$(st)"""
+        return (; _named_tuple(header)..., error=SamplesInfoErr(msg, e))
     end
+
+    # nothing matched, return the original signal header
+    return _named_tuple(header)
+end
+
+# create a table with a plan for converting this EDF file to onda: one row per
+# signal, with the Onda.SamplesInfo fields that will be generated (modulo
+# `promote_encoding`).  The column `onda_signal_idx` gives the planned grouping
+# of EDF signals into Onda Samples.
+#
+# pass this plan to execute_plan to actually run it
+function plan(edf::EDF.File;
+              labels=STANDARD_LABELS,
+              units=STANDARD_UNITS,
+              preprocess_labels=(l,t) -> l,
+              onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
+    # remove AnnotationsSignals, keeping track of indices
+    enum_signals = [(i, s) for (i, s) in enumerate(edf.signals) if s isa EDF.Signal]
+    plan_rows = map(enum_signals) do (edf_signal_idx, signal)
+        row = extract_channels_by_label(signal.header,
+                                        edf.header.seconds_per_record;
+                                        labels, units, preprocess_labels)
+        return Tables.rowmerge(row; edf_signal_idx)
+    end
+
+    # write index of destination signal into plan to capture grouping
+    grouped_rows = groupby(onda_signal_groups, plan_rows)
+    plan_rows = mapreduce(vcat, enumerate(values(grouped_rows))) do (onda_signal_idx, rows)
+        return Tables.rowmerge.(rows; onda_signal_idx)
+    end
+
+    # make sure we get a well-behaved Tables.jl table out of this
+    return Tables.dictrowtable(plan_rows)
+end
+
+_get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missing
+function grouper(vars=(:kind, :sample_unit, :sample_rate))
+    return x -> NamedTuple{vars}(_get.(Ref(x), vars))
+end
+
+# return Samples for each :onda_signal_idx
+function execute_plan(plan_table, edf::EDF.File;
+                      samples_groups=grouper((:onda_signal_idx, )))
+    rows = Tables.rows(plan_table)
+    output = map(collect(groupby(samples_groups, rows))) do (idx, rows)
+        try
+            info = merge_samples_info(rows)
+            signals = [edf.signals[row.edf_signal_idx] for row in rows]
+            samples = onda_samples_from_edf_signals(info, signals,
+                                                    edf.header.seconds_per_record)
+            return (; samples, plan_rows=rows, error=nothing)
+        catch e
+            bt = catch_backtrace()
+            io = IOBuffer()
+            println(io, "Error executing OndaEDF plan for rows $(rows)")
+            showerror(io, e, bt)
+            @error String(take!(io))
+            # this doesn't work (at least in IJulia) for some reason:
+            # @error "Error executing OndaEDF plan for rows $(rows)" exception=(e, bt)
+            return (; samples=missing, plan_rows=rows, error=e)
+        end
+    end
+end
+
+function merge_samples_info(rows)
+    # we enforce that kind, sample_unit, and sample_rate are all equal here
+    key = unique(grouper((:kind, :sample_unit, :sample_rate)), rows)
+    if length(key) != 1
+        throw(ArgumentError("couldn't merge samples info from rows: multiple " *
+                            "kind/sample_unit/sample_rate combinations:\n\n" *
+                            "$(keys)\n\n$(rows)"))
+    end
+
+    key = only(key)
+    onda_encoding = promote_encodings(rows)
+    channels = [row.channel for row in rows]
+    return SamplesInfo(; onda_encoding..., key..., channels, edf_source=rows)
 end
 
 #####
