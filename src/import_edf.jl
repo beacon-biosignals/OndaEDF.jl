@@ -285,6 +285,38 @@ function extract_channels_by_label(edf::EDF.File, signal_names, channel_names;
             [e for e in results if isa(e, Exception)])
 end
 
+# "channel"
+canonical_channel_name(channel_name) = channel_name
+# "channel" => ["alt1", "alt2", ...]
+canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
+
+function extract_channels_by_label(header::EDF.SignalHeader,
+                                   seconds_per_record;
+                                   labels=STANDARD_LABELS,
+                                   units=STANDARD_UNITS,
+                                   preprocess_labels=(l,t) -> l)
+    edf_label = preprocess_labels(header.label, header.transducer_type)
+    
+    for (signal_names, channel_names) in labels
+        # channel names is iterable of channel specs, which are either "channel"
+        # or "canonical => ["alt1", ...]
+        for canonical in channel_names
+            channel_name = canonical_channel_name(canonical)
+
+            matched = match_edf_label(edf_label, signal_names, channel_name, channel_names)
+            if matched !== nothing
+                # create SamplesInfo and return
+                row = (; _named_tuple(header)...,
+                       channel=matched,
+                       kind=first(signal_names),
+                       sample_unit=edf_to_onda_unit(header.physical_dimension, units),
+                       edf_signal_encoding(header, seconds_per_record)..., )
+                return row
+            end
+        end
+    end
+end
+
 #####
 ##### `import_edf!`
 #####
