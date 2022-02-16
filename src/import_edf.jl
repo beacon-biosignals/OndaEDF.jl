@@ -94,9 +94,6 @@ _safe_lowercase(c::Char) = isvalid(c) ? lowercase(c) : c
 # malformed UTF-8 chars are a choking hazard
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 
-# only compile regex once per unique signal name
-SIGNAL_NAME_REGEX_LIBRARY = Dict{String,Regex}()
-
 function match_edf_label(label, signal_names, channel_name, canonical_names)
     label = _safe_lowercase(label)
     m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
@@ -104,22 +101,6 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
         label = m[:spec]
     end
 
-    # preserve this for posterity?  this is EXTREMELY SLOW because it compiles
-    # the regex anew every time...and even using a "regex library it's still ~8x
-    # slower than using a single regex to match
-
-    # for signal_name in signal_names
-    #     # match exact STANDARD (or custom) signal types at beginning of label, ignoring case
-    #     # possibly bracketed by or prepended with `[`, `]`, `,` or whitespace
-    #     # everything after is included in the spec a.k.a. label
-    #     r = get!(SIGNAL_NAME_REGEX_LIBRARY, string(signal_name),
-    #              Regex("[\\s\\[,\\]]*$(signal_name)[\\s,\\]]*\\s+(?<spec>.+)", "i"))
-    #     m = match(r, label)
-    #     if !isnothing(m)
-    #         label = m[:spec]
-    #     end
-    #     # if signal type does not match, use the entire label
-    # end
     label = replace(label, r"\s*-\s*" => "-")
     initial, normalized_label = _normalize_references(label, canonical_names)
     initial == channel_name && return normalized_label
@@ -729,6 +710,44 @@ function edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDA
     return info_map, (header_map=header_map,
                       unextracted_edf_headers=unextracted,
                       errors=errors)
+end
+
+function diagnostics_from_plan(plan)
+    header_map = []
+    unextracted = []
+    errors = []
+
+    rows = Tables.rows(plan)
+
+    for row in rows
+        err = _get(row, :error)
+        if err isa Exception
+            push!(errors, err)
+        end
+    end
+
+    foreach(groupby(rows, grouper((:onda_signal_idx, )))) do (_, rows)
+        headers = _signal_header.(rows)
+        try
+            if any(ismissing, _get.(rows, :channel))
+                append!(unextracted, headers)
+            else
+                info = merge_samples_info(rows)
+                push!(header_map, Onda.SamplesInfo(info) => headers)
+            end
+        catch e
+            push!(errors, e)
+            append!(unextracted, headers)
+        end
+    end
+
+    return (; header_map, unextracted, errors)
+end
+
+function _signal_header(row)
+    fields = fieldnames(EDF.SignalHeader)
+    values = NamedTuple{fields}(row)
+    return EDF.SignalHeader(values...)
 end
 
 function diagnostics_table(diagnostics)
