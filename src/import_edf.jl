@@ -382,11 +382,11 @@ function plan(header, seconds_per_record; labels=STANDARD_LABELS,
 
         @error msg
         
-        return (; header..., error=SamplesInfoError(msg, e))
+        return (; header..., seconds_per_record, error=SamplesInfoError(msg, e))
     end
 
-    # nothing matched, return the original signal header
-    return header
+    # nothing matched, return the original signal header (as a namedtuple)
+    return (; header..., seconds_per_record)
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -732,8 +732,6 @@ function _named_tuple(x::T) where {T}
     values = getfield.(Ref(x), fields)
     return NamedTuple{fields}(values)
 end
-
-
 
 function diagnostics_table(diagnostics)
     (; header_map, unextracted_edf_headers, errors) = diagnostics
