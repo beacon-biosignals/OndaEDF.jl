@@ -408,17 +408,29 @@ function grouper(vars=(:kind, :sample_unit, :sample_rate))
     return x -> NamedTuple{vars}(_get.(Ref(x), vars))
 end
 
+
+
 # return Samples for each :onda_signal_idx
 function execute_plan(plan_table, edf::EDF.File;
                       samples_groups=grouper((:onda_signal_idx, )))
-    rows = Tables.rows(plan_table)
-    output = map(collect(groupby(samples_groups, rows))) do (idx, rows)
+    plan_rows = Tables.rows(plan_table)
+    exec_rows = map(collect(groupby(samples_groups, plan_rows))) do (idx, rows)
         try
             info = merge_samples_info(rows)
-            signals = [edf.signals[row.edf_signal_idx] for row in rows]
-            samples = onda_samples_from_edf_signals(info, signals,
-                                                    edf.header.seconds_per_record)
-            return (; samples, plan_rows=rows, error=nothing)
+            if ismissing(info)
+                # merge_samples_info returns missing is any of :kind,
+                # :sample_unit, :sample_rate, or :channel is missing in any of
+                # the rows, to indicate that it's not possible to generate
+                # samples.  this keeps us from overwriting any existing, more
+                # specific :errors in the plan with nonsense about promote_type
+                # etc.
+                samples = missing
+            else
+                signals = [edf.signals[row.edf_signal_idx] for row in rows]
+                samples = onda_samples_from_edf_signals(info, signals,
+                                                        edf.header.seconds_per_record)
+            end
+            return (; idx, samples, plan_rows=rows)
         catch e
             bt = catch_backtrace()
             io = IOBuffer()
@@ -427,9 +439,17 @@ function execute_plan(plan_table, edf::EDF.File;
             @error String(take!(io))
             # this doesn't work (at least in IJulia) for some reason:
             # @error "Error executing OndaEDF plan for rows $(rows)" exception=(e, bt)
-            return (; samples=missing, plan_rows=rows, error=e)
+            
+            return (; idx, samples=missing, plan_rows=Tables.rowmerge.(rows; error=e))
         end
     end
+
+    sort!(exec_rows; by=(row -> row.idx))
+    exec = Tables.columntable(exec_rows)
+
+    exec_plan = reduce(vcat, exec.plan_rows)
+
+    return collect(skipmissing(exec.samples)), exec_plan
 end
 
 function merge_samples_info(rows)
@@ -442,9 +462,15 @@ function merge_samples_info(rows)
     end
 
     key = only(key)
-    onda_encoding = promote_encodings(rows)
-    channels = [row.channel for row in rows]
-    return SamplesInfo(; onda_encoding..., key..., channels, edf_source=rows)
+    if any(ismissing, key) || any(ismissing, _get.(rows, :channel))
+        # we use missing as a sentinel value to indicate that it's not possible
+        # to create Samples from these rows
+        return missing
+    else
+        onda_encoding = promote_encodings(rows)
+        channels = [row.channel for row in rows]
+        return SamplesInfo(; onda_encoding..., NamedTuple(key)..., channels, edf_source=rows)
+    end
 end
 
 #####
@@ -647,14 +673,11 @@ following transformations:
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
-function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
+function edf_to_onda_samples(edf::EDF.File; kwargs...)
+    plan = plan(edf; kwargs...)
     EDF.read!(edf)
-    info_map, nt = edf_header_to_onda_samples_info(edf; custom_extractors=custom_extractors)
-    edf_samples = [onda_samples_from_edf_signals(info,
-                                                 edf_signals,
-                                                 edf.header.seconds_per_record)
-                   for (info, edf_signals) in info_map if !isempty(info.channels)]
-    return edf_samples, nt
+    samples, exec_plan = execute_plan(plan, edf)
+    return samples, exec_plan
 end
 
 """
@@ -715,7 +738,7 @@ end
 function diagnostics_from_plan(plan)
     header_map = []
     unextracted = []
-    errors = []
+    errors = Exception[]
 
     rows = Tables.rows(plan)
 
@@ -726,14 +749,14 @@ function diagnostics_from_plan(plan)
         end
     end
 
-    foreach(groupby(rows, grouper((:onda_signal_idx, )))) do (_, rows)
+    foreach(groupby(grouper((:onda_signal_idx, )), rows)) do (_, rows)
         headers = _signal_header.(rows)
         try
             if any(ismissing, _get.(rows, :channel))
                 append!(unextracted, headers)
             else
                 info = merge_samples_info(rows)
-                push!(header_map, Onda.SamplesInfo(info) => headers)
+                push!(header_map, _samples_info(info) => headers)
             end
         catch e
             push!(errors, e)
@@ -746,8 +769,15 @@ end
 
 function _signal_header(row)
     fields = fieldnames(EDF.SignalHeader)
-    values = NamedTuple{fields}(row)
+    values = NamedTuple{fields}(NamedTuple(row))
     return EDF.SignalHeader(values...)
+end
+
+function _samples_info(row)
+    fields = (:kind, :channels, :sample_unit, :sample_resolution_in_unit,
+              :sample_offset_in_unit, :sample_type, :sample_rate)
+    values = NamedTuple{fields}(NamedTuple(row))
+    return Onda.SamplesInfo(; values...)
 end
 
 function diagnostics_table(diagnostics)
