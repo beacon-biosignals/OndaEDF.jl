@@ -90,18 +90,32 @@ _safe_lowercase(c::Char) = isvalid(c) ? lowercase(c) : c
 # malformed UTF-8 chars are a choking hazard
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 
+# only compile regex once per unique signal name
+SIGNAL_NAME_REGEX_LIBRARY = Dict{String,Regex}()
+
 function match_edf_label(label, signal_names, channel_name, canonical_names)
     label = _safe_lowercase(label)
-    for signal_name in signal_names
-        # match exact STANDARD (or custom) signal types at beginning of label, ignoring case
-        # possibly bracketed by or prepended with `[`, `]`, `,` or whitespace
-        # everything after is included in the spec a.k.a. label
-        m = match(Regex("[\\s\\[,\\]]*$(signal_name)[\\s,\\]]*\\s+(?<spec>.+)", "i"), label)
-        if !isnothing(m)
-            label = m[:spec]
-        end
-        # if signal type does not match, use the entire label
+    m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
+    if !isnothing(m) && m[:signal] in signal_names
+        label = m[:spec]
     end
+
+    # preserve this for posterity?  this is EXTREMELY SLOW because it compiles
+    # the regex anew every time...and even using a "regex library it's still ~8x
+    # slower than using a single regex to match
+
+    # for signal_name in signal_names
+    #     # match exact STANDARD (or custom) signal types at beginning of label, ignoring case
+    #     # possibly bracketed by or prepended with `[`, `]`, `,` or whitespace
+    #     # everything after is included in the spec a.k.a. label
+    #     r = get!(SIGNAL_NAME_REGEX_LIBRARY, string(signal_name),
+    #              Regex("[\\s\\[,\\]]*$(signal_name)[\\s,\\]]*\\s+(?<spec>.+)", "i"))
+    #     m = match(r, label)
+    #     if !isnothing(m)
+    #         label = m[:spec]
+    #     end
+    #     # if signal type does not match, use the entire label
+    # end
     label = replace(label, r"\s*-\s*" => "-")
     initial, normalized_label = _normalize_references(label, canonical_names)
     initial == channel_name && return normalized_label
@@ -141,8 +155,7 @@ end
 #   pmax + pmin + (pmax*(dmin - dmax)/(dmax - dmin)) ≈ pmin
 #   pmax + pmin + (-pmax) ≈ pmin
 #   pmin ≈ pmin
-function edf_signal_encoding(edf_signal_header::EDF.SignalHeader,
-                             edf_seconds_per_record)
+function edf_signal_encoding(edf_signal_header, edf_seconds_per_record)
     dmin, dmax = edf_signal_header.digital_minimum, edf_signal_header.digital_maximum
     pmin, pmax = edf_signal_header.physical_minimum, edf_signal_header.physical_maximum
     sample_resolution_in_unit = (pmax - pmin) / (dmax - dmin)
@@ -332,11 +345,10 @@ canonical_channel_name(channel_name) = channel_name
 # "channel" => ["alt1", "alt2", ...]
 canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
 
-function extract_channels_by_label(header::EDF.SignalHeader,
-                                   seconds_per_record;
-                                   labels=STANDARD_LABELS,
-                                   units=STANDARD_UNITS,
-                                   preprocess_labels=(l,t) -> l)
+plan(header::EDF.SignalHeader, s; kwargs...) = plan(_named_tuple(header), s; kwargs...)
+
+function plan(header, seconds_per_record; labels=STANDARD_LABELS,
+              units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
     edf_label = preprocess_labels(header.label, header.transducer_type)
 
     try
@@ -350,7 +362,8 @@ function extract_channels_by_label(header::EDF.SignalHeader,
                 
                 if matched !== nothing
                     # create SamplesInfo and return
-                    row = (; _named_tuple(header)...,
+                    row = (; header...,
+                           seconds_per_record,
                            channel=matched,
                            kind=first(signal_names),
                            sample_unit=edf_to_onda_unit(header.physical_dimension, units),
@@ -361,20 +374,19 @@ function extract_channels_by_label(header::EDF.SignalHeader,
         end
     catch e
         bt = catch_backtrace()
-        st = stacktrace(bt)
-        msg = """Skipping signal $(header.label): error while extracting channels:\n\n$(st)"""
-
-        @error let io = IOBuffer()
+        msg = let io = IOBuffer()
             println(io, "Skipping signal $(header.label): error while extracting channels")
             showerror(io, e, bt)
             String(take!(io))
         end
+
+        @error msg
         
-        return (; _named_tuple(header)..., error=SamplesInfoError(msg, e))
+        return (; header..., error=SamplesInfoError(msg, e))
     end
 
     # nothing matched, return the original signal header
-    return _named_tuple(header)
+    return header
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -388,12 +400,11 @@ function plan(edf::EDF.File;
               units=STANDARD_UNITS,
               preprocess_labels=(l,t) -> l,
               onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
-    # remove AnnotationsSignals, keeping track of indices
+    # remove non-Signals (e.g., AnnotationsSignals), keeping track of indices
     enum_signals = [(i, s) for (i, s) in enumerate(edf.signals) if s isa EDF.Signal]
     plan_rows = map(enum_signals) do (edf_signal_idx, signal)
-        row = extract_channels_by_label(signal.header,
-                                        edf.header.seconds_per_record;
-                                        labels, units, preprocess_labels)
+        row = plan(signal.header, edf.header.seconds_per_record;
+                   labels, units, preprocess_labels)
         return Tables.rowmerge(row; edf_signal_idx)
     end
 
