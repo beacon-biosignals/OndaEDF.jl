@@ -262,6 +262,9 @@ end
         # print result of mapping `edf_to_onda_samples` over `test_edf_to_samples_info.in`
         # this makes it easy to see effects of any changes made to OndaEDF by looking at
         # `diff test_edf_to_samples_info.{in,out}`
+        #
+        # in practice this doesn't work well because the ordering of dicts is not defined
+        # so the header map entries print out in different orders.
         prettyprint_diagnostic_info("test_edf_to_samples_info", results)
         prettyprint_diagnostic_info("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", map(first, nt.header_map)), results))
         prettyprint_diagnostic_info("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", map(first, nt.header_map)), results))
