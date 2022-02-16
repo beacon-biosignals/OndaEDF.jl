@@ -36,8 +36,12 @@ My proposal is this:
 
 =# 
 
-
-
+# XXX: make this @generated for speed:
+function _named_tuple(x::T) where {T}
+    fields = fieldnames(T)
+    values = getfield.(Ref(x), fields)
+    return NamedTuple{fields}(values)
+end
 
 #####
 ##### `EDF.Signal` label handling
@@ -727,18 +731,12 @@ function edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDA
                       errors=errors)
 end
 
-function _named_tuple(x::T) where {T}
-    fields = fieldnames(T)
-    values = getfield.(Ref(x), fields)
-    return NamedTuple{fields}(values)
-end
-
 function diagnostics_table(diagnostics)
-    (; header_map, unextracted_edf_headers, errors) = diagnostics
+    header_map, unextracted_edf_headers, errors = diagnostics
     diag_table = []
     for (samplesinfo, headers) in header_map
-        for (header, channels) in zip(headers, samplesinfo.channels)
-            push!(diag_table, (; NamedTuple(samplesinfo)..., channels, _named_tuple(header)...))
+        for (header, channel) in zip(headers, samplesinfo.channels)
+            push!(diag_table, (; NamedTuple(samplesinfo)..., channel, _named_tuple(header)...))
         end
     end
 

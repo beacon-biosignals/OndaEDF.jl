@@ -240,6 +240,8 @@ function test_preprocessor(l, t)
 end
 
 custom_labels = deepcopy(OndaEDF.STANDARD_LABELS)
+# add alternative pap signal name
+custom_labels[["positive_airway_pressure", "xpap"]] = ["ipap", "epap", "cpap"],
 #custom_labels[["emg"]] = [p for p in custom_labels[["emg"]] if startswith(first(p), "chin")]
 
 custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel_names; preprocess_labels=test_preprocessor)
