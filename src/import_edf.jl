@@ -196,6 +196,7 @@ function extract_channels(edf_signals, channel_matchers)
     for channel_matcher in channel_matchers
         for edf_signal in edf_signals
             edf_signal isa EDF.Signal || continue
+            # skip channels already extracted
             any(x -> last(x) === edf_signal, extracted_channels) && continue
             channel_name = channel_matcher(edf_signal)
             channel_name === nothing && continue
@@ -362,7 +363,14 @@ function extract_channels_by_label(header::EDF.SignalHeader,
         bt = catch_backtrace()
         st = stacktrace(bt)
         msg = """Skipping signal $(header.label): error while extracting channels:\n\n$(st)"""
-        return (; _named_tuple(header)..., error=SamplesInfoErr(msg, e))
+
+        @error let io = IOBuffer()
+            println(io, "Skipping signal $(header.label): error while extracting channels")
+            showerror(io, e, bt)
+            String(take!(io))
+        end
+        
+        return (; _named_tuple(header)..., error=SamplesInfoError(msg, e))
     end
 
     # nothing matched, return the original signal header
