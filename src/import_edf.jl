@@ -467,7 +467,8 @@ function merge_samples_info(rows)
     else
         onda_encoding = promote_encodings(rows)
         channels = [row.channel for row in rows]
-        return SamplesInfo(; onda_encoding..., NamedTuple(key)..., channels, edf_source=rows)
+        edf_channels = [row.label for row in rows]
+        return SamplesInfo(; onda_encoding..., NamedTuple(key)..., channels, edf_channels)
     end
 end
 
@@ -553,9 +554,10 @@ and an `AmbiguousChannelError` displayed as a warning.
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
-                           custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
+                           import_annotations::Bool=true,
                            postprocess_samples=identity,
-                           signals_prefix="edf", annotations_prefix=signals_prefix)
+                           signals_prefix="edf", annotations_prefix=signals_prefix,
+                           kwargs...)
 
     # Validate input argument early on
     signals_path = joinpath(onda_dir, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
@@ -568,10 +570,18 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
     mkpath(joinpath(onda_dir, "samples") * '/')
 
     signals = Onda.Signal[]
-    edf_samples, diagnostics = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
-    for e in diagnostics.errors
-        @warn sprint(showerror, e)
+    edf_samples, plan = edf_to_onda_samples(edf; kwargs...)
+    
+    errors = _get(Tables.columns(plan), :errors)
+    if !ismissing(errors)
+        # why unique?  because errors that occur during execution get inserted
+        # into all plan rows for that group of EDF signals, so they may be
+        # repeated
+        for e in unique(errors)
+            @warn sprint(showerror, e)
+        end
     end
+    
     edf_samples = postprocess_samples(edf_samples)
     for samples in edf_samples
         sample_filename = string(recording_uuid, "_", samples.info.kind, ".", file_format)
@@ -593,7 +603,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         annotations = Onda.Annotation[]
     end
 
-    return @compat (; recording_uuid, signals, annotations, signals_path, annotations_path)
+    return @compat (; recording_uuid, signals, annotations, signals_path, annotations_path, plan)
 end
 
 function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4(); kwargs...)
