@@ -139,7 +139,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     # - " eCg 2"
     # - ",ekg,2"
     #
-    # into "ecg"
+    # into "2"
     #
     # however, the original behavior requires compiling and matching a different
     # regex for every possible `signal_names` entry (across all labels), for
