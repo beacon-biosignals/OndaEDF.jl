@@ -94,8 +94,70 @@ _safe_lowercase(c::Char) = isvalid(c) ? lowercase(c) : c
 # malformed UTF-8 chars are a choking hazard
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 
+"""
+    match_edf_label(label, signal_names, channel_name, canonical_names)
+
+Return a normalized label matched from and EDF `label`.  The purpose of this
+function is to remove signal names from the label, and to canonicalize the
+channel name(s) that remain.  So something like "[eCG] avl-REF" will be
+transformed to "avl" (given `signal_names=["ecg"]`, and `channel_name="avl"`)
+
+This returns `nothing` if `channel_name` does not match after normalization
+
+Canonicalization
+
+- ensures the given label is whitespace-stripped, lowercase, and parens-free
+- strips trailing generic EDF references (e.g. "ref", "ref2", etc.)
+- replaces all references with the appropriate name as specified by
+  `canonical_names`
+- replaces `+` with `_plus_` and `/` with `_over_`
+- returns the initial reference name (w/o prefix sign, if present) and the
+  entire label; the initial reference name should match the canonical channel
+  name, otherwise the channel extraction will be rejected.
+
+## Examples
+
+```julia
+match_edf_label("[ekG]  avl-REF", ["ecg", "ekg"], "avl", []) == "avl"
+match_edf_label("ECG 2", ["ecg", "ekg"], "ii", ["ii" => ["2", "two", "ecg2"]]) == "ii"
+```
+
+See the tests for more examples
+
+"""
 function match_edf_label(label, signal_names, channel_name, canonical_names)
     label = _safe_lowercase(label)
+
+    # ideally, we'd do the original behavior:
+    # 
+    # match exact STANDARD (or custom) signal types at beginning of label,
+    # ignoring case possibly bracketed by or prepended with `[`, `]`, `,` or
+    # whitespace everything after is included in the spec a.k.a. label
+    #
+    # for instance, if `signal_names = ["ecg", "ekg"]`, this would convert
+    # - "[EKG] 2-REF"
+    # - " eCg 2"
+    # - ",ekg,2"
+    #
+    # into "ecg"
+    #
+    # however, the original behavior requires compiling and matching a different
+    # regex for every possible `signal_names` entry (across all labels), for
+    # every signal.  this adds ENORMOUS overhead compared to the rest of the
+    # import pipeline (>90% of total time was spent in regex stuff) so instead
+    # we do an approximation: treat ANYTHING between whitespace, [], or ',', as
+    # teh signal, adn remove it (and the enclosing chars) if it is exactly equal
+    # to any of the input `signal_names` (after lowercasing).
+    #
+    # This is not equivalent to the original behavior in only a handful of
+    # cases
+    # 
+    # - if one of the `signal_names` is a suffix of the signal, like `"pap"`
+    #   matching against `"xpap cpap"`.  the fix for this is to add the full
+    #   signal name to the (end) of `signal_names` in the label set.
+    # - if the signal name itself contains whitespace or one of `",[]"`, it
+    #   will not match.  the fix for this is to pass a preprocessor function to
+    #   `plan` to normalize known instances (after reviewing the plan)
     m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
     if !isnothing(m) && m[:signal] in signal_names
         label = m[:spec]
