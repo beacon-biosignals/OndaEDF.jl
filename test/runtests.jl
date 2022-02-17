@@ -71,15 +71,8 @@ function make_test_data(rng, sample_rate, samples_per_record, n_records, ::Type{
                      :ptaf => [17])
 end
 
-# include("test_edf_to_samples_info.in")
-
 @testset "OndaEDF" begin
     include("signal_labels.jl")
     include("import.jl")
     include("export.jl")
 end
-
-@info """
-    To look for the effect of any modifications made to OndaEDF, look at:
-    `diff test/test_edf_to_samples_info.{in,out}`
-"""
