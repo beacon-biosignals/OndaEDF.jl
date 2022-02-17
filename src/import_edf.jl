@@ -408,8 +408,6 @@ function grouper(vars=(:kind, :sample_unit, :sample_rate))
     return x -> NamedTuple{vars}(_get.(Ref(x), vars))
 end
 
-
-
 # return Samples for each :onda_signal_idx
 function execute_plan(plan_table, edf::EDF.File;
                       samples_groups=grouper((:onda_signal_idx, )))
@@ -674,9 +672,9 @@ following transformations:
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function edf_to_onda_samples(edf::EDF.File; kwargs...)
-    plan = plan(edf; kwargs...)
+    signals_plan = plan(edf; kwargs...)
     EDF.read!(edf)
-    samples, exec_plan = execute_plan(plan, edf)
+    samples, exec_plan = execute_plan(signals_plan, edf)
     return samples, exec_plan
 end
 
