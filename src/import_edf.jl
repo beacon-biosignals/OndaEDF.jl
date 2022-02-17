@@ -452,7 +452,7 @@ end
 
 function merge_samples_info(rows)
     # we enforce that kind, sample_unit, and sample_rate are all equal here
-    key = unique(grouper((:kind, :sample_unit, :sample_rate)), rows)
+    key = unique(grouper((:kind, :sample_unit, :sample_rate)).(rows))
     if length(key) != 1
         throw(ArgumentError("couldn't merge samples info from rows: multiple " *
                             "kind/sample_unit/sample_rate combinations:\n\n" *
