@@ -7,7 +7,7 @@ using OndaEDF: validate_arrow_prefix
         for T in (Int16, EDF.Int24)
             edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, T)
 
-            returned_samples, nt = OndaEDF.edf_to_onda_samples(edf)
+            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf)
             @test length(returned_samples) == 13
 
             samples_info = Dict(s.info.kind => s.info for s in returned_samples)
@@ -17,18 +17,18 @@ using OndaEDF: validate_arrow_prefix
             @test samples_info["respiratory_effort"].sample_unit == "microvolt"
             @test samples_info["snore"].channels == ["snore"]
             @test samples_info["snore"].sample_unit == "microvolt"
-            @test samples_info["ecg"].channels == ["avl", "avr"]
+            @test samples_info["ecg"].channels == ["avr", "avl"]
             @test samples_info["ecg"].sample_unit == "microvolt"
             @test samples_info["positive_airway_pressure"].channels == ["ipap", "epap"]
             @test samples_info["positive_airway_pressure"].sample_unit == "centimeter_of_water"
             @test samples_info["heart_rate"].channels == ["heart_rate"]
             @test samples_info["heart_rate"].sample_unit == "beat_per_minute"
-            @test samples_info["emg"].channels == ["intercostal", "left_anterior_tibialis", "right_anterior_tibialis"]
+            @test samples_info["emg"].channels == ["left_anterior_tibialis", "right_anterior_tibialis", "intercostal"]
             @test samples_info["emg"].sample_unit == "microvolt"
             @test samples_info["eog"].channels == ["left", "right"]
             @test samples_info["eog"].sample_unit == "microvolt"
-            @test samples_info["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
-                                                   "c4-m1", "o1-m2", "o2-a1"]
+            @test samples_info["eeg"].channels == ["f3-m2", "f4-m1", "c3-m2",
+                                                   "o1-m2", "c4-m1", "o2-a1", "fpz"]
             @test samples_info["eeg"].sample_unit == "microvolt"
             @test samples_info["pap_device_cflow"].channels == ["pap_device_cflow"]
             @test samples_info["pap_device_cflow"].sample_unit == "liter_per_minute"
@@ -66,18 +66,18 @@ using OndaEDF: validate_arrow_prefix
             @test signals["respiratory_effort"].sample_unit == "microvolt"
             @test signals["snore"].channels == ["snore"]
             @test signals["snore"].sample_unit == "microvolt"
-            @test signals["ecg"].channels == ["avl", "avr"]
+            @test signals["ecg"].channels == ["avr", "avl"]
             @test signals["ecg"].sample_unit == "microvolt"
             @test signals["positive_airway_pressure"].channels == ["ipap", "epap"]
             @test signals["positive_airway_pressure"].sample_unit == "centimeter_of_water"
             @test signals["heart_rate"].channels == ["heart_rate"]
             @test signals["heart_rate"].sample_unit == "beat_per_minute"
-            @test signals["emg"].channels == ["intercostal", "left_anterior_tibialis", "right_anterior_tibialis"]
+            @test signals["emg"].channels == ["left_anterior_tibialis", "right_anterior_tibialis", "intercostal"]
             @test signals["emg"].sample_unit == "microvolt"
             @test signals["eog"].channels == ["left", "right"]
             @test signals["eog"].sample_unit == "microvolt"
-            @test signals["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
-                                              "c4-m1", "o1-m2", "o2-a1"]
+            @test signals["eeg"].channels == ["f3-m2", "f4-m1", "c3-m2",
+                                              "o1-m2", "c4-m1", "o2-a1", "fpz"]
             @test signals["eeg"].sample_unit == "microvolt"
             @test signals["pap_device_cflow"].channels == ["pap_device_cflow"]
             @test signals["pap_device_cflow"].sample_unit == "liter_per_minute"
@@ -95,10 +95,14 @@ using OndaEDF: validate_arrow_prefix
             @test signal.file_format == "lpcm.zst"
         end
 
-        for (signal_name, edf_indices) in edf_channel_indices
-            onda_samples = load(signals[string(signal_name)]).data
-            edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, edf.signals[edf_indices])
-            @test isapprox(onda_samples, edf_samples; rtol=0.02)
+        @testset "Signal roundtrip" begin 
+            for (signal_name, edf_indices) in edf_channel_indices
+                @testset "$signal_name" begin
+                    onda_samples = load(signals[string(signal_name)]).data
+                    edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, edf.signals[sort(edf_indices)])
+                    @test isapprox(onda_samples, edf_samples; rtol=0.02)
+                end
+            end
         end
 
         @testset "Annotations import" begin
