@@ -270,13 +270,61 @@ function groupby(f, list)
     return d
 end
 
+# unpack a single channel spec from labels:
 # "channel"
 canonical_channel_name(channel_name) = channel_name
 # "channel" => ["alt1", "alt2", ...]
 canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
 
+plan(signal::EDF.Signal, s; kwargs...) = plan(_named_tuple(signal.header), s; kwargs...)
 plan(header::EDF.SignalHeader, s; kwargs...) = plan(_named_tuple(header), s; kwargs...)
 
+"""
+    plan(header, seconds_per_record; labels=STANDARD_LABELS,
+         units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+    plan(signal::EDF.Signal, args...; kwargs...) = plan(signal.header, args...; kwargs...)
+
+Formulate a plan for converting an EDF signal into Onda format.  This returns a
+Tables.jl row with all the columns from the signal header, plus additional
+columns for the `Onda.SamplesInfo` for this signal, and the `seconds_per_record`
+that is passed in here.
+
+If no labels match, then the `channel` and `kind` columns are `missing`; the
+behavior of other `SamplesInfo` columns is undefined; they are currently set to
+missing but that may change in future versions.
+
+Any errors that are thrown in the process will be stored as `SampleInfoError`s
+in the `error` column.
+
+## Matching EDF label to Onda labels
+
+The `labels` keyword argument determines how Onda `channel` and signal `kind`
+are extracted from the EDF label.
+
+Labels are specified as an iterable of `signal_names => channel_names` pairs.
+`signal_names` should be an iterable of signal names, the first of which is the
+canonical name used as the Onda `kind`.  Each element of `channel_names` gives
+the specification for one channel, which can either be a string, or a
+`canonical_name => alternates` pair.  Occurences of `alternates` will be
+replaces with `canonical_name` in the generated channel label.
+
+Matching is determined _solely_ by the channel names.  When matching, the signal
+names are only used to remove signal names occuring as prefixes (e.g., "[ECG]
+AVL") before matching channel names.  See [`match_edf_label`](@ref) for details,
+and see `OndaEDF.STANDARD_LABELS` for the default labels.
+
+As an example, here is (a subset of) the default labels for ECG signals:
+
+```julia
+["ecg", "ekg"] => ["i" => ["1"], "ii" => ["2"], "iii" => ["3"],
+                   "avl"=> ["ecgl", "ekgl", "ecg", "ekg", "l"], 
+                   "avr"=> ["ekgr", "ecgr", "r"], ...]
+```
+
+Matching is done in the order that `labels` iterates pairs, and will stop at the
+first match, with no warning if signals are ambiguous (although this may change
+in a future version)
+"""
 function plan(header, seconds_per_record; labels=STANDARD_LABELS,
               units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
     edf_label = preprocess_labels(header.label, header.transducer_type)
