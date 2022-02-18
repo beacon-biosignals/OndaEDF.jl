@@ -97,7 +97,7 @@ _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 """
     match_edf_label(label, signal_names, channel_name, canonical_names)
 
-Return a normalized label matched from and EDF `label`.  The purpose of this
+Return a normalized label matched from an EDF `label`.  The purpose of this
 function is to remove signal names from the label, and to canonicalize the
 channel name(s) that remain.  So something like "[eCG] avl-REF" will be
 transformed to "avl" (given `signal_names=["ecg"]`, and `channel_name="avl"`)
