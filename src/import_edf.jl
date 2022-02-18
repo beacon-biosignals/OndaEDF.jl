@@ -325,8 +325,11 @@ Matching is done in the order that `labels` iterates pairs, and will stop at the
 first match, with no warning if signals are ambiguous (although this may change
 in a future version)
 """
-function plan(header, seconds_per_record; labels=STANDARD_LABELS,
+function plan(header, seconds_per_record=_get(header, :seconds_per_record);
+              labels=STANDARD_LABELS,
               units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+    ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
+
     edf_label = preprocess_labels(header.label, header.transducer_type)
 
     try
@@ -345,7 +348,8 @@ function plan(header, seconds_per_record; labels=STANDARD_LABELS,
                            channel=matched,
                            kind=first(signal_names),
                            sample_unit=edf_to_onda_unit(header.physical_dimension, units),
-                           edf_signal_encoding(header, seconds_per_record)..., )
+                           edf_signal_encoding(header, seconds_per_record)...,
+                           error=nothing)
                     return row
                 end
             end
@@ -364,7 +368,7 @@ function plan(header, seconds_per_record; labels=STANDARD_LABELS,
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return (; header..., seconds_per_record)
+    return (; header..., seconds_per_record, error=nothing)
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
