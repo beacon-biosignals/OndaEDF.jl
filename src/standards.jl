@@ -110,6 +110,3 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              ["spo2"] => ["spo2"],
                              ["sao2"] => ["sao2", "osat"],
                              ["etco2"] => ["etco2 "=> ["capno"]])
-
-const STANDARD_EXTRACTORS = [edf -> extract_channels_by_label(edf, signal_names, channel_names)
-                             for (signal_names, channel_names) in STANDARD_LABELS]
