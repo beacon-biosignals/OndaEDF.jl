@@ -24,8 +24,10 @@ edf_to_onda_annotations
 ### Import utilities
 
 ```@docs
-extract_channels_by_label
-edf_signals_to_samplesinfo
+plan
+execute_plan
+match_edf_label
+merge_samples_info
 ```
 
 ### Full-service import

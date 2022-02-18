@@ -570,35 +570,29 @@ in `\$path/samples/`, and write the Onda signals and annotations tables to
 "edf", and if a prefix is provided for signals but not annotations both will use
 the signals prefix.  The prefixes cannot reference (sub)directories.
 
-Returns `(; recording_uuid, signals, annotations, signals_path, annotations_path)`.
+Returns `(; recording_uuid, signals, annotations, signals_path, annotations_path, plan)`.
 
-Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
-extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
-(the default).
+This is a convenience function that first formulates an import plan via
+[`plan`](@ref), and then immediately executes this plan with
+[`execute_plan`](@ref).
 
-Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
-"extractor" callbacks of the form:
+The samples and executed plan are returned; it is **strongly advised** that you
+review the plan for un-extracted signals (where `:kind` or `:channel` is
+`missing`) and errors (non-`nothing` values in `:error`).
 
-    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
-                      edf_signals::Vector{EDF.Signal})
-
-`store_edf_as_onda` automatically uses a variety of default extractors derived
-from the EDF standard texts; see `src/standards.jl` and
-[`extract_channels_by_label`](@ref) for details. The caller can provide
-alternative extractors via the `custom_extractors` keyword argument, and the
-[`edf_signals_to_samplesinfo`](@ref) utility can be used to extract a common
-`Onda.SamplesInfo` from a collection of EDF.Signals.
+Groups of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
+[`plan`](@ref).  The caller of this function can control the plan via the
+`labels`, `units`, and `preprocess_labels` keyword arguments, all of
+which are forwarded to [`plan`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
 
-- the label's prepended signal type is matched against known types, if present
-- the remainder of the label is whitespace-stripped, parens-stripped, and lowercased
+- the label is whitespace-stripped, parens-stripped, and lowercased
 - trailing generic EDF references (e.g. "ref", "ref2", etc.) are dropped
 - any instance of `+` is replaced with `_plus_` and `/` with `_over_`
 - all component names are converted to their "canonical names" when possible
-  (e.g. for an EOG matched channel, "eogl", "loc", "lefteye", etc. are converted
-  to "left").
+  (e.g. "m1" in an EEG-matched channel name will be converted to "a1").
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
@@ -668,28 +662,19 @@ end
 """
     edf_to_onda_samples(edf::EDF.File; kwargs...)
 
-Read signals from an `EDF.File` into a vector of `Onda.Samples`,
-which are returned along with a NamedTuple with diagnostic information
-(the same info returned by [`edf_header_to_onda_samples_info`](@ref)).
+Read signals from an `EDF.File` into a vector of `Onda.Samples`.  This is a
+convenience function that first formulates an import plan via [`plan`](@ref),
+and then immediately executes this plan with [`execute_plan`](@ref).  The vector
+of `Onda.Samples` and the executed plan are returned
 
-This is a convenience function that first formulates an import plan via
-[`plan`](@ref), and then immediately executes this plan with
-[`execute_plan`](@ref).
+The samples and executed plan are returned; it is **strongly advised** that you
+review the plan for un-extracted signals (where `:kind` or `:channel` is
+`missing`) and errors (non-`nothing` values in `:error`).
 
-The samples and executed plan are returned.
-
-Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
-"extractor" callbacks of the form:
-
-    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
-                      edf_signals::Vector{EDF.Signal})
-
-`edf_to_onda_samples` automatically uses a variety of default extractors derived
-from the EDF standard texts; see `src/standards.jl` for details. The caller can
-also provide custom labels via the `labels` keyword argument, custom unit
-specifications via `units`, and custom preprocessor functions via the
-`preprocess_labels` keyword argument (both of which are forarded to
-[`plan`](@ref)).
+Collections of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
+[`plan`](@ref).  The caller of this function can control the plan via the
+`labels`, `units`, and `preprocess_labels` keyword arguments, all of
+which are forwarded to [`plan`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
