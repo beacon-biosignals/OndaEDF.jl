@@ -18,3 +18,28 @@ These expectations are as follows:
 - The `physical_dimension` field for any given `EDF.Signal` is a value supported by `OndaEDF.STANDARD_UNITS`.
 
 Note that callers can additionally use the `custom_extractors` argument to `edf_to_onda_signals` to workaround some of these expectations; see the `import_edf` docstring for more details.
+
+## Fine-grained control over `Signal` processing: `plan` and `execute_plan`
+
+Because the default labels do not always match EDF files as seen in the wild, OndaEDF provides additional tools for creating, inspecting, manipulating, and recording the `EDF.Signal`-to-`Onda.Samples` mapping.
+In fact, the high-level function `edf_to_onda_samples` contains very few lines of code:
+```julia
+function edf_to_onda_samples(edf::EDF.File; kwargs...)
+    signals_plan = plan(edf; kwargs...)
+    EDF.read!(edf)
+    samples, exec_plan = execute_plan(signals_plan, edf)
+    return samples, exec_plan
+end
+```
+The executed plan as returned is a Tables.jl compatible table, with one row per EDF.Signal and columns for
+- the fields of the original `EDF.SignalHeader`
+- the fields of the generated `Onda.SamplesInfo`, including
+  - `:kind`, the extracted signal kind
+  - `:channel`, the extracted channel label (instead of `:channels`, since each `EDF.Signal` is exactly one channel in `Onda.Samples`)
+- `:edf_signal_idx`, the numerical index of the source signal in `edf.signals`
+- `:onda_signal_idx`, the ordinal index of the resulting samples (not necessarily the index into `samples`, since some groups might be skipped)
+- `:error`, any errors that were caught during planning and/or execution.
+
+This table could, for instance, be recorded somewhere during ingest of large or complex datasets, as a record of how the `Onda.Samples` were generated.
+
+It can also be manipulated programmatically, by manually or semi-automatically modifying the `:kind`, `:channel`, or other columns to correct for missed signals by the default labels (for which `:kind` and `:channel` will be `missing`).
