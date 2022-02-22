@@ -1,4 +1,5 @@
 using OndaEDF: validate_arrow_prefix, plan
+using Tables: rowmerge
 
 @testset "Import EDF" begin
 
