@@ -16,6 +16,10 @@ using Legolas: @row, lift
 using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type, convert_number_to_lpcm_sample_type
 using Tables: rowmerge
 
+export write_plan
+export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, store_edf_as_onda
+export onda_to_edf
+
 # can be dropped if we drop Onda<0.14
 sample_type(x) = isdefined(Onda, :sample_type) ? Onda.sample_type(x) : x.sample_type
 
@@ -108,10 +112,14 @@ const FilePlan = @row("ondaedf-file-plan@1" > "ondaedf-plan@1",
                       edf_signal_idx::Int,
                       onda_signal_idx::Int)
 
+function write_plan(io_or_path, plan_table; kwargs...)
+    return Legolas.write(io_or_path, plan_table,
+                         Legolas.Schema("ondaedf-file-plan@1");
+                         kwargs...)
+end
+
 include("import_edf.jl")
-export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, store_edf_as_onda
 
 include("export_edf.jl")
-export onda_to_edf
 
 end # module
