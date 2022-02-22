@@ -198,8 +198,16 @@ using Tables: rowmerge
         err_plan = @test_logs (:error,) plan(one_signal, 1.0; preprocess_labels=preproc_err)
         @test err_plan.error isa ErrorException
 
-        # malformed labels
+        # malformed labels/units
         @test_logs (:error,) plan(one_signal, 1.0; labels=[["signal"] => nothing])
+        @test_logs (:error,) plan(one_signal, 1.0; units=["millivolt" => nothing])
+
+        # unit not found does not error but does create a missing
+        unitless_plan = plan(one_signal, 1.0; units=["millivolt" => ["mV"]])
+        @test unitless_plan.error === nothing
+        @test ismissing(unitless_plan.sample_unit)
+
+        
         
         # error on execution
         plans = plan(edf)
