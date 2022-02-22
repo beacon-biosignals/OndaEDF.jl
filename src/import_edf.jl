@@ -43,6 +43,29 @@ function _named_tuple(x::T) where {T}
     return NamedTuple{fields}(values)
 end
 
+function _err_msg(e, msg="Error while converting EDF:")
+    bt = catch_backtrace()
+    msg = let io = IOBuffer()
+        println(io, msg)
+        showerror(io, e, bt)
+        String(take!(io))
+    end
+    @error msg
+    return msg
+end
+
+function _errored_row(row, e)
+    msg = _err_msg(e, "Skipping signal $(row.label): error while extracting channels")
+    return Tables.rowmerge(row; error=e)
+end
+
+function _errored_rows(rows, e)
+    labels = [row.label for row in rows]
+    labels_str = join(string.('"', labels, '"'), ", ", ", and ")
+    msg = _err_msg(e, "Skipping signal $(labels_str): error while extracting channels")
+    return Tables.rowmerge.(rows; error=e)
+end
+
 #####
 ##### `EDF.Signal` label handling
 #####
@@ -328,9 +351,13 @@ in a future version)
 function plan(header, seconds_per_record=_get(header, :seconds_per_record);
               labels=STANDARD_LABELS,
               units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+    # we don't check this inside the try/catch because it's a user/method error
+    # rather than a data/ingest error
     ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
 
     edf_label = preprocess_labels(header.label, header.transducer_type)
+
+    row = (; header..., seconds_per_record, error=nothing)
 
     try
         for (signal_names, channel_names) in labels
@@ -343,32 +370,22 @@ function plan(header, seconds_per_record=_get(header, :seconds_per_record);
                 
                 if matched !== nothing
                     # create SamplesInfo and return
-                    row = (; header...,
-                           seconds_per_record,
-                           channel=matched,
-                           kind=first(signal_names),
-                           sample_unit=edf_to_onda_unit(header.physical_dimension, units),
-                           edf_signal_encoding(header, seconds_per_record)...,
-                           error=nothing)
+                    row = Tables.rowmerge(row; 
+                                          channel=matched,
+                                          kind=first(signal_names),
+                                          sample_unit=edf_to_onda_unit(header.physical_dimension, units),
+                                          edf_signal_encoding(header, seconds_per_record)...,
+                                          )
                     return row
                 end
             end
         end
     catch e
-        bt = catch_backtrace()
-        msg = let io = IOBuffer()
-            println(io, "Skipping signal $(header.label): error while extracting channels")
-            showerror(io, e, bt)
-            String(take!(io))
-        end
-
-        @error msg
-        
-        return (; header..., seconds_per_record, error=SamplesInfoError(msg, e))
+        return _errored_row(row, e)
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return (; header..., seconds_per_record, error=nothing)
+    return row
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -470,15 +487,8 @@ function execute_plan(plan_table, edf::EDF.File;
             end
             return (; idx, samples, plan_rows=rows)
         catch e
-            bt = catch_backtrace()
-            io = IOBuffer()
-            println(io, "Error executing OndaEDF plan for rows $(rows)")
-            showerror(io, e, bt)
-            @error String(take!(io))
-            # this doesn't work (at least in IJulia) for some reason:
-            # @error "Error executing OndaEDF plan for rows $(rows)" exception=(e, bt)
-            
-            return (; idx, samples=missing, plan_rows=Tables.rowmerge.(rows; error=e))
+            plan_rows = _errored_rows(rows, e)
+            return (; idx, samples=missing, plan_rows)
         end
     end
 
