@@ -1,4 +1,4 @@
-using OndaEDF: validate_arrow_prefix, plan
+using OndaEDF: validate_arrow_prefix
 using Tables: rowmerge
 
 @testset "Import EDF" begin
@@ -189,32 +189,30 @@ using Tables: rowmerge
         edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
 
         one_signal = first(edf.signals)
-        @test_throws ArgumentError plan(one_signal)
-        @test_throws ArgumentError plan(one_signal, missing)
-        one_plan = plan(one_signal, edf.header.seconds_per_record)
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal)
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal, missing)
+        one_plan = plan_edf_to_onda_samples(one_signal, edf.header.seconds_per_record)
         @test one_plan.label == one_signal.header.label
 
         preproc_err = (l, t) -> throw(ErrorException("testing"))
-        err_plan = @test_logs (:error,) plan(one_signal, 1.0; preprocess_labels=preproc_err)
+        err_plan = @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; preprocess_labels=preproc_err)
         @test err_plan.error isa ErrorException
 
         # malformed labels/units
-        @test_logs (:error,) plan(one_signal, 1.0; labels=[["signal"] => nothing])
-        @test_logs (:error,) plan(one_signal, 1.0; units=["millivolt" => nothing])
+        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; labels=[["signal"] => nothing])
+        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => nothing])
 
         # unit not found does not error but does create a missing
-        unitless_plan = plan(one_signal, 1.0; units=["millivolt" => ["mV"]])
+        unitless_plan = plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => ["mV"]])
         @test unitless_plan.error === nothing
         @test ismissing(unitless_plan.sample_unit)
-
-        
         
         # error on execution
-        plans = plan(edf)
+        plans = plan_edf_to_onda_samples(edf)
         # intentionally combine signals of different kinds
         different = findfirst(row -> !isequal(row.kind, first(plans).kind), plans)
         bad_plans = rowmerge.(plans[[1, different]]; onda_signal_idx=1)
-        bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.execute_plan(bad_plans, edf)
+        bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
         @test all(row.error isa ArgumentError for row in bad_plans_exec)
         @test all(ismissing, bad_samples)
     end

@@ -18,14 +18,20 @@ or manipulated in memory as desired.
 
 ```@docs
 edf_to_onda_samples
+plan_edf_to_onda_samples
 edf_to_onda_annotations
+```
+
+### Import plan table schemas
+
+```@docs
+Plan
+FilePlan
 ```
 
 ### Import utilities
 
 ```@docs
-plan
-execute_plan
 match_edf_label
 merge_samples_info
 ```

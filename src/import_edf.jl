@@ -180,7 +180,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     #   signal name to the (end) of `signal_names` in the label set.
     # - if the signal name itself contains whitespace or one of `",[]"`, it
     #   will not match.  the fix for this is to pass a preprocessor function to
-    #   `plan` to normalize known instances (after reviewing the plan)
+    #   `plan_edf_to_onda_samples` to normalize known instances (after reviewing the plan)
     m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
     if !isnothing(m) && m[:signal] in signal_names
         label = m[:spec]
@@ -308,13 +308,13 @@ canonical_channel_name(channel_name) = channel_name
 # "channel" => ["alt1", "alt2", ...]
 canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
 
-plan(signal::EDF.Signal, s; kwargs...) = plan(_named_tuple(signal.header), s; kwargs...)
-plan(header::EDF.SignalHeader, s; kwargs...) = plan(_named_tuple(header), s; kwargs...)
+plan_edf_to_onda_samples(signal::EDF.Signal, s; kwargs...) = plan_edf_to_onda_samples(_named_tuple(signal.header), s; kwargs...)
+plan_edf_to_onda_samples(header::EDF.SignalHeader, s; kwargs...) = plan_edf_to_onda_samples(_named_tuple(header), s; kwargs...)
 
 """
-    plan(header, seconds_per_record; labels=STANDARD_LABELS,
-         units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
-    plan(signal::EDF.Signal, args...; kwargs...) = plan(signal.header, args...; kwargs...)
+    plan_edf_to_onda_samples(header, seconds_per_record; labels=STANDARD_LABELS,
+                             units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+    plan_edf_to_onda_samples(signal::EDF.Signal, args...; kwargs...)
 
 Formulate a plan for converting an EDF signal into Onda format.  This returns a
 Tables.jl row with all the columns from the signal header, plus additional
@@ -357,9 +357,12 @@ Matching is done in the order that `labels` iterates pairs, and will stop at the
 first match, with no warning if signals are ambiguous (although this may change
 in a future version)
 """
-function plan(header, seconds_per_record=_get(header, :seconds_per_record);
-              labels=STANDARD_LABELS,
-              units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+function plan_edf_to_onda_samples(header,
+                                  seconds_per_record=_get(header,
+                                                          :seconds_per_record);
+                                  labels=STANDARD_LABELS,
+                                  units=STANDARD_UNITS,
+                                  preprocess_labels=(l,t) -> l)
     # we don't check this inside the try/catch because it's a user/method error
     # rather than a data/ingest error
     ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
@@ -384,16 +387,16 @@ function plan(header, seconds_per_record=_get(header, :seconds_per_record);
                                    sample_unit=edf_to_onda_unit(header.physical_dimension, units),
                                    edf_signal_encoding(header, seconds_per_record)...,
                                    )
-                    return PlanRow(row)
+                    return Plan(row)
                 end
             end
         end
     catch e
-        return PlanRow(_errored_row(row, e))
+        return Plan(_errored_row(row, e))
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return PlanRow(row)
+    return Plan(row)
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -401,35 +404,35 @@ end
 # `promote_encoding`).  The column `onda_signal_idx` gives the planned grouping
 # of EDF signals into Onda Samples.
 #
-# pass this plan to execute_plan to actually run it
+# pass this plan to edf_to_onda_samples to actually run it
 
 """
-    plan(edf::EDF.File;
-         labels=STANDARD_LABELS,
-         units=STANDARD_UNITS,
-         preprocess_labels=(l,t) -> l,
-         onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
+    plan_edf_to_onda_samples(edf::EDF.File;
+                             labels=STANDARD_LABELS,
+                             units=STANDARD_UNITS,
+                             preprocess_labels=(l,t) -> l,
+                             onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
 
 Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
-`plan` to each individual signal contained in the file, storing `edf_signal_idx`
-as an additional column.  The resulting rows are then grouped according to
-`onda_signal_grouper` (by default, the `:kind`, `:sample_unit`, and
-`:sample_rate` columns), and the group index is added as an additional column in
-`onda_signal_idx`.
+`plan_edf_to_onda_samples` to each individual signal contained in the file,
+storing `edf_signal_idx` as an additional column.  The resulting rows are then
+grouped according to `onda_signal_grouper` (by default, the `:kind`,
+`:sample_unit`, and `:sample_rate` columns), and the group index is added as an
+additional column in `onda_signal_idx`.
 
 The resulting plan is returned as a table.  No signal data is actually read from
 the EDF file; to execute this plan and generate `Onda.Samples`, use
-[`execute_plan`](@ref)
+[`edf_to_onda_samples`](@ref)
 """
-function plan(edf::EDF.File;
-              labels=STANDARD_LABELS,
-              units=STANDARD_UNITS,
-              preprocess_labels=(l,t) -> l,
-              onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
+function plan_edf_to_onda_samples(edf::EDF.File;
+                                  labels=STANDARD_LABELS,
+                                  units=STANDARD_UNITS,
+                                  preprocess_labels=(l,t) -> l,
+                                  onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
     # remove non-Signals (e.g., AnnotationsSignals), keeping track of indices
     enum_signals = [(i, s) for (i, s) in enumerate(edf.signals) if s isa EDF.Signal]
     plan_rows = map(enum_signals) do (edf_signal_idx, signal)
-        row = plan(signal.header, edf.header.seconds_per_record;
+        row = plan_edf_to_onda_samples(signal.header, edf.header.seconds_per_record;
                    labels, units, preprocess_labels)
         return rowmerge(row; edf_signal_idx)
     end
@@ -442,7 +445,7 @@ function plan(edf::EDF.File;
         return [rowmerge(row, encoding, (; onda_signal_idx)) for row in rows]
     end
 
-    return plan_rows
+    return FilePlan.(plan_rows)
 end
 
 _get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missing
@@ -452,12 +455,12 @@ end
 
 # return Samples for each :onda_signal_idx
 """
-    execute_plan(plan_table, edf::EDF.File;
-                 samples_groups=grouper((:onda_signal_idx, )))
+    edf_to_onda_samples(edf::EDF.File, plan_table; validate=true,
+                        samples_groups=grouper((:onda_signal_idx, )))
 
-Execute an EDF import plan specified in `plan_table` (e.g., as generated by
-[`plan`](@ref)), returning an iterable of the generated `Onda.Samples` and the
-plan as actually executed.
+Convert Signals found in an EDF File to `Onda.Samples` according to the plan
+specified in `plan_table` (e.g., as generated by [`plan_edf_to_onda_samples`](@ref)), returning an
+iterable of the generated `Onda.Samples` and the plan as actually executed.
 
 The input plan is transformed by using [`merge_samples_info`](@ref) to combine
 rows with the same `:onda_signal_idx` (or output of `sample_groups`) into a
@@ -473,9 +476,20 @@ corresponding rows from the plan.
 Samples are returned in the order of `:onda_signal_idx` (or otherwise the output
 of the `samples_groups` function).  Signals that could not be matched or
 otherwise caused an error during execution are not returned.
+
+If `validate=true` (the default), the plan is validated against the
+[`FilePlan`](@ref) schema, and the signal headers in the `EDF.File`.
 """
-function execute_plan(plan_table, edf::EDF.File;
-                      samples_groups=grouper((:onda_signal_idx, )))
+function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true,
+                             samples_groups=grouper((:onda_signal_idx, )))
+    if validate
+        Legolas.validate(plan_table, Legolas.Schema("ondaedf-file-plan@1"))
+        for row in Tables.rows(plan_table)
+            signal = edf.signals[row.edf_signal_idx]
+            signal.header.label == row.label ||
+                throw(ArgumentError("Plan's label $(row.label) does not match EDF label $(signal.header.label)!"))
+        end
+    end
     EDF.read!(edf)
     plan_rows = Tables.rows(plan_table)
     exec_rows = map(collect(groupby(samples_groups, plan_rows))) do (idx, rows)
@@ -513,7 +527,7 @@ end
     merge_samples_info(plan_rows)
 
 Create a single, merged `SamplesInfo` from plan rows, such as generated by
-[`plan`](@ref).  Encodings are promoted with `promote_encodings`.
+[`plan_edf_to_onda_samples`](@ref).  Encodings are promoted with `promote_encodings`.
 
 The input rows must have the same values for `:kind`, `:sample_unit`, and
 `:sample_rate`; otherwise an `ArgumentError` is thrown.
@@ -597,17 +611,17 @@ the signals prefix.  The prefixes cannot reference (sub)directories.
 Returns `(; recording_uuid, signals, annotations, signals_path, annotations_path, plan)`.
 
 This is a convenience function that first formulates an import plan via
-[`plan`](@ref), and then immediately executes this plan with
-[`execute_plan`](@ref).
+[`plan_edf_to_onda_samples`](@ref), and then immediately executes this plan with
+[`edf_to_onda_samples`](@ref).
 
 The samples and executed plan are returned; it is **strongly advised** that you
 review the plan for un-extracted signals (where `:kind` or `:channel` is
 `missing`) and errors (non-`nothing` values in `:error`).
 
 Groups of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
-[`plan`](@ref).  The caller of this function can control the plan via the
-`labels`, `units`, and `preprocess_labels` keyword arguments, all of
-which are forwarded to [`plan`](@ref).
+[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the
+plan via the `labels`, `units`, and `preprocess_labels` keyword arguments, all
+of which are forwarded to [`plan_edf_to_onda_samples`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
@@ -687,8 +701,8 @@ end
     edf_to_onda_samples(edf::EDF.File; kwargs...)
 
 Read signals from an `EDF.File` into a vector of `Onda.Samples`.  This is a
-convenience function that first formulates an import plan via [`plan`](@ref),
-and then immediately executes this plan with [`execute_plan`](@ref).  The vector
+convenience function that first formulates an import plan via [`plan_edf_to_onda_samples`](@ref),
+and then immediately executes this plan with [`edf_to_onda_samples`](@ref).  The vector
 of `Onda.Samples` and the executed plan are returned
 
 The samples and executed plan are returned; it is **strongly advised** that you
@@ -696,9 +710,9 @@ review the plan for un-extracted signals (where `:kind` or `:channel` is
 `missing`) and errors (non-`nothing` values in `:error`).
 
 Collections of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
-[`plan`](@ref).  The caller of this function can control the plan via the
+[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the plan via the
 `labels`, `units`, and `preprocess_labels` keyword arguments, all of
-which are forwarded to [`plan`](@ref).
+which are forwarded to [`plan_edf_to_onda_samples`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
@@ -712,9 +726,9 @@ following transformations:
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function edf_to_onda_samples(edf::EDF.File; kwargs...)
-    signals_plan = plan(edf; kwargs...)
+    signals_plan = plan_edf_to_onda_samples(edf; kwargs...)
     EDF.read!(edf)
-    samples, exec_plan = execute_plan(signals_plan, edf)
+    samples, exec_plan = edf_to_onda_samples(edf, signals_plan)
     return samples, exec_plan
 end
 

@@ -25,9 +25,9 @@ Because the default labels do not always match EDF files as seen in the wild, On
 In fact, the high-level function `edf_to_onda_samples` contains very few lines of code:
 ```julia
 function edf_to_onda_samples(edf::EDF.File; kwargs...)
-    signals_plan = plan(edf; kwargs...)
+    signals_plan = plan_edf_to_onda_samples(edf; kwargs...)
     EDF.read!(edf)
-    samples, exec_plan = execute_plan(signals_plan, edf)
+    samples, exec_plan = edf_to_onda_samples(edf, signals_plan)
     return samples, exec_plan
 end
 ```
