@@ -212,7 +212,8 @@ using Tables: rowmerge
         # error on execution
         plans = plan(edf)
         # intentionally combine signals of different kinds
-        bad_plans = rowmerge.(plans[1:2]; onda_signal_idx=1)
+        different = findfirst(row -> !isequal(row.kind, first(plans).kind), plans)
+        bad_plans = rowmerge.(plans[[1, different]]; onda_signal_idx=1)
         bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.execute_plan(bad_plans, edf)
         @test all(row.error isa ArgumentError for row in bad_plans_exec)
         @test all(ismissing, bad_samples)
