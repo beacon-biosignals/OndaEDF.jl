@@ -34,23 +34,12 @@ function edf_to_onda_unit(edf_physical_dimension::AbstractString, unit_alternati
     for (onda_unit, potential_edf_matches) in unit_alternatives
         any(==(edf_physical_dimension), potential_edf_matches) && return onda_unit
     end
-    error("""
-          Failed to convert EDF physical dimension label `$(edf_physical_dimension)`
-          to known Onda unit; please either open a PR to add this unknown unit
-          to `OndaEDF.STANDARD_UNITS` (if the unit obeys the EDF standard),
-          or otherwise preprocess your EDF such that physical dimension labels
-          contain known/standard values.
-          """)
+    return missing
 end
 
-function onda_to_edf_unit(onda_sample_unit::String)
-    haskey(STANDARD_UNITS, onda_sample_unit) && return first(STANDARD_UNITS[onda_sample_unit])
-    error("""
-          Failed to convert Onda unit `$(onda_sample_unit)` to EDF physical dimension
-          label; please either open a PR to add this unknown unit to `OndaEDF.STANDARD_UNITS`
-          (if the unit obeys the EDF standard), or otherwise preprocess your input data such
-          that their unit names are known/standard values.
-          """)
+function onda_to_edf_unit(onda_sample_unit::String, unit_alternatives=STANDARD_UNITS)
+    units = get(unit_alternatives, onda_sample_unit, missing)
+    return lift(first, units)
 end
 
 const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 and 10/10
