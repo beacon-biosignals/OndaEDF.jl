@@ -56,14 +56,14 @@ end
 
 function _errored_row(row, e)
     msg = _err_msg(e, "Skipping signal $(row.label): error while extracting channels")
-    return Tables.rowmerge(row; error=e)
+    return rowmerge(row; error=e)
 end
 
 function _errored_rows(rows, e)
     labels = [row.label for row in rows]
     labels_str = join(string.('"', labels, '"'), ", ", ", and ")
     msg = _err_msg(e, "Skipping signal $(labels_str): error while extracting channels")
-    return Tables.rowmerge.(rows; error=e)
+    return rowmerge.(rows; error=e)
 end
 
 #####
@@ -379,12 +379,12 @@ function plan(header, seconds_per_record=_get(header, :seconds_per_record);
                 
                 if matched !== nothing
                     # create SamplesInfo and return
-                    row = Tables.rowmerge(row; 
-                                          channel=matched,
-                                          kind=first(signal_names),
-                                          sample_unit=edf_to_onda_unit(header.physical_dimension, units),
-                                          edf_signal_encoding(header, seconds_per_record)...,
-                                          )
+                    row = rowmerge(row; 
+                                   channel=matched,
+                                   kind=first(signal_names),
+                                   sample_unit=edf_to_onda_unit(header.physical_dimension, units),
+                                   edf_signal_encoding(header, seconds_per_record)...,
+                                   )
                     return PlanRow(row)
                 end
             end
@@ -432,7 +432,7 @@ function plan(edf::EDF.File;
     plan_rows = map(enum_signals) do (edf_signal_idx, signal)
         row = plan(signal.header, edf.header.seconds_per_record;
                    labels, units, preprocess_labels)
-        return Tables.rowmerge(row; edf_signal_idx)
+        return rowmerge(row; edf_signal_idx)
     end
 
     # group signals by which Samples they will belong to, promote_encoding, and
@@ -440,7 +440,7 @@ function plan(edf::EDF.File;
     grouped_rows = groupby(onda_signal_groups, plan_rows)
     plan_rows = mapreduce(vcat, enumerate(values(grouped_rows))) do (onda_signal_idx, rows)
         encoding = promote_encodings(rows)
-        return Tables.rowmerge.(rows; onda_signal_idx)
+        return [rowmerge(row, encoding, (; onda_signal_idx)) for row in rows]
     end
 
     # make sure we get a well-behaved Tables.jl table out of this

@@ -22,8 +22,9 @@ const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
                             "beat_per_minute" => ["B/m", "b/m", "bpm", "BPM", "BpM", "Bpm"],
                             "centimeter_of_water" => ["cmH2O", "cmh2o", "cmH20"],
                             "ohm" => ["Ohm", "ohms", "Ohms", "ohm"],
-                            "unknown" => ["", "\"\"", "#", "u", "none", "---"],
-                            "relative" => ["rel."])
+                            "unknown" => ["", "\"\"", "#", "u", "none", "---", "n/a"],
+                            "relative" => ["rel."],
+                            "microbar" => ["ubar"])
 
 # The case-sensitivity of EDF physical dimension names means you can't/shouldn't
 # naively convert/lowercase them to compliant Onda unit names, so we have to be
