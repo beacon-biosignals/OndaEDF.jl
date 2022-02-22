@@ -247,7 +247,7 @@ function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=mi
                 sample_rate=missing)
     end
     
-    sample_type = mapreduce(lift(Onda.julia_type_from_onda_sample_type),
+    sample_type = mapreduce(Onda.julia_type_from_onda_sample_type,
                             promote_type,
                             (e.sample_type for e in encodings))
 
