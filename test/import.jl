@@ -1,4 +1,4 @@
-using OndaEDF: validate_arrow_prefix
+using OndaEDF: validate_arrow_prefix, plan
 
 @testset "Import EDF" begin
 
@@ -183,5 +183,32 @@ using OndaEDF: validate_arrow_prefix
             end
         end
     end
+
+    @testset "error handling" begin
+        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
+
+        one_signal = first(edf.signals)
+        @test_throws ArgumentError plan(one_signal)
+        @test_throws ArgumentError plan(one_signal, missing)
+        one_plan = plan(one_signal, edf.header.seconds_per_record)
+        @test one_plan.label == one_signal.header.label
+
+        preproc_err = (l, t) -> throw(ErrorException("testing"))
+        err_plan = @test_logs (:error,) plan(one_signal, 1.0; preprocess_labels=preproc_err)
+        @test err_plan.error isa ErrorException
+
+        # malformed labels
+        @test_logs (:error,) plan(one_signal, 1.0; labels=[["signal"] => nothing])
+        
+        # error on execution
+        plans = plan(edf)
+        # intentionally combine signals of different kinds
+        bad_plans = rowmerge.(plans[1:2]; onda_signal_idx=1)
+        bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.execute_plan(bad_plans, edf)
+        @test all(row.error isa ArgumentError for row in bad_plans_exec)
+        @test all(ismissing, bad_samples)
+    end
+    
+    
 
 end

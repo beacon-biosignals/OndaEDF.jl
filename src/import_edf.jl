@@ -62,7 +62,7 @@ end
 function _errored_rows(rows, e)
     labels = [row.label for row in rows]
     labels_str = join(string.('"', labels, '"'), ", ", ", and ")
-    msg = _err_msg(e, "Skipping signal $(labels_str): error while extracting channels")
+    msg = _err_msg(e, "Skipping signals $(labels_str): error while extracting channels")
     return rowmerge.(rows; error=e)
 end
 
@@ -364,11 +364,10 @@ function plan(header, seconds_per_record=_get(header, :seconds_per_record);
     # rather than a data/ingest error
     ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
 
-    edf_label = preprocess_labels(header.label, header.transducer_type)
-
     row = (; header..., seconds_per_record, error=nothing)
 
     try
+        edf_label = preprocess_labels(header.label, header.transducer_type)
         for (signal_names, channel_names) in labels
             # channel names is iterable of channel specs, which are either "channel"
             # or "canonical => ["alt1", ...]
@@ -443,8 +442,7 @@ function plan(edf::EDF.File;
         return [rowmerge(row, encoding, (; onda_signal_idx)) for row in rows]
     end
 
-    # make sure we get a well-behaved Tables.jl table out of this
-    return Tables.dictrowtable(plan_rows)
+    return plan_rows
 end
 
 _get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missing
@@ -533,7 +531,8 @@ function merge_samples_info(rows)
     if length(key) != 1
         throw(ArgumentError("couldn't merge samples info from rows: multiple " *
                             "kind/sample_unit/sample_rate combinations:\n\n" *
-                            "$(keys)\n\n$(rows)"))
+                            "$(pretty_table(String, key))\n\n" *
+                            "$(pretty_table(String, rows))"))
     end
 
     key = only(key)

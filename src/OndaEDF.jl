@@ -1,14 +1,17 @@
 module OndaEDF
 
 using Base.Iterators
-using Compat: @compat
-using Dates, UUIDs
+using Dates
+using EDF
 using Legolas
-using Onda, EDF
+using Onda
+using PrettyTables
 using StatsBase
 using TimeSpans
 using Tables
+using UUIDs
 
+using Compat: @compat
 using Legolas: @row, lift
 using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type, convert_number_to_lpcm_sample_type
 using Tables: rowmerge
@@ -39,8 +42,8 @@ const PlanRow = @row("ondaedf-plan@1",
                      sample_offset_in_unit::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_offset_in_unit),
                      sample_type::Union{Missing, AbstractString} = lift(Onda.onda_sample_type_from_julia_type, sample_type),
                      sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_rate),
-                     # errors,
-                     error::Union{Nothing, Exception} = coalesce(lift(Exception, error), nothing),
+                     # errors, use `nothing` to indicate no error
+                     error::Union{Nothing, Exception} = coalesce(error, nothing)
                      )
 
 
