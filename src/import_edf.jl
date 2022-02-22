@@ -240,7 +240,16 @@ end
 
 # TODO: replace this with float type for mismatched
 function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
-    sample_type = reduce(promote_type, (e.sample_type for e in encodings))
+    if any(any(ismissing, row) for row in encodings)
+        return (sample_type=missing,
+                sample_offset_in_unit=missing,
+                sample_resolution_in_unit=missing,
+                sample_rate=missing)
+    end
+    
+    sample_type = mapreduce(lift(Onda.julia_type_from_onda_sample_type),
+                            promote_type,
+                            (e.sample_type for e in encodings))
 
     sample_rates = [e.sample_rate for e in encodings]
     if all(==(first(sample_rates)), sample_rates)
@@ -376,16 +385,16 @@ function plan(header, seconds_per_record=_get(header, :seconds_per_record);
                                           sample_unit=edf_to_onda_unit(header.physical_dimension, units),
                                           edf_signal_encoding(header, seconds_per_record)...,
                                           )
-                    return row
+                    return PlanRow(row)
                 end
             end
         end
     catch e
-        return _errored_row(row, e)
+        return PlanRow(_errored_row(row, e))
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return row
+    return PlanRow(row)
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -426,9 +435,11 @@ function plan(edf::EDF.File;
         return Tables.rowmerge(row; edf_signal_idx)
     end
 
+    # group signals by which Samples they will belong to, promote_encoding, and
     # write index of destination signal into plan to capture grouping
     grouped_rows = groupby(onda_signal_groups, plan_rows)
     plan_rows = mapreduce(vcat, enumerate(values(grouped_rows))) do (onda_signal_idx, rows)
+        encoding = promote_encodings(rows)
         return Tables.rowmerge.(rows; onda_signal_idx)
     end
 
