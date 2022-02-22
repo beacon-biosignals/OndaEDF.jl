@@ -112,6 +112,12 @@ const FilePlan = @row("ondaedf-file-plan@1" > "ondaedf-plan@1",
                       edf_signal_idx::Int,
                       onda_signal_idx::Int)
 
+"""
+    write_plan(io_or_path, plan_table; validate=true, kwargs...)
+
+Write a plan table to `io_or_path` using `Legolas.write`, using the
+`ondaedf-file-plan@1` schema.
+"""
 function write_plan(io_or_path, plan_table; kwargs...)
     return Legolas.write(io_or_path, plan_table,
                          Legolas.Schema("ondaedf-file-plan@1");

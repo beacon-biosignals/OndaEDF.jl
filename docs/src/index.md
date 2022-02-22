@@ -27,6 +27,7 @@ edf_to_onda_annotations
 ```@docs
 Plan
 FilePlan
+write_plan
 ```
 
 ### Import utilities
