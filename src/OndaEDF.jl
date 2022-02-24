@@ -47,8 +47,7 @@ include("standards.jl")
                 sample_type::Union{Missing, AbstractString}
                 sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION}
                 # errors, use `nothing` to indicate no error
-                error::Union{Nothing, String}
-                )
+                error::Union{Nothing, String})
 
 A type-alias for a Legolas row describing a single EDF signal-to-Onda channel
 conversion.  The columns are the union of
