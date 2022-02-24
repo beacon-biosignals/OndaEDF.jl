@@ -11,7 +11,6 @@ using TimeSpans
 using Tables
 using UUIDs
 
-using Compat: @compat
 using Legolas: @row, lift
 using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type, convert_number_to_lpcm_sample_type
 using Tables: rowmerge
@@ -26,7 +25,7 @@ sample_type(x) = isdefined(Onda, :sample_type) ? Onda.sample_type(x) : x.sample_
 include("standards.jl")
 
 """
-    Plan = @row("ondaedf-plan@1",
+    Plan = @row("ondaedf.plan@1",
                 # EDF.SignalHeader fields
                 label::String
                 transducer_type::String
@@ -60,7 +59,7 @@ conversion.  The columns are the union of
 - `error`, which is `nothing` for a conversion that is or is expected to be 
   successful, and the caught `Exception` for any failures.
 
-The [`FilePlan`](@ref) extension contiains two columns that give additional
+The [`FilePlan`](@ref) extension contains two columns that give additional
 context about the conversion that only apply at the level of an `EDF.File`: 
 - `edf_signal_idx` gives the index of the source EDF signal
 - `onda_signal_idx` gives the index of the output `Onda.Samples`.  Note some
@@ -90,8 +89,7 @@ const Plan = @row("ondaedf-plan@1",
                   sample_type::Union{Missing, AbstractString} = lift(Onda.onda_sample_type_from_julia_type, sample_type),
                   sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_rate),
                   # errors, use `nothing` to indicate no error
-                  error::Union{Nothing, Exception} = coalesce(error, nothing)
-                  )
+                  error::Union{Nothing, Exception} = coalesce(error, nothing))
 
 """
     const FilePlan = @row("ondaedf-file-plan@1" > "ondaedf-plan@1",

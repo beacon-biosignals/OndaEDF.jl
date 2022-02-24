@@ -125,7 +125,7 @@ function is to remove signal names from the label, and to canonicalize the
 channel name(s) that remain.  So something like "[eCG] avl-REF" will be
 transformed to "avl" (given `signal_names=["ecg"]`, and `channel_name="avl"`)
 
-This returns `nothing` if `channel_name` does not match after normalization
+This returns `nothing` if `channel_name` does not match after normalization.
 
 Canonicalization
 
@@ -247,9 +247,9 @@ function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=mi
                 sample_rate=missing)
     end
     
-    sample_type = mapreduce(Onda.julia_type_from_onda_sample_type,
-                            promote_type,
-                            (e.sample_type for e in encodings))
+    sample_type = mapreduce(promote_type, encodings) do e
+        return Onda.julia_type_from_onda_sample_type(e.sample_type)
+    end
 
     sample_rates = [e.sample_rate for e in encodings]
     if all(==(first(sample_rates)), sample_rates)
@@ -308,7 +308,7 @@ canonical_channel_name(channel_name) = channel_name
 # "channel" => ["alt1", "alt2", ...]
 canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
 
-plan_edf_to_onda_samples(signal::EDF.Signal, s; kwargs...) = plan_edf_to_onda_samples(_named_tuple(signal.header), s; kwargs...)
+plan_edf_to_onda_samples(signal::EDF.Signal, s; kwargs...) = plan_edf_to_onda_samples(signal.header, s; kwargs...)
 plan_edf_to_onda_samples(header::EDF.SignalHeader, s; kwargs...) = plan_edf_to_onda_samples(_named_tuple(header), s; kwargs...)
 
 """
@@ -385,8 +385,7 @@ function plan_edf_to_onda_samples(header,
                                    channel=matched,
                                    kind=first(signal_names),
                                    sample_unit=edf_to_onda_unit(header.physical_dimension, units),
-                                   edf_signal_encoding(header, seconds_per_record)...,
-                                   )
+                                   edf_signal_encoding(header, seconds_per_record)...)
                     return Plan(row)
                 end
             end
@@ -430,12 +429,11 @@ function plan_edf_to_onda_samples(edf::EDF.File;
                                   preprocess_labels=(l,t) -> l,
                                   onda_signal_groups=grouper((:kind, :sample_unit, :sample_rate)))
     # remove non-Signals (e.g., AnnotationsSignals), keeping track of indices
-    enum_signals = [(i, s) for (i, s) in enumerate(edf.signals) if s isa EDF.Signal]
-    plan_rows = map(enum_signals) do (edf_signal_idx, signal)
-        row = plan_edf_to_onda_samples(signal.header, edf.header.seconds_per_record;
-                   labels, units, preprocess_labels)
-        return rowmerge(row; edf_signal_idx)
-    end
+    plan_rows = [rowmerge(plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
+                                                   labels, units, preprocess_labels);
+                          edf_signal_idx=i)
+                 for (i, s) in enumerate(edf.signals)
+                 if s isa EDF.Signal]
 
     # group signals by which Samples they will belong to, promote_encoding, and
     # write index of destination signal into plan to capture grouping
@@ -653,7 +651,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
     signals = Onda.Signal[]
     edf_samples, plan = edf_to_onda_samples(edf; kwargs...)
     
-    errors = _get(Tables.columns(plan), :errors)
+    errors = _get(Tables.columns(plan), :error)
     if !ismissing(errors)
         # why unique?  because errors that occur during execution get inserted
         # into all plan rows for that group of EDF signals, so they may be
@@ -684,7 +682,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         annotations = Onda.Annotation[]
     end
 
-    return @compat (; recording_uuid, signals, annotations, signals_path, annotations_path, plan)
+    return (; recording_uuid, signals, annotations, signals_path, annotations_path, plan)
 end
 
 function validate_arrow_prefix(prefix)

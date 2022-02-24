@@ -36,7 +36,7 @@ The executed plan as returned is a Tables.jl compatible table, with one row per 
 - the fields of the generated `Onda.SamplesInfo`, including
   - `:kind`, the extracted signal kind
   - `:channel`, the extracted channel label (instead of `:channels`, since each `EDF.Signal` is exactly one channel in `Onda.Samples`)
-- `:edf_signal_idx`, the numerical index of the source signal in `edf.signals`
+- `:edf_signal_index`, the 1-based numerical index of the source signal in `edf.signals`
 - `:onda_signal_idx`, the ordinal index of the resulting samples (not necessarily the index into `samples`, since some groups might be skipped)
 - `:error`, any errors that were caught during planning and/or execution.
 
