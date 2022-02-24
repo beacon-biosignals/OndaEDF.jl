@@ -34,7 +34,7 @@ include("standards.jl")
                 physical_maximum::Float32
                 digital_minimum::Float32
                 digital_maximum::Float32
-                prefilter::AbstractString
+                prefilter::String
                 samples_per_record::Int16
                 # EDF.FileHeader field,
                 seconds_per_record::Float64
@@ -47,7 +47,7 @@ include("standards.jl")
                 sample_type::Union{Missing, AbstractString}
                 sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION}
                 # errors, use `nothing` to indicate no error
-                error::Union{Nothing, Exception}
+                error::Union{Nothing, String}
                 )
 
 A type-alias for a Legolas row describing a single EDF signal-to-Onda channel
@@ -57,17 +57,18 @@ conversion.  The columns are the union of
 - fields from `Onda.SamplesInfo` (optional, may be `missing` to indicate failed
   conversion)
 - `error`, which is `nothing` for a conversion that is or is expected to be 
-  successful, and the caught `Exception` for any failures.
+  successful, and a `String` describing the source of the error (with backtrace)
+  in the case of a caught error.
 
 The [`FilePlan`](@ref) extension contains two columns that give additional
 context about the conversion that only apply at the level of an `EDF.File`: 
-- `edf_signal_idx` gives the index of the source EDF signal
-- `onda_signal_idx` gives the index of the output `Onda.Samples`.  Note some
+- `edf_signal_index` gives the index of the source EDF signal
+- `onda_signal_index` gives the index of the output `Onda.Samples`.  Note some
   indices may be skipped in the output, so this is only to indicate order and
   grouping.
 
 """
-const Plan = @row("ondaedf-plan@1",
+const Plan = @row("ondaedf.plan@1",
                   # EDF.SignalHeader fields
                   label::String = convert(String, label),
                   transducer_type::String = convert(String, transducer_type),
@@ -76,7 +77,7 @@ const Plan = @row("ondaedf-plan@1",
                   physical_maximum::Float32 = convert(Float32, physical_maximum),
                   digital_minimum::Float32 = convert(Float32, digital_minimum),
                   digital_maximum::Float32 = convert(Float32, digital_maximum),
-                  prefilter::AbstractString = convert(String, prefilter),
+                  prefilter::String = convert(String, prefilter),
                   samples_per_record::Int16 = convert(Int16, samples_per_record),
                   # EDF.FileHeader field,
                   seconds_per_record::Float64 = convert(Float64, seconds_per_record),
@@ -89,36 +90,36 @@ const Plan = @row("ondaedf-plan@1",
                   sample_type::Union{Missing, AbstractString} = lift(Onda.onda_sample_type_from_julia_type, sample_type),
                   sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_rate),
                   # errors, use `nothing` to indicate no error
-                  error::Union{Nothing, Exception} = coalesce(error, nothing))
+                  error::Union{Nothing, String} = coalesce(error, nothing))
 
 """
-    const FilePlan = @row("ondaedf-file-plan@1" > "ondaedf-plan@1",
-                          edf_signal_idx::Int,
-                          onda_signal_idx::Int)
+    const FilePlan = @row("ondaedf.file-plan@1" > "ondaedf.plan@1",
+                          edf_signal_index::Int,
+                          onda_signal_index::Int)
 
 Type alias for a Legolas row for one EDF signal-to-Onda channel conversion,
 which includes the columns of a [`Plan`](@ref) and additional file-level context:
-- `edf_signal_idx` gives the index of the `signals` in the source `EDF.File` 
+- `edf_signal_index` gives the index of the `signals` in the source `EDF.File` 
   corresponding to this row
-- `onda_signal_idx` gives the index of the output `Onda.Samples`.
+- `onda_signal_index` gives the index of the output `Onda.Samples`.
 
 Note that while the EDF index does correspond to the actual index in
 `edf.signals`, some Onda indices may be skipped in the output, so
-`onda_signal_idx` is only to indicate order and grouping.
+`onda_signal_index` is only to indicate order and grouping.
 """
-const FilePlan = @row("ondaedf-file-plan@1" > "ondaedf-plan@1",
-                      edf_signal_idx::Int,
-                      onda_signal_idx::Int)
+const FilePlan = @row("ondaedf.file-plan@1" > "ondaedf.plan@1",
+                      edf_signal_index::Int,
+                      onda_signal_index::Int)
 
 """
     write_plan(io_or_path, plan_table; validate=true, kwargs...)
 
 Write a plan table to `io_or_path` using `Legolas.write`, using the
-`ondaedf-file-plan@1` schema.
+`ondaedf.file-plan@1` schema.
 """
 function write_plan(io_or_path, plan_table; kwargs...)
     return Legolas.write(io_or_path, plan_table,
-                         Legolas.Schema("ondaedf-file-plan@1");
+                         Legolas.Schema("ondaedf.file-plan@1");
                          kwargs...)
 end
 

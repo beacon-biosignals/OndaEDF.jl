@@ -1,41 +1,3 @@
-#= 
-
-OndaEDF: a manifesto
-
-this is a mess.  there are a two main problems with the current state of things:
-
-1. There is a huge amount of indirection which makes the specification of
-   extractors unnecessarily confusing and opaque.  It's very hard to tell what's
-   going to happen when you make a change, and hard to tell what changes to make
-   to achieve a desired outcome
-
-2. It's harder than it should be to generate a persistent record of how one or
-   more EDFs was converted to Onda format.  We should emit an "audit" table by
-   default, which has one row per input signal, and the corresponding
-   samplesinfo fields that were generated from it, where there's a 1-1 mapping
-   between unique combinations of samplesinfo fields and Onda.Samples that are
-   generated.
-
-My proposal is this: 
-
-1. Channel label extraction proceeds solely one signal at a time, and only takes
-   the signal header or information derived from it.
-
-2. The default extractor is a single function that iterates through a set of
-   patterns, stopping at the first pattern that matches, and then quitting.
-
-3. The output of this initial processing is a table with columns for the union
-   of the fields in EDF.SignalHeader and Onda.SamplesInfo.  The Onda.SamplesInfo
-   columns will be `missing` if extraction failed for some reason.  An
-   additional column may optionally record the status (including any exceptions
-   that occurred during any stage in processing).  
-
-4. This table is The Plan for how to convert to Onda.  It may be manipulated
-   programmatically before actually consuming the EDF.Signal data.  It should
-   be consumed by any functions that actually deal with signal data
-
-=# 
-
 @generated function _named_tuple(x)
     names = fieldnames(x)
     types = Tuple{fieldtypes(x)...}
@@ -59,14 +21,14 @@ end
 
 function _errored_row(row, e)
     msg = _err_msg(e, "Skipping signal $(row.label): error while extracting channels")
-    return rowmerge(row; error=e)
+    return rowmerge(row; error=msg)
 end
 
 function _errored_rows(rows, e)
     labels = [row.label for row in rows]
     labels_str = join(string.('"', labels, '"'), ", ", ", and ")
     msg = _err_msg(e, "Skipping signals $(labels_str): error while extracting channels")
-    return rowmerge.(rows; error=e)
+    return rowmerge.(rows; error=msg)
 end
 
 #####
@@ -328,8 +290,8 @@ If no labels match, then the `channel` and `kind` columns are `missing`; the
 behavior of other `SamplesInfo` columns is undefined; they are currently set to
 missing but that may change in future versions.
 
-Any errors that are thrown in the process will be stored as `SampleInfoError`s
-in the `error` column.
+Any errors that are thrown in the process will be wrapped as `SampleInfoError`s
+and then printed with backtrace to a `String` in the `error` column.
 
 ## Matching EDF label to Onda labels
 
@@ -403,7 +365,7 @@ end
 
 # create a table with a plan for converting this EDF file to onda: one row per
 # signal, with the Onda.SamplesInfo fields that will be generated (modulo
-# `promote_encoding`).  The column `onda_signal_idx` gives the planned grouping
+# `promote_encoding`).  The column `onda_signal_index` gives the planned grouping
 # of EDF signals into Onda Samples.
 #
 # pass this plan to edf_to_onda_samples to actually run it
@@ -417,10 +379,10 @@ end
 
 Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
 `plan_edf_to_onda_samples` to each individual signal contained in the file,
-storing `edf_signal_idx` as an additional column.  The resulting rows are then
+storing `edf_signal_index` as an additional column.  The resulting rows are then
 grouped according to `onda_signal_grouper` (by default, the `:kind`,
 `:sample_unit`, and `:sample_rate` columns), and the group index is added as an
-additional column in `onda_signal_idx`.
+additional column in `onda_signal_index`.
 
 The resulting plan is returned as a table.  No signal data is actually read from
 the EDF file; to execute this plan and generate `Onda.Samples`, use
@@ -434,16 +396,16 @@ function plan_edf_to_onda_samples(edf::EDF.File;
     # remove non-Signals (e.g., AnnotationsSignals), keeping track of indices
     plan_rows = [rowmerge(plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
                                                    labels, units, preprocess_labels);
-                          edf_signal_idx=i)
+                          edf_signal_index=i)
                  for (i, s) in enumerate(edf.signals)
                  if s isa EDF.Signal]
 
     # group signals by which Samples they will belong to, promote_encoding, and
     # write index of destination signal into plan to capture grouping
     grouped_rows = groupby(onda_signal_groups, plan_rows)
-    plan_rows = mapreduce(vcat, enumerate(values(grouped_rows))) do (onda_signal_idx, rows)
+    plan_rows = mapreduce(vcat, enumerate(values(grouped_rows))) do (onda_signal_index, rows)
         encoding = promote_encodings(rows)
-        return [rowmerge(row, encoding, (; onda_signal_idx)) for row in rows]
+        return [rowmerge(row, encoding, (; onda_signal_index)) for row in rows]
     end
 
     return FilePlan.(plan_rows)
@@ -454,27 +416,27 @@ function grouper(vars=(:kind, :sample_unit, :sample_rate))
     return x -> NamedTuple{vars}(_get.(Ref(x), vars))
 end
 
-# return Samples for each :onda_signal_idx
+# return Samples for each :onda_signal_index
 """
     edf_to_onda_samples(edf::EDF.File, plan_table; validate=true,
-                        samples_groups=grouper((:onda_signal_idx, )))
+                        samples_groups=grouper((:onda_signal_index, )))
 
 Convert Signals found in an EDF File to `Onda.Samples` according to the plan
 specified in `plan_table` (e.g., as generated by [`plan_edf_to_onda_samples`](@ref)), returning an
 iterable of the generated `Onda.Samples` and the plan as actually executed.
 
 The input plan is transformed by using [`merge_samples_info`](@ref) to combine
-rows with the same `:onda_signal_idx` (or output of `sample_groups`) into a
+rows with the same `:onda_signal_index` (or output of `sample_groups`) into a
 common `Onda.SamplesInfo`.  Then [`onda_samples_from_edf_signals`](@ref) is used
 to combine the EDF signals data into a single `Onda.Samples` per group.
 
 The `label` of the original `EDF.Signal`s are preserved in the `:edf_channels`
 field of the resulting `SamplesInfo`s for each `Samples` generated.
 
-Any errors that occur are inserted into the `:error` column for the
-corresponding rows from the plan.
+Any errors that occur are shown as `String`s (with backtrace) and inserted into
+the `:error` column for the corresponding rows from the plan.
 
-Samples are returned in the order of `:onda_signal_idx` (or otherwise the output
+Samples are returned in the order of `:onda_signal_index` (or otherwise the output
 of the `samples_groups` function).  Signals that could not be matched or
 otherwise caused an error during execution are not returned.
 
@@ -482,11 +444,11 @@ If `validate=true` (the default), the plan is validated against the
 [`FilePlan`](@ref) schema, and the signal headers in the `EDF.File`.
 """
 function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true,
-                             samples_groups=grouper((:onda_signal_idx, )))
+                             samples_groups=grouper((:onda_signal_index, )))
     if validate
-        Legolas.validate(plan_table, Legolas.Schema("ondaedf-file-plan@1"))
+        Legolas.validate(plan_table, Legolas.Schema("ondaedf.file-plan@1"))
         for row in Tables.rows(plan_table)
-            signal = edf.signals[row.edf_signal_idx]
+            signal = edf.signals[row.edf_signal_index]
             signal.header.label == row.label ||
                 throw(ArgumentError("Plan's label $(row.label) does not match EDF label $(signal.header.label)!"))
         end
@@ -505,7 +467,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true,
                 # etc.
                 samples = missing
             else
-                signals = [edf.signals[row.edf_signal_idx] for row in rows]
+                signals = [edf.signals[row.edf_signal_index] for row in rows]
                 samples = onda_samples_from_edf_signals(info, signals,
                                                         edf.header.seconds_per_record)
             end
@@ -660,7 +622,9 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         # into all plan rows for that group of EDF signals, so they may be
         # repeated
         for e in unique(errors)
-            @warn sprint(showerror, e)
+            if e !== nothing
+                @warn sprint(showerror, e)
+            end
         end
     end
     

@@ -1,5 +1,6 @@
 using OndaEDF: validate_arrow_prefix
 using Tables: rowmerge
+using Legolas: validate, Schema, read
 
 @testset "Import EDF" begin
 
@@ -196,7 +197,8 @@ using Tables: rowmerge
 
         preproc_err = (l, t) -> throw(ErrorException("testing"))
         err_plan = @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; preprocess_labels=preproc_err)
-        @test err_plan.error isa ErrorException
+        @test err_plan.error isa String
+        @test occursin("testing", err_plan.error)
 
         # malformed labels/units
         @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; labels=[["signal"] => nothing])
@@ -211,12 +213,32 @@ using Tables: rowmerge
         plans = plan_edf_to_onda_samples(edf)
         # intentionally combine signals of different kinds
         different = findfirst(row -> !isequal(row.kind, first(plans).kind), plans)
-        bad_plans = rowmerge.(plans[[1, different]]; onda_signal_idx=1)
+        bad_plans = rowmerge.(plans[[1, different]]; onda_signal_index=1)
         bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
-        @test all(row.error isa ArgumentError for row in bad_plans_exec)
-        @test all(ismissing, bad_samples)
+        @test all(row.error isa String for row in bad_plans_exec)
+        @test all(occursin("ArgumentError", row.error) for row in bad_plans_exec)
+        @test isempty(bad_samples)
     end
-    
-    
+
+    @testset "de/serialization of plans" begin
+        edf, _ = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
+        plan = plan_edf_to_onda_samples(edf)
+        @test validate(plan, Schema("ondaedf.file-plan@1")) === nothing
+
+        samples, plan_exec = edf_to_onda_samples(edf, plan)
+        @test validate(plan_exec, Schema("ondaedf.file-plan@1")) === nothing
+
+        plan_rt = let io=IOBuffer()
+            OndaEDF.write_plan(io, plan)
+            seekstart(io)
+            Legolas.read(io; validate=true)
+        end
+
+        plan_exec_cols = Tables.columns(plan_exec)
+        plan_rt_cols = Tables.columns(plan_rt)
+        for col in Tables.columnnames(plan_exec_cols)
+            @test all(isequal.(Tables.getcolumn(plan_rt_cols, col), Tables.getcolumn(plan_exec_cols, col)))
+        end
+    end
 
 end
