@@ -1,5 +1,6 @@
 using OndaEDF: validate_arrow_prefix
 using Tables: rowmerge
+using Legolas
 using Legolas: validate, Schema, read
 
 @testset "Import EDF" begin
