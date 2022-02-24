@@ -36,11 +36,14 @@ My proposal is this:
 
 =# 
 
-# XXX: make this @generated for speed:
-function _named_tuple(x::T) where {T}
-    fields = fieldnames(T)
-    values = getfield.(Ref(x), fields)
-    return NamedTuple{fields}(values)
+@generated function _named_tuple(x)
+    names = fieldnames(x)
+    types = Tuple{fieldtypes(x)...}
+    body = Expr(:tuple)
+    for i in 1:fieldcount(x)
+        push!(body.args, :(getfield(x, $i)))
+    end
+    return :(NamedTuple{$names,$types}($body))
 end
 
 function _err_msg(e, msg="Error while converting EDF:")
