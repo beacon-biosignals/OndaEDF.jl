@@ -31,7 +31,7 @@ function edf_to_onda_samples(edf::EDF.File; kwargs...)
     return samples, exec_plan
 end
 ```
-The executed plan as returned is a Tables.jl compatible table, with one row per EDF.Signal and columns for
+The executed plan as returned is a [Tables.jl](https://github.com/JuliaData/Tables.jl)-compatible table, with one row per `EDF.Signal` and columns for
 - the fields of the original `EDF.SignalHeader`
 - the fields of the generated `Onda.SamplesInfo`, including
   - `:kind`, the extracted signal kind
