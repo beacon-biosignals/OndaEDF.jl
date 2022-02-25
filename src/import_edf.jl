@@ -206,7 +206,7 @@ end
 # TODO: replace this with float type for mismatched
 function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
     if any(any(ismissing, row) for row in encodings)
-        return (sample_type=missing,
+        return (; sample_type=missing,
                 sample_offset_in_unit=missing,
                 sample_resolution_in_unit=missing,
                 sample_rate=missing)
