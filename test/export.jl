@@ -96,15 +96,21 @@
         @test getproperty.(nt.annotations, :recording) == getproperty.(ann_sorted, :recording)
         # new UUID for each annotation created during import
         @test all(getproperty.(nt.annotations, :id) .!= getproperty.(ann_sorted, :id))
-        info_orig = first(onda_samples).info
-        info_round_tripped = SamplesInfo(first(nt.signals))
 
-        # note: not all signals will pass this test.  there are some where the
-        # Int16 encoding gets widened to combine multiple channels with
-        # different ranges losslessly.  so we just test the first one, which
-        # happens to pass.
-        @test all(getproperty(info_orig, p) == getproperty(info_round_tripped, p) for p in propertynames(info_orig)
-                  if p != :edf_channels) # this can change with export/import
+        for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
+            info_orig = samples_orig.info
+            info_round_tripped = SamplesInfo(signal_round_tripped)
+            for p in setdiff(propertynames(info_orig),
+                             (:edf_channels, :sample_type, :sample_resolution_in_unit))
+                @test getproperty(info_orig, p) == getproperty(info_round_tripped, p)
+            end
+            if info_orig.sample_type == "int32"
+                resolution_orig = info_orig.sample_resolution_in_unit * 2
+            else
+                resolution_orig = info_orig.sample_resolution_in_unit
+            end
+            @test resolution_orig ≈ info_round_tripped.sample_resolution_in_unit
+        end
 
         # don't import annotations
         nt = store_edf_as_onda(exported_edf, mktempdir(), uuid; import_annotations=false)
