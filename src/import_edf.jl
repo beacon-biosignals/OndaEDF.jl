@@ -477,21 +477,21 @@ If `validate=true` (the default), the plan is validated against the
 """
 function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true)
                              
+    true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
+    
     if validate
         Legolas.validate(plan_table, Legolas.Schema("ondaedf.file-plan@1"))
         for row in Tables.rows(plan_table)
-            signal = edf.signals[row.edf_signal_index]
+            signal = true_signals[row.edf_signal_index]
             signal.header.label == row.label ||
                 throw(ArgumentError("Plan's label $(row.label) does not match EDF label $(signal.header.label)!"))
         end
     end
 
-    true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
-    
     EDF.read!(edf)
     plan_rows = Tables.rows(plan_table)
     grouped_plan_rows = groupby(grouper((:onda_signal_index, )), plan_rows)
-    exec_rows = map(collect(grouoped_plan_rows)) do (idx, rows)
+    exec_rows = map(collect(grouped_plan_rows)) do (idx, rows)
         try
             info = merge_samples_info(rows)
             if ismissing(info)
