@@ -71,6 +71,38 @@ function make_test_data(rng, sample_rate, samples_per_record, n_records, ::Type{
                      :ptaf => [17])
 end
 
+function validate_extracted_signals(signals)
+    signals = Dict(s.kind => s for s in signals)
+    @test signals["tidal_volume"].channels == ["tidal_volume"]
+    @test signals["tidal_volume"].sample_unit == "milliliter"
+    @test signals["respiratory_effort"].channels == ["chest", "abdomen"]
+    @test signals["respiratory_effort"].sample_unit == "microvolt"
+    @test signals["snore"].channels == ["snore"]
+    @test signals["snore"].sample_unit == "microvolt"
+    @test signals["ecg"].channels == ["avr", "avl"]
+    @test signals["ecg"].sample_unit == "microvolt"
+    @test signals["positive_airway_pressure"].channels == ["ipap", "epap"]
+    @test signals["positive_airway_pressure"].sample_unit == "centimeter_of_water"
+    @test signals["heart_rate"].channels == ["heart_rate"]
+    @test signals["heart_rate"].sample_unit == "beat_per_minute"
+    @test signals["emg"].channels == ["left_anterior_tibialis", "right_anterior_tibialis", "intercostal"]
+    @test signals["emg"].sample_unit == "microvolt"
+    @test signals["eog"].channels == ["left", "right"]
+    @test signals["eog"].sample_unit == "microvolt"
+    @test signals["eeg"].channels == ["f3-m2", "f4-m1", "c3-m2",
+                                      "o1-m2", "c4-m1", "o2-a1", "fpz"]
+    @test signals["eeg"].sample_unit == "microvolt"
+    @test signals["pap_device_cflow"].channels == ["pap_device_cflow"]
+    @test signals["pap_device_cflow"].sample_unit == "liter_per_minute"
+    @test signals["pap_device_leak"].channels == ["pap_device_leak"]
+    @test signals["pap_device_leak"].sample_unit == "liter_per_minute"
+    @test signals["sao2"].channels == ["sao2"]
+    @test signals["sao2"].sample_unit == "percent"
+    @test signals["ptaf"].channels == ["ptaf"]
+    @test signals["ptaf"].sample_unit == "volt"
+    return nothing
+end
+
 @testset "OndaEDF" begin
     include("signal_labels.jl")
     include("import.jl")

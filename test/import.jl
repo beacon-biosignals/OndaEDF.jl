@@ -13,39 +13,64 @@ using Legolas: validate, Schema, read
             returned_samples, plan = OndaEDF.edf_to_onda_samples(edf)
             @test length(returned_samples) == 13
 
-            samples_info = Dict(s.info.kind => s.info for s in returned_samples)
-            @test samples_info["tidal_volume"].channels == ["tidal_volume"]
-            @test samples_info["tidal_volume"].sample_unit == "milliliter"
-            @test samples_info["respiratory_effort"].channels == ["chest", "abdomen"]
-            @test samples_info["respiratory_effort"].sample_unit == "microvolt"
-            @test samples_info["snore"].channels == ["snore"]
-            @test samples_info["snore"].sample_unit == "microvolt"
-            @test samples_info["ecg"].channels == ["avr", "avl"]
-            @test samples_info["ecg"].sample_unit == "microvolt"
-            @test samples_info["positive_airway_pressure"].channels == ["ipap", "epap"]
-            @test samples_info["positive_airway_pressure"].sample_unit == "centimeter_of_water"
-            @test samples_info["heart_rate"].channels == ["heart_rate"]
-            @test samples_info["heart_rate"].sample_unit == "beat_per_minute"
-            @test samples_info["emg"].channels == ["left_anterior_tibialis", "right_anterior_tibialis", "intercostal"]
-            @test samples_info["emg"].sample_unit == "microvolt"
-            @test samples_info["eog"].channels == ["left", "right"]
-            @test samples_info["eog"].sample_unit == "microvolt"
-            @test samples_info["eeg"].channels == ["f3-m2", "f4-m1", "c3-m2",
-                                                   "o1-m2", "c4-m1", "o2-a1", "fpz"]
-            @test samples_info["eeg"].sample_unit == "microvolt"
-            @test samples_info["pap_device_cflow"].channels == ["pap_device_cflow"]
-            @test samples_info["pap_device_cflow"].sample_unit == "liter_per_minute"
-            @test samples_info["pap_device_leak"].channels == ["pap_device_leak"]
-            @test samples_info["pap_device_leak"].sample_unit == "liter_per_minute"
-            @test samples_info["sao2"].channels == ["sao2"]
-            @test samples_info["sao2"].sample_unit == "percent"
-            @test samples_info["ptaf"].channels == ["ptaf"]
-            @test samples_info["ptaf"].sample_unit == "volt"
-
+            validate_extracted_signals(s.info for s in returned_samples)
             @test all(Onda.duration(s) == Nanosecond(Second(200)) for s in returned_samples)
         end
     end
 
+    @testset "edf_to_onda_samples with manual override" begin
+        n_records = 100
+        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, Int16)
+        @test_throws(ArgumentError(":seconds_per_record not found in header, or missing"),
+                     plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals)))
+
+        signal_plans = plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals),
+                                                 edf.header.seconds_per_record)
+
+        @testset "signal-wise plan" begin
+            grouped_plans = OndaEDF.plan_edf_to_onda_samples_groups(signal_plans)
+            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
+
+            validate_extracted_signals(s.info for s in returned_samples)
+        end
+            
+        @testset "custom grouping" begin
+            signal_plans = [rowmerge(plan; grp=string(plan.kind, plan.sample_unit, plan.sample_rate))
+                            for plan in signal_plans]
+            grouped_plans = OndaEDF.plan_edf_to_onda_samples_groups(signal_plans,
+                                                                    onda_signal_groupby=:grp)
+            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
+            validate_extracted_signals(s.info for s in returned_samples)
+        end
+
+        @testset "preserve existing row index" begin
+            # we test this by first setting the numbers, then reversing the row
+            # orders before grouping.
+            plans_numbered = [rowmerge(plan; edf_signal_index)
+                              for (edf_signal_index, plan)
+                              in enumerate(signal_plans)]
+            plans_rev = reverse!(plans_numbered)
+            @test last(plans_rev).edf_signal_index == 1
+
+            grouped_plans_rev = OndaEDF.plan_edf_to_onda_samples_groups(plans_rev)
+            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans_rev)
+            # we need to re-reverse the order of channels to get to what's
+            # expected in teh tests
+            infos = [rowmerge(s.info; channels=reverse(s.info.channels))
+                     for s in returned_samples]
+            validate_extracted_signals(infos)
+
+            # test also that this will error about mismatch between plan label
+            # and signal label without pre-numbering
+            plans_rev_bad = [rowmerge(plan; edf_signal_index=missing)
+                             for plan in plans_rev]
+            grouped_plans_rev_bad = OndaEDF.plan_edf_to_onda_samples_groups(plans_rev_bad)
+            @test_throws(ArgumentError("Plan's label EcG EKGL does not match EDF label EEG C3-M2!"),
+                         edf_to_onda_samples(edf, grouped_plans_rev_bad))
+            
+        end
+    end
+    
     @testset "store_edf_as_onda" begin
         n_records = 100
         edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
@@ -53,7 +78,6 @@ using Legolas: validate, Schema, read
         root = mktempdir()
         uuid = uuid4()
         nt = OndaEDF.store_edf_as_onda(edf, root, uuid)
-        signals = Dict(s.kind => s for s in nt.signals)
 
         @test nt.signals_path == joinpath(root, "edf.onda.signals.arrow")
         @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
@@ -63,33 +87,7 @@ using Legolas: validate, Schema, read
         @test nt.recording_uuid == uuid
         @test length(nt.signals) == 13
         @testset "samples info" begin
-            @test signals["tidal_volume"].channels == ["tidal_volume"]
-            @test signals["tidal_volume"].sample_unit == "milliliter"
-            @test signals["respiratory_effort"].channels == ["chest", "abdomen"]
-            @test signals["respiratory_effort"].sample_unit == "microvolt"
-            @test signals["snore"].channels == ["snore"]
-            @test signals["snore"].sample_unit == "microvolt"
-            @test signals["ecg"].channels == ["avr", "avl"]
-            @test signals["ecg"].sample_unit == "microvolt"
-            @test signals["positive_airway_pressure"].channels == ["ipap", "epap"]
-            @test signals["positive_airway_pressure"].sample_unit == "centimeter_of_water"
-            @test signals["heart_rate"].channels == ["heart_rate"]
-            @test signals["heart_rate"].sample_unit == "beat_per_minute"
-            @test signals["emg"].channels == ["left_anterior_tibialis", "right_anterior_tibialis", "intercostal"]
-            @test signals["emg"].sample_unit == "microvolt"
-            @test signals["eog"].channels == ["left", "right"]
-            @test signals["eog"].sample_unit == "microvolt"
-            @test signals["eeg"].channels == ["f3-m2", "f4-m1", "c3-m2",
-                                              "o1-m2", "c4-m1", "o2-a1", "fpz"]
-            @test signals["eeg"].sample_unit == "microvolt"
-            @test signals["pap_device_cflow"].channels == ["pap_device_cflow"]
-            @test signals["pap_device_cflow"].sample_unit == "liter_per_minute"
-            @test signals["pap_device_leak"].channels == ["pap_device_leak"]
-            @test signals["pap_device_leak"].sample_unit == "liter_per_minute"
-            @test signals["sao2"].channels == ["sao2"]
-            @test signals["sao2"].sample_unit == "percent"
-            @test signals["ptaf"].channels == ["ptaf"]
-            @test signals["ptaf"].sample_unit == "volt"
+            validate_extracted_signals(nt)
         end
 
         for signal in values(signals)
