@@ -93,14 +93,16 @@ using Legolas: validate, Schema, read
         @test nt.recording_uuid == uuid
         @test length(nt.signals) == 13
         @testset "samples info" begin
-            validate_extracted_signals(nt)
+            validate_extracted_signals(nt.signals)
         end
 
-        for signal in values(signals)
+        for signal in nt.signals
             @test signal.span.start == Nanosecond(0)
             @test signal.span.stop == Nanosecond(Second(200))
             @test signal.file_format == "lpcm.zst"
         end
+
+        signals = Dict(s.kind => s for s in nt.signals)
 
         @testset "Signal roundtrip" begin 
             for (signal_name, edf_indices) in edf_channel_indices
