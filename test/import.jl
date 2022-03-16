@@ -41,6 +41,12 @@ using Legolas: validate, Schema, read
                                                                     onda_signal_groupby=:grp)
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
             validate_extracted_signals(s.info for s in returned_samples)
+
+            # one channel per signal, group by label
+            grouped_plans = OndaEDF.plan_edf_to_onda_samples_groups(signal_plans,
+                                                                    onda_signal_groupby=:label)
+            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
+            @test all(==(1), channel_count.(returned_samples))
         end
 
         @testset "preserve existing row index" begin
