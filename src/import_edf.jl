@@ -574,8 +574,8 @@ end
 #####
 
 """
-    onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
-                                  edf_seconds_per_record)
+    OndaEDF.onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
+                                          edf_seconds_per_record)
 
 Generate an `Onda.Samples` struct from an iterable of `EDF.Signal`s, based on
 the `Onda.SamplesInfo` in `target`.  This checks for matching sample rates in
