@@ -1,317 +1,82 @@
-using OndaEDF: validate_arrow_prefix, prettyprint_diagnostic_info, mock_edf
-
-function test_preprocessor(l, t)
-    l = replace(l, ':' => '-')
-    l = replace(l, "\xf6"[1] => 'o') # remove umlaut (German)
-    l = replace(l, '\u00F3' => 'o') # remove accute accent (Spanish)
-    l = replace(l, '\u00D3' => 'O') # remove accute accent (Spanish)
-    l = OndaEDF._safe_lowercase(l)
-    t = OndaEDF._safe_lowercase(t)
-
-    l = replace(l, r"\.$"i => "")
-
-    ####
-    # ODDBALLS
-
-    m = match(r"\[chin-(?<lr>[lr])-chin-[ar]\]"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:lr])"
-
-    l = endswith(l, "clavicle") ? "ecg avl" : l
-
-    l = l == "ekg8" ? "ekg v8" : l
-    l = replace(l, r"^e1 14" => "e1")
-    l = replace(l, r"^e2 18" => "e2")
-
-    l = endswith(l, "cardiogr") ? "ecg avl" : l
-
-    l = l == "ecg+" ? "ecg" : l
-    l = l == "ecg-" ? "ecg" : l
-
-    if t == "ekg_channel"
-        l = "ecg"
-    end
-
-    if l == "eog" && t == ""
-        l = "eog l"  # recording will have 2 left eogs, no way to say which is which
-    end
-
-    l = startswith(l, "eog horz") ? "eog l" : l
-
-    # CHIN1I-CHIN[23][]
-    l = replace(l, r"^chin1i-chin.*"i => "emg chin1")
-
-    if t == "leg_channel" && l == "25"
-        l = "left_anterior_tibialis"
-    end
-
-    if t == "leg2_channel" && l == "26"
-        l = "right_anterior_tibialis"
-    end
-
-    if t == "chin_channel" && l ∈ ["fz-cz", "24", "p3-p4", "fp1-fp2"]
-        l = "emg chin1"
-    end
-
-    if t == "chin2_channel" && l ∈ ["25", "p4-pz"]
-        l = "emg chin2"
-    end
-
-    m = match(r"chin(?<lr>[lr])[\(\s]+ment.*"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:lr])"
-
-    l = l == "emg x1-x6" ? "emg chin1" : l
-
-    m = match(r"emg\s+(?<lr>[lr])at\s+.*"i, l)
-    l = isnothing(m) ? l : "emg $(m[:lr])at"
-
-    m = match(r"[lr]leg[\+\-]"i, l)
-    l = isnothing(m) ? l : "ignorame"
-
-    m = match(r"^(?<lr>[lr])t\. eye"i, l)
-    l = isnothing(m) ? l : "eog $(m[:lr])"
-
-    l = l == "e1 (l)-m2" ? "eog l" : l
-    l = l == "e2 (r)-m2" ? "eog r" : l
-
-    l = l == "chinz-chin1" ? "emg chinl" : l
-    l = l == "chinz-chin2" ? "emg chinr" : l
-
-    l = l == "eog x4-a2" ? "eog r" : l
-    l = l == "eog x9-a2" ? "eog l" : l
-
-    #m = match(r"^eeg (?<lr>[lr]oc)(?<rest>.*)$"i, l)
-    #l = isnothing(m) ? l : "eog $(m[:lr])$(m[:rest])"
-
-    l = l == "e.left" ? "eog loc" : l
-    l = l == "e.right" ? "eog roc" : l
-
-    ###############
-    # AMBIGUOUS ONES
-    # these will only be kept if recording also has leg EMG in separate channels
-
-    # "EMG[123]" => emg_ambiguous [123]
-    m = match(r"^\s*emg_?(?<n>[lr123])\s*$"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
-
-    # "EMG\s*Aux[123]" => emg_ambiguous [123]
-    m = match(r"^\s*emg\s*aux(?<n>[123])\s*$"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
-
-    # "EMG_[LR]" => emg_ambiguous [12]
-    m = match(r"^\s*emg(?<n>[123])\s*$"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:n])"
-
-    # EMG[+-]? => EMG Aux[123]
-    l = l == "emg+" ? "emg_ambiguous 1" : l
-    l = l == "emg-" ? "emg_ambiguous 2" : l
-    l = l == "emg" ? "emg_ambiguous 3" : l    # postprocess: if only "emg_ambiguous 3" + legs present, replace with "EMG chin1"
-
-    # other ambiguous forms
-    l = l == "emg1-emg2" ? "emg_ambiguous 1" : l
-    l = l == "emg2-emg1" ? "emg_ambiguous 2" : l
-    l = l == "emg-a1" ? "emg_ambiguous 1" : l
-    l = l == "emg emg" ? "emg_ambiguous 1" : l
-
-    m = match(r"[\s\[,]*emg(?<i>[123]?)[\s\-]+emg([123]?)[\]\s,]*"i, l)
-    l = isnothing(m) ? l : "emg_ambiguous $(m[:i])"
-
-    ####
-    ####
-
-    # [sub][clavi]?
-    m = match(r"l[^r]*sub"i, l)
-    l = (isnothing(m) || occursin("subm", l)) ? l : "ecg avl"
-    m = match(r"r[^l]*sub"i, l)
-    l = (isnothing(m) || occursin("subm", l)) ? l : "ecg avr"
-
-    # [sub]?[clav]
-    m = match(r"l[^r]*clav"i, l)
-    l = isnothing(m) ? l : "ecg avl"
-    m = match(r"r[^l]*clav"i, l)
-    l = isnothing(m) ? l : "ecg avr"
-
-    # recordings with label in the transducer field
-    l = l == "spectrum eeg" ? t : l
-
-    # "EOG - L" and "EOG - R" should not be parsed as channel \minus channel
-    m = match(r"^\s*EOG[\s\-]+(?<lr>[LR])\s*"i, l)
-    if !isnothing(m)
-        l = "EOG $(m[:lr])"
-    end
-
-    # "L - EOG" and "R- EOG" should not be parsed as channel \minus channel
-    m = match(r"^[\[\s,\(]*(?<lr>[LR])[\s\-]+EOG(?<rest>[^\]\),]*)\s*[\]\s,\)]*$"i, l)
-    if !isnothing(m)
-        l = "EOG $(m[:lr])$(m[:rest])"
-    end
-
-    # "C2M1" => "C2-M1" etc
-    m = match(r"\s*(?<channel>[fco][1234])\s*(?<ref>[am][12])\s*$"i, l)
-    l = isnothing(m) ? l : "$(m[:channel])-$(m[:ref])"
-
-    # "Chin EMG[12]?" => "EMG chin[12]?"
-    m = match(r"\s*chin\s+emg(?<n>[12]?)\s*"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:n])"
-
-    # Chin[LR123]?.* => chin[lr123]?
-    m = match(r"\s*chin(?<side>[lr123]?)\s*(?<rest>[\-chinlr123]*)\s*$"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:side])$(m[:rest])"
-
-    # "Menton (cen.)" => chin3
-    m = match(r"\s*menton.*cen.*"i, l)
-    l = isnothing(m) ? l : "chin3"
-
-    # "Lower.Left-Upper" => "EMG chin1"
-    l = startswith(l, "lower.left-upp") ? "emg chin1" : l
-    l = startswith(l, "lower.right-upp") ? "emg chin2" : l
-    l = startswith(l, "lower.left-low") ? "emg chin1" : l    # dipole; dubious assignment
-    l = startswith(l, "lower.right-low") ? "emg chin2" : l   # dipole; dubious assignment
-
-    # how to denote that sign is inverted???
-    # "Upper-Lower.Left" => "EMG chin1"
-    l = l == "upper-lower.left" ? "emg chin1" : l
-    l = l == "upper-lower.righ" ? "emg chin2" : l
-
-    # deutsch
-    l = l == "emg li" ? "emg chin1" : l
-    l = l == "emg re" ? "emg chin2" : l
-    l = l == "emg mitte" ? "emg chin3" : l
-    l = l == "emg1 kinn" ? "emg chin1" : l
-    l = l == "emg2 kinn" ? "emg chin2" : l
-
-    # EMG-subm[12] => EMG chin[12]
-    m = match(r"\s*emg\-subm(?<n>[12])\s*"i, l)
-    l = isnothing(m) ? l : "emg chin$(m[:n])"
-
-    # label = "EMG", transducer_type = "FP1-FP2" => label = "EEG FP1-FP2"
-    l = (l == "emg" && t == "fp1-fp2") ? "eeg fp1-fp2" : l
-    l = (l == "emg" && t == "fp2-fp1") ? "eeg fp2-fp1" : l
-
-    # label = "EMG", transducer_type = "1A-1R" => label = "EMG chin1"
-    l = (l == "emg" && t == "1a-1r") ? "emg chin1" : l
-
-    # EKG
-
-    # EKG1, ECG2, etc are ambiguous
-    # pick same default as for "ECG"
-    # TODO should I instead pick[B another default,
-    #      or make a new ambiguous ECG signal type for these cases?
-    m = match(r"[\s\[,]*e[ck]g([123])[\s\-]*e[ck]g([123])[\]\s,]*"i, l)
-    l = isnothing(m) ? l : "ecg $(m[1])"
-
-    m = match(r"[\s\[,]*e[ck]g([123])[\]\s,]*"i, l)
-    l = isnothing(m) ? l : "ecg $(m[1])"
-
-    # [LR] ECG
-    m = match(r"^[\[\s,]*(?<lr>[lr])\s*E[ck]g"i, l)
-    l = isnothing(m) ? l : "ecg av$(m[:lr])"
-
-    # [LR]-Leg[12]?
-    m = match(r"^[\[\s,]*(?<lr>[lr])\s*\-\s*leg[1-2][\s\],]?"i, l)
-    l = isnothing(m) ? l : "ecg av$(m[:lr])"
-
-    # EMG Leg
-
-    # {left,right,l,r}[\s-_]*leg
-    m = match(r"^(\s*emg\s*)?(left|l)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
-    l = isnothing(m) ? l : "emg left_anterior_tibialis$(m[:rest])"
-    m = match(r"^(\s*emg\s*)?(right|r)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
-    l = isnothing(m) ? l : "emg right_anterior_tibialis$(m[:rest])"
-
-    # leg[\s-_]*{left,right,l,r}
-    m = match(r"^(\s*emg\s*)?(?<lr>left|l)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
-    l = isnothing(m) ? l : "emg left_anterior_tibialis$(m[:rest])"
-    m = match(r"^(\s*emg\s*)?(?<lr>right|r)[_\-\s]*leg\s*(?<rest>.*)\s*$"i, l)
-    l = isnothing(m) ? l : "emg right_anterior_tibialis$(m[:rest])"
-
-    # (Tib|Leg)(-|/)[LR]
-    m = match(r"^\s*(leg|tib)[/\-](?<lr>l|left|right|r)\s*$"i, l)
-    l = isnothing(m) ? l : "$(startswith(m[:lr], "l") ? "left" : "right")_anterior_tibialis"
-
-    # [LR]Leg1 - [LR]Leg2
-    m = match(r"[\s\[,]*(?<lr>[lr])leg([12]?)[\s\-lr]*leg([12]?)[\]\s,]*"i, l)
-    l = isnothing(m) ? l : "emg $(m[:lr])leg"
-
-    # [LR] LEG[12]?  # with a minus `-`, this would be interpreted as ECG
-    m = match(r"^[\[\s,]*(?<lr>[lr])\s*leg[1234]?"i, l)
-    l = isnothing(m) ? l : "emg leg$(m[:lr])"
-
-    return l
-end
-
-custom_labels = deepcopy(OndaEDF.STANDARD_LABELS)
-#custom_labels[["emg"]] = [p for p in custom_labels[["emg"]] if startswith(first(p), "chin")]
-
-custom_extractors = [edf -> extract_channels_by_label(edf, signal_names, channel_names; preprocess_labels=test_preprocessor)
-                     for (signal_names, channel_names) in custom_labels]
-
-function has_leg(h)
-    h.kind != "emg" && return false
-    return any(c -> startswith(c, "left_anterior_tibialis") || startswith(c, "right_anterior_tibialis"), h.channels)
-end
+using OndaEDF: validate_arrow_prefix
+using Tables: rowmerge
+using Legolas
+using Legolas: validate, Schema, read
 
 @testset "Import EDF" begin
-
-    @testset "edf_to_samples_info" begin
-        results = map(test_edf_to_samples_info) do r
-            edf = mock_edf(r)
-            return last(OndaEDF.edf_header_to_onda_samples_info(edf; custom_extractors=custom_extractors))
-        end
-        # print result of mapping `edf_to_onda_samples` over `test_edf_to_samples_info.in`
-        # this makes it easy to see effects of any changes made to OndaEDF by looking at
-        # `diff test_edf_to_samples_info.{in,out}`
-        prettyprint_diagnostic_info("test_edf_to_samples_info", results)
-        prettyprint_diagnostic_info("no_eeg_tested", filter(nt -> !any(h -> h.kind == "eeg", map(first, nt.header_map)), results))
-        prettyprint_diagnostic_info("no_eog_tested", filter(nt -> !any(h -> h.kind == "eog", map(first, nt.header_map)), results))
-        prettyprint_diagnostic_info("no_chin_tested", filter(nt -> !any(h -> startswith(h.kind, "emg") && (h.kind == "emg_ambiguous" || any(c -> startswith(c, "chin"), h.channels)), map(first, nt.header_map)), results))
-        prettyprint_diagnostic_info("no_leg_tested", filter(nt -> !any(has_leg, map(first, nt.header_map)), results))
-        prettyprint_diagnostic_info("no_ekg_tested", filter(nt -> !any(h -> h.kind ∈ Set(("ecg", "ekg")), map(first, nt.header_map)), results))
-        for (i, (r, expected)) in enumerate(zip(results, test_edf_to_samples_info))
-            @test (i, setdiff(r.unextracted_edf_headers, expected.unextracted_edf_headers)) == (i, [])
-        end
-    end
 
     @testset "edf_to_onda_samples" begin
         n_records = 100
         for T in (Int16, EDF.Int24)
             edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, T)
 
-            returned_samples, nt = OndaEDF.edf_to_onda_samples(edf)
+            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf)
             @test length(returned_samples) == 13
 
-            samples_info = Dict(s.info.kind => s.info for s in returned_samples)
-            @test samples_info["tidal_volume"].channels == ["tidal_volume"]
-            @test samples_info["tidal_volume"].sample_unit == "milliliter"
-            @test samples_info["respiratory_effort"].channels == ["chest", "abdomen"]
-            @test samples_info["respiratory_effort"].sample_unit == "microvolt"
-            @test samples_info["snore"].channels == ["snore"]
-            @test samples_info["snore"].sample_unit == "microvolt"
-            @test samples_info["ecg"].channels == ["avl", "avr"]
-            @test samples_info["ecg"].sample_unit == "microvolt"
-            @test samples_info["positive_airway_pressure"].channels == ["ipap", "epap"]
-            @test samples_info["positive_airway_pressure"].sample_unit == "centimeter_of_water"
-            @test samples_info["heart_rate"].channels == ["heart_rate"]
-            @test samples_info["heart_rate"].sample_unit == "beat_per_minute"
-            @test samples_info["emg"].channels == ["intercostal", "left_anterior_tibialis", "right_anterior_tibialis"]
-            @test samples_info["emg"].sample_unit == "microvolt"
-            @test samples_info["eog"].channels == ["left", "right"]
-            @test samples_info["eog"].sample_unit == "microvolt"
-            @test samples_info["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
-                                                "c4-m1", "o1-m2", "o2-a1"]
-            @test samples_info["eeg"].sample_unit == "microvolt"
-            @test samples_info["pap_device_cflow"].channels == ["pap_device_cflow"]
-            @test samples_info["pap_device_cflow"].sample_unit == "liter_per_minute"
-            @test samples_info["pap_device_leak"].channels == ["pap_device_leak"]
-            @test samples_info["pap_device_leak"].sample_unit == "liter_per_minute"
-            @test samples_info["sao2"].channels == ["sao2"]
-            @test samples_info["sao2"].sample_unit == "percent"
-            @test samples_info["ptaf"].channels == ["ptaf"]
-            @test samples_info["ptaf"].sample_unit == "volt"
-
+            validate_extracted_signals(s.info for s in returned_samples)
             @test all(Onda.duration(s) == Nanosecond(Second(200)) for s in returned_samples)
         end
     end
 
+    @testset "edf_to_onda_samples with manual override" begin
+        n_records = 100
+        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, Int16)
+        @test_throws(ArgumentError(":seconds_per_record not found in header, or missing"),
+                     plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals)))
+
+        signal_plans = plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals),
+                                                 edf.header.seconds_per_record)
+
+        @testset "signal-wise plan" begin
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
+            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
+
+            validate_extracted_signals(s.info for s in returned_samples)
+        end
+        
+        @testset "custom grouping" begin
+            signal_plans = [rowmerge(plan; grp=string(plan.kind, plan.sample_unit, plan.sample_rate))
+                            for plan in signal_plans]
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
+                                                            onda_signal_groupby=:grp)
+            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
+            validate_extracted_signals(s.info for s in returned_samples)
+
+            # one channel per signal, group by label
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
+                                                            onda_signal_groupby=:label)
+            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
+            @test all(==(1), channel_count.(returned_samples))
+        end
+
+        @testset "preserve existing row index" begin
+            # we test this by first setting the numbers, then reversing the row
+            # orders before grouping.
+            plans_numbered = [rowmerge(plan; edf_signal_index)
+                              for (edf_signal_index, plan)
+                              in enumerate(signal_plans)]
+            plans_rev = reverse!(plans_numbered)
+            @test last(plans_rev).edf_signal_index == 1
+
+            grouped_plans_rev = plan_edf_to_onda_samples_groups(plans_rev)
+            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans_rev)
+            # we need to re-reverse the order of channels to get to what's
+            # expected in teh tests
+            infos = [rowmerge(s.info; channels=reverse(s.info.channels))
+                     for s in returned_samples]
+            validate_extracted_signals(infos)
+
+            # test also that this will error about mismatch between plan label
+            # and signal label without pre-numbering
+            plans_rev_bad = [rowmerge(plan; edf_signal_index=missing)
+                             for plan in plans_rev]
+            grouped_plans_rev_bad = plan_edf_to_onda_samples_groups(plans_rev_bad)
+            @test_throws(ArgumentError("Plan's label EcG EKGL does not match EDF label EEG C3-M2!"),
+                         edf_to_onda_samples(edf, grouped_plans_rev_bad))
+            
+        end
+    end
+    
     @testset "store_edf_as_onda" begin
         n_records = 100
         edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
@@ -319,7 +84,6 @@ end
         root = mktempdir()
         uuid = uuid4()
         nt = OndaEDF.store_edf_as_onda(edf, root, uuid)
-        signals = Dict(s.kind => s for s in nt.signals)
 
         @test nt.signals_path == joinpath(root, "edf.onda.signals.arrow")
         @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
@@ -329,45 +93,25 @@ end
         @test nt.recording_uuid == uuid
         @test length(nt.signals) == 13
         @testset "samples info" begin
-            @test signals["tidal_volume"].channels == ["tidal_volume"]
-            @test signals["tidal_volume"].sample_unit == "milliliter"
-            @test signals["respiratory_effort"].channels == ["chest", "abdomen"]
-            @test signals["respiratory_effort"].sample_unit == "microvolt"
-            @test signals["snore"].channels == ["snore"]
-            @test signals["snore"].sample_unit == "microvolt"
-            @test signals["ecg"].channels == ["avl", "avr"]
-            @test signals["ecg"].sample_unit == "microvolt"
-            @test signals["positive_airway_pressure"].channels == ["ipap", "epap"]
-            @test signals["positive_airway_pressure"].sample_unit == "centimeter_of_water"
-            @test signals["heart_rate"].channels == ["heart_rate"]
-            @test signals["heart_rate"].sample_unit == "beat_per_minute"
-            @test signals["emg"].channels == ["intercostal", "left_anterior_tibialis", "right_anterior_tibialis"]
-            @test signals["emg"].sample_unit == "microvolt"
-            @test signals["eog"].channels == ["left", "right"]
-            @test signals["eog"].sample_unit == "microvolt"
-            @test signals["eeg"].channels == ["fpz", "f3-m2", "f4-m1", "c3-m2",
-                                              "c4-m1", "o1-m2", "o2-a1"]
-            @test signals["eeg"].sample_unit == "microvolt"
-            @test signals["pap_device_cflow"].channels == ["pap_device_cflow"]
-            @test signals["pap_device_cflow"].sample_unit == "liter_per_minute"
-            @test signals["pap_device_leak"].channels == ["pap_device_leak"]
-            @test signals["pap_device_leak"].sample_unit == "liter_per_minute"
-            @test signals["sao2"].channels == ["sao2"]
-            @test signals["sao2"].sample_unit == "percent"
-            @test signals["ptaf"].channels == ["ptaf"]
-            @test signals["ptaf"].sample_unit == "volt"
+            validate_extracted_signals(nt.signals)
         end
 
-        for signal in values(signals)
+        for signal in nt.signals
             @test signal.span.start == Nanosecond(0)
             @test signal.span.stop == Nanosecond(Second(200))
             @test signal.file_format == "lpcm.zst"
         end
 
-        for (signal_name, edf_indices) in edf_channel_indices
-            onda_samples = load(signals[string(signal_name)]).data
-            edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, edf.signals[edf_indices])
-            @test isapprox(onda_samples, edf_samples; rtol=0.02)
+        signals = Dict(s.kind => s for s in nt.signals)
+
+        @testset "Signal roundtrip" begin 
+            for (signal_name, edf_indices) in edf_channel_indices
+                @testset "$signal_name" begin
+                    onda_samples = load(signals[string(signal_name)]).data
+                    edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, edf.signals[sort(edf_indices)])
+                    @test isapprox(onda_samples, edf_samples; rtol=0.02)
+                end
+            end
         end
 
         @testset "Annotations import" begin
@@ -446,6 +190,63 @@ end
                 @test isdir(joinpath(dirname(nt.signals_path), "samples"))
                 @test all(p -> p isa AbstractPath, (s.file_path for s in nt.signals))
             end
+        end
+    end
+
+    @testset "error handling" begin
+        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
+
+        one_signal = first(edf.signals)
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal)
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal, missing)
+        one_plan = plan_edf_to_onda_samples(one_signal, edf.header.seconds_per_record)
+        @test one_plan.label == one_signal.header.label
+
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal, 1.0; preprocess_labels=identity)
+
+        err_plan = @test_logs (:error, ) plan_edf_to_onda_samples(one_signal, 1.0; units=[1, 2, 3])
+        @test err_plan.error isa String
+        # malformed units arg: elements should be de-structurable
+        @test contains(err_plan.error, "BoundsError")
+
+        # malformed labels/units
+        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; labels=[["signal"] => nothing])
+        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => nothing])
+
+        # unit not found does not error but does create a missing
+        unitless_plan = plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => ["mV"]])
+        @test unitless_plan.error === nothing
+        @test ismissing(unitless_plan.sample_unit)
+        
+        # error on execution
+        plans = plan_edf_to_onda_samples(edf)
+        # intentionally combine signals of different kinds
+        different = findfirst(row -> !isequal(row.kind, first(plans).kind), plans)
+        bad_plans = rowmerge.(plans[[1, different]]; onda_signal_index=1)
+        bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
+        @test all(row.error isa String for row in bad_plans_exec)
+        @test all(occursin("ArgumentError", row.error) for row in bad_plans_exec)
+        @test isempty(bad_samples)
+    end
+
+    @testset "de/serialization of plans" begin
+        edf, _ = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
+        plan = plan_edf_to_onda_samples(edf)
+        @test validate(plan, Schema("ondaedf.file-plan@1")) === nothing
+
+        samples, plan_exec = edf_to_onda_samples(edf, plan)
+        @test validate(plan_exec, Schema("ondaedf.file-plan@1")) === nothing
+
+        plan_rt = let io=IOBuffer()
+            OndaEDF.write_plan(io, plan)
+            seekstart(io)
+            Legolas.read(io; validate=true)
+        end
+
+        plan_exec_cols = Tables.columns(plan_exec)
+        plan_rt_cols = Tables.columns(plan_rt)
+        for col in Tables.columnnames(plan_exec_cols)
+            @test all(isequal.(Tables.getcolumn(plan_rt_cols, col), Tables.getcolumn(plan_exec_cols, col)))
         end
     end
 

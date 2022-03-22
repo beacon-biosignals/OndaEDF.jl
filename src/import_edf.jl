@@ -1,3 +1,32 @@
+@generated function _named_tuple(x)
+    names = fieldnames(x)
+    types = Tuple{fieldtypes(x)...}
+    body = Expr(:tuple)
+    for i in 1:fieldcount(x)
+        push!(body.args, :(getfield(x, $i)))
+    end
+    return :(NamedTuple{$names,$types}($body))
+end
+
+function _err_msg(e, msg="Error while converting EDF:")
+    bt = catch_backtrace()
+    msg *= '\n' * sprint(showerror, e, bt)
+    @error msg
+    return msg
+end
+
+function _errored_row(row, e)
+    msg = _err_msg(e, "Skipping signal $(row.label): error while extracting channels")
+    return rowmerge(row; error=msg)
+end
+
+function _errored_rows(rows, e)
+    labels = [row.label for row in rows]
+    labels_str = join(string.('"', labels, '"'), ", ", ", and ")
+    msg = _err_msg(e, "Skipping signals $(labels_str): error while extracting channels")
+    return rowmerge.(rows; error=msg)
+end
+
 #####
 ##### `EDF.Signal` label handling
 #####
@@ -49,18 +78,79 @@ _safe_lowercase(c::Char) = isvalid(c) ? lowercase(c) : c
 # malformed UTF-8 chars are a choking hazard
 _safe_lowercase(s::AbstractString) = map(_safe_lowercase, s)
 
+"""
+    OndaEDF.match_edf_label(label, signal_names, channel_name, canonical_names)
+
+Return a normalized label matched from an EDF `label`.  The purpose of this
+function is to remove signal names from the label, and to canonicalize the
+channel name(s) that remain.  So something like "[eCG] avl-REF" will be
+transformed to "avl" (given `signal_names=["ecg"]`, and `channel_name="avl"`)
+
+This returns `nothing` if `channel_name` does not match after normalization.
+
+Canonicalization
+
+- ensures the given label is whitespace-stripped, lowercase, and parens-free
+- strips trailing generic EDF references (e.g. "ref", "ref2", etc.)
+- replaces all references with the appropriate name as specified by
+  `canonical_names`
+- replaces `+` with `_plus_` and `/` with `_over_`
+- returns the initial reference name (w/o prefix sign, if present) and the
+  entire label; the initial reference name should match the canonical channel
+  name, otherwise the channel extraction will be rejected.
+
+## Examples
+
+```julia
+match_edf_label("[ekG]  avl-REF", ["ecg", "ekg"], "avl", []) == "avl"
+match_edf_label("ECG 2", ["ecg", "ekg"], "ii", ["ii" => ["2", "two", "ecg2"]]) == "ii"
+```
+
+See the tests for more examples
+
+!!! note
+
+    This is an internal function and is not meant to be called directly.
+
+"""
 function match_edf_label(label, signal_names, channel_name, canonical_names)
     label = _safe_lowercase(label)
-    for signal_name in signal_names
-        # match exact STANDARD (or custom) signal types at beginning of label, ignoring case
-        # possibly bracketed by or prepended with `[`, `]`, `,` or whitespace
-        # everything after is included in the spec a.k.a. label
-        m = match(Regex("[\\s\\[,\\]]*$(signal_name)[\\s,\\]]*\\s+(?<spec>.+)", "i"), label)
-        if !isnothing(m)
-            label = m[:spec]
-        end
-        # if signal type does not match, use the entire label
+
+    # ideally, we'd do the original behavior:
+    # 
+    # match exact STANDARD (or custom) signal types at beginning of label,
+    # ignoring case possibly bracketed by or prepended with `[`, `]`, `,` or
+    # whitespace everything after is included in the spec a.k.a. label
+    #
+    # for instance, if `signal_names = ["ecg", "ekg"]`, this would convert
+    # - "[EKG] 2-REF"
+    # - " eCg 2"
+    # - ",ekg,2"
+    #
+    # into "2"
+    #
+    # however, the original behavior requires compiling and matching a different
+    # regex for every possible `signal_names` entry (across all labels), for
+    # every signal.  this adds ENORMOUS overhead compared to the rest of the
+    # import pipeline (>90% of total time was spent in regex stuff) so instead
+    # we do an approximation: treat ANYTHING between whitespace, [], or ',', as
+    # teh signal, adn remove it (and the enclosing chars) if it is exactly equal
+    # to any of the input `signal_names` (after lowercasing).
+    #
+    # This is not equivalent to the original behavior in only a handful of
+    # cases
+    # 
+    # - if one of the `signal_names` is a suffix of the signal, like `"pap"`
+    #   matching against `"xpap cpap"`.  the fix for this is to add the full
+    #   signal name to the (end) of `signal_names` in the label set.
+    # - if the signal name itself contains whitespace or one of `",[]"`, it
+    #   will not match.  the fix for this is to preprocess signal headers before
+    #   `plan_edf_to_onda_samples` to normalize known instances (after reviewing the plan)
+    m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
+    if !isnothing(m) && m[:signal] in signal_names
+        label = m[:spec]
     end
+
     label = replace(label, r"\s*-\s*" => "-")
     initial, normalized_label = _normalize_references(label, canonical_names)
     initial == channel_name && return normalized_label
@@ -100,22 +190,29 @@ end
 #   pmax + pmin + (pmax*(dmin - dmax)/(dmax - dmin)) ≈ pmin
 #   pmax + pmin + (-pmax) ≈ pmin
 #   pmin ≈ pmin
-function edf_signal_encoding(edf_signal_header::EDF.SignalHeader,
-                             edf_seconds_per_record)
+function edf_signal_encoding(edf_signal_header, edf_seconds_per_record)
     dmin, dmax = edf_signal_header.digital_minimum, edf_signal_header.digital_maximum
     pmin, pmax = edf_signal_header.physical_minimum, edf_signal_header.physical_maximum
     sample_resolution_in_unit = (pmax - pmin) / (dmax - dmin)
     sample_offset_in_unit = pmin - (sample_resolution_in_unit * dmin)
     sample_rate = edf_signal_header.samples_per_record / edf_seconds_per_record
-    sample_type = (dmax > typemax(Int16) || dmin < typemin(Int16)) ? Int32 : Int16
+    sample_type = (dmax > typemax(Int16) || dmin < typemin(Int16)) ? "int32" : "int16"
     return (sample_resolution_in_unit=Float64(sample_resolution_in_unit),
             sample_offset_in_unit=Float64(sample_offset_in_unit),
             sample_rate=Float64(sample_rate),
             sample_type=sample_type)
 end
 
+# TODO: replace this with float type for mismatched
 function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
-    sample_type = reduce(promote_type, (e.sample_type for e in encodings))
+    if any(any(ismissing, row) for row in encodings)
+        return (; sample_type=missing,
+                sample_offset_in_unit=missing,
+                sample_resolution_in_unit=missing,
+                sample_rate=missing)
+    end
+    
+    sample_type = mapreduce(Onda.sample_type, promote_type, encodings)
 
     sample_rates = [e.sample_rate for e in encodings]
     if all(==(first(sample_rates)), sample_rates)
@@ -140,7 +237,7 @@ function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=mi
         sample_resolution_in_unit = pick_resolution(resolutions)
     end
 
-    return (sample_type=sample_type,
+    return (sample_type=Onda.onda_sample_type_from_julia_type(sample_type),
             sample_offset_in_unit=sample_offset_in_unit,
             sample_resolution_in_unit=sample_resolution_in_unit,
             sample_rate=sample_rate)
@@ -149,46 +246,6 @@ end
 #####
 ##### `EDF.Signal`s -> `Onda.Samples`
 #####
-
-function extract_channels(edf_signals, channel_matchers)
-    extracted_channels = Pair{String,EDF.Signal}[]
-    for channel_matcher in channel_matchers
-        for edf_signal in edf_signals
-            edf_signal isa EDF.Signal || continue
-            any(x -> last(x) === edf_signal, extracted_channels) && continue
-            channel_name = channel_matcher(edf_signal)
-            channel_name === nothing && continue
-            push!(extracted_channels, channel_name => edf_signal)
-        end
-    end
-    return extracted_channels
-end
-
-"""
-    edf_signals_to_samplesinfo(edf, edf_signals, kind, channel_names, samples_per_record; unit_alternatives=STANDARD_UNITS)
-
-Generate a single `Onda.SamplesInfo` for the given collection of `EDF.Signal`s
-corresponding to the channels of a single Onda signal.  Sample units are
-converted to Onda units and checked for consistency, and a promoted encoding
-(resolution, offset, and sample type/rate) is generated.
-
-No conversion of the actual signals is performed at this step.
-"""
-function edf_signals_to_samplesinfo(edf::EDF.File, edf_signals::Vector{<:EDF.Signal}, kind, channel_names; unit_alternatives=STANDARD_UNITS)
-    onda_units = map(s -> edf_to_onda_unit(s.header.physical_dimension, unit_alternatives), edf_signals)
-    onda_sample_unit = first(onda_units)
-
-    edf_encodings = map(s -> edf_signal_encoding(s.header, edf.header.seconds_per_record), edf_signals)
-    onda_encoding = promote_encodings(edf_encodings)
-
-    info = SamplesInfo(; kind=kind, channels=channel_names,
-                       sample_unit=string(onda_sample_unit),
-                       sample_resolution_in_unit=onda_encoding.sample_resolution_in_unit,
-                       sample_offset_in_unit=onda_encoding.sample_offset_in_unit,
-                       sample_type=onda_encoding.sample_type,
-                       sample_rate=onda_encoding.sample_rate)
-    return info
-end
 
 struct SamplesInfoError <: Exception
     msg::String
@@ -208,87 +265,338 @@ function groupby(f, list)
     return d
 end
 
-"""
-    extract_channels_by_label(edf::EDF.File, signal_names, channel_names;
-                              unit_alternatives=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+# unpack a single channel spec from labels:
+# "channel"
+canonical_channel_name(channel_name) = channel_name
+# "channel" => ["alt1", "alt2", ...]
+canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
 
-For one or more signal names and one or more channel names,
-return a list of `[(infos, errors)...]` where `errors` is a vector of errors that occurred,
-and `infos` is a vector of `(si::Onda.SamplesInfo, edf_signals::Vector{EDF.Signal})`,
-where `edf_signals` align with `si.channel`. This list can have more than one pair
-if channels with the same signal kind/type have different sample rates or
-physical units.
-
-`(label, transducer_type)` pairs will be transformed into labels by `preprocess_labels`
-(default preprocessor returns the original label). An alternate to `STANDARD_UNITS`
-for mapping different spellings of units to their canonical unit name can be passed in
-as `unit_alternatives`.
-
-`errors` contains `SamplesInfoError`s thrown if channels corresponding to a signal
-were extracted but an error occured while interpreting physical units,
-while promoting sample encodings, or otherwise constructing a `SamplesInfo`.
-
-`signal_names` should be an iterable of `String`s naming the signal types to
-extract (e.g., `["ecg", "ekg"]`; `["eeg"]`).
-
-`channel_names` should be an iterable of channel specifications, each of which
-can be either a `String` giving the generated channel name, or a `Pair` mapping
-a canonical name to a list of alternatives that it should be substituted for
-(e.g., `"canonical_name" => ["alt1", "alt2", ...]`).
-
-`unit_alternatives` lists standardized unit names and alternatives that map to them.
-See `OndaEDF.STANDARD_UNITS` for defaults.
-
-`preprocess_labels(label::String, transducer_type::String)` is applied to raw edf signal header labels
-beforehand; defaults to returning `label`.
-
-See `OndaEDF.STANDARD_LABELS` for the labels (`signal_names => channel_names`
-`Pair`s) that are used to extract EDF signals by default.
+plan_edf_to_onda_samples(signal::EDF.Signal, s; kwargs...) = plan_edf_to_onda_samples(signal.header, s; kwargs...)
+plan_edf_to_onda_samples(header::EDF.SignalHeader, s; kwargs...) = plan_edf_to_onda_samples(_named_tuple(header), s; kwargs...)
 
 """
-function extract_channels_by_label(edf::EDF.File, signal_names, channel_names;
-                                   unit_alternatives=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
-    matcher = x -> begin
-        # yo I heard you like closures
-        # x is either a channel name (string), or a channel_name => alternatives Pair.
-        this_channel_name = x isa Pair ? first(x) : x
-        return s -> match_edf_label(preprocess_labels(s.header.label, s.header.transducer_type),
-                                    signal_names,
-                                    this_channel_name,
-                                    channel_names)
-    end
-    edf_channels = extract_channels(edf.signals, (matcher(x) for x in channel_names))
+    plan_edf_to_onda_samples(header, seconds_per_record; labels=STANDARD_LABELS,
+                             units=STANDARD_UNITS)
+    plan_edf_to_onda_samples(signal::EDF.Signal, args...; kwargs...)
 
-    # place channels with different physical units or sample rates in separate Onda signals
-    grouped = groupby(edf_channels) do p
-        channel_name, edf_signal = p
-        return ((edf_signal.header.samples_per_record / edf.header.seconds_per_record), edf_signal.header.physical_dimension)
+Formulate a plan for converting an EDF signal into Onda format.  This returns a
+Tables.jl row with all the columns from the signal header, plus additional
+columns for the `Onda.SamplesInfo` for this signal, and the `seconds_per_record`
+that is passed in here.
+
+If no labels match, then the `channel` and `kind` columns are `missing`; the
+behavior of other `SamplesInfo` columns is undefined; they are currently set to
+missing but that may change in future versions.
+
+Any errors that are thrown in the process will be wrapped as `SampleInfoError`s
+and then printed with backtrace to a `String` in the `error` column.
+
+## Matching EDF label to Onda labels
+
+The `labels` keyword argument determines how Onda `channel` and signal `kind`
+are extracted from the EDF label.
+
+Labels are specified as an iterable of `signal_names => channel_names` pairs.
+`signal_names` should be an iterable of signal names, the first of which is the
+canonical name used as the Onda `kind`.  Each element of `channel_names` gives
+the specification for one channel, which can either be a string, or a
+`canonical_name => alternates` pair.  Occurences of `alternates` will be
+replaces with `canonical_name` in the generated channel label.
+
+Matching is determined _solely_ by the channel names.  When matching, the signal
+names are only used to remove signal names occuring as prefixes (e.g., "[ECG]
+AVL") before matching channel names.  See [`match_edf_label`](@ref) for details,
+and see `OndaEDF.STANDARD_LABELS` for the default labels.
+
+As an example, here is (a subset of) the default labels for ECG signals:
+
+```julia
+["ecg", "ekg"] => ["i" => ["1"], "ii" => ["2"], "iii" => ["3"],
+                   "avl"=> ["ecgl", "ekgl", "ecg", "ekg", "l"], 
+                   "avr"=> ["ekgr", "ecgr", "r"], ...]
+```
+
+Matching is done in the order that `labels` iterates pairs, and will stop at the
+first match, with no warning if signals are ambiguous (although this may change
+in a future version)
+"""
+function plan_edf_to_onda_samples(header,
+                                  seconds_per_record=_get(header,
+                                                          :seconds_per_record);
+                                  labels=STANDARD_LABELS,
+                                  units=STANDARD_UNITS,
+                                  preprocess_labels=nothing)
+    # we don't check this inside the try/catch because it's a user/method error
+    # rather than a data/ingest error
+    ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
+
+    # keep the kwarg so we can throw a more informative error
+    if preprocess_labels !== nothing
+        throw(ArgumentError("the `preprocess_labels` argument has been removed.  " *
+                            "Instead, preprocess signal header rows to before calling " *
+                            "`plan_edf_to_onda_samples`"))
+    end
+    
+    row = (; header..., seconds_per_record, error=nothing)
+
+    try
+        edf_label = header.label
+        for (signal_names, channel_names) in labels
+            # channel names is iterable of channel specs, which are either "channel"
+            # or "canonical => ["alt1", ...]
+            for canonical in channel_names
+                channel_name = canonical_channel_name(canonical)
+
+                matched = match_edf_label(edf_label, signal_names, channel_name, channel_names)
+                
+                if matched !== nothing
+                    # create SamplesInfo and return
+                    row = rowmerge(row; 
+                                   channel=matched,
+                                   kind=first(signal_names),
+                                   sample_unit=edf_to_onda_unit(header.physical_dimension, units),
+                                   edf_signal_encoding(header, seconds_per_record)...)
+                    return Plan(row)
+                end
+            end
+        end
+    catch e
+        return Plan(_errored_row(row, e))
     end
 
-    results = map(values(grouped)) do pairs
-        # pairs is a vector of `standard_onda_name::String => EDF.Signal` pairs
-        edf_channel_names, edf_channels = zip(pairs...)
-        try
-            edf_channels = collect(edf_channels)
-            info = edf_signals_to_samplesinfo(edf, edf_channels, first(signal_names), collect(edf_channel_names))
-            return info, edf_channels
-        catch e
-            # do not throw, but return any errors
-            units = [s.header.label => s.header.physical_dimension for s in edf_channels]
-            msg ="""Skipping signal: error while processing units and encodings
-                    for $(first(signal_names)) signal with units $units"""
-            return SamplesInfoError(msg, e)
+    # nothing matched, return the original signal header (as a namedtuple)
+    return Plan(row)
+end
+
+# create a table with a plan for converting this EDF file to onda: one row per
+# signal, with the Onda.SamplesInfo fields that will be generated (modulo
+# `promote_encoding`).  The column `onda_signal_index` gives the planned grouping
+# of EDF signals into Onda Samples.
+#
+# pass this plan to edf_to_onda_samples to actually run it
+
+"""
+    plan_edf_to_onda_samples(edf::EDF.File;
+                             labels=STANDARD_LABELS,
+                             units=STANDARD_UNITS,
+                             onda_signal_groupby=(:kind, :sample_unit, :sample_rate))
+
+Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
+`plan_edf_to_onda_samples` to each individual signal contained in the file,
+storing `edf_signal_index` as an additional column.  
+
+The resulting rows are then passed to [`plan_edf_to_onda_samples_groups`](@ref)
+and grouped according to `onda_signal_groupby` (by default, the `:kind`,
+`:sample_unit`, and `:sample_rate` columns), and the group index is added as an
+additional column in `onda_signal_index`.
+
+The resulting plan is returned as a table.  No signal data is actually read from
+the EDF file; to execute this plan and generate `Onda.Samples`, use
+[`edf_to_onda_samples`](@ref).  The index of the EDF signal (after filtering out
+signals that are not `EDF.Signal`s, e.g. annotation channels) for each row is
+stored in the `:edf_signal_index` column, and the rows are sorted in order of
+`:onda_signal_index`, and then by `:edf_signal_index`.
+"""
+function plan_edf_to_onda_samples(edf::EDF.File;
+                                  labels=STANDARD_LABELS,
+                                  units=STANDARD_UNITS,
+                                  preprocess_labels=nothing,
+                                  onda_signal_groupby=(:kind, :sample_unit, :sample_rate))
+    # keep the kwarg so we can throw a more informative error
+    if preprocess_labels !== nothing
+        throw(ArgumentError("the `preprocess_labels` argument has been removed.  " *
+                            "Instead, preprocess signal header rows to before calling " *
+                            "`plan_edf_to_onda_samples`.  See the OndaEDF README."))
+    end
+
+    
+    true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
+    plan_rows = map(true_signals) do s
+        return plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
+                                        labels, units)
+    end
+
+    # group signals by which Samples they will belong to, promote_encoding, and
+    # write index of destination signal into plan to capture grouping
+    plan_rows = plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby)
+
+    return FilePlan.(plan_rows)
+end
+
+"""
+    plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby=(:kind, :sample_unit, :sample_rate))
+
+Group together `plan_rows` based on the values of the `onda_signal_groupby`
+columns, creating the `:onda_signal_index` column and promoting the Onda encodings
+for each group using [`promote_encodings`](@ref).
+
+If the `:edf_signal_index` column is not present or otherwise missing, it will
+be filled in based on the order of the input rows.
+
+The updated rows are returned, sorted first by the columns named in
+`onda_signal_groupby` and second by order of occurrence within the input rows.
+"""
+function plan_edf_to_onda_samples_groups(plan_rows;
+                                         onda_signal_groupby=(:kind, :sample_unit, :sample_rate))
+    plan_rows = Tables.rows(plan_rows)
+    # if `edf_signal_index` is not present, create it before we re-order things
+    plan_rows = map(enumerate(plan_rows)) do (i, row)
+        edf_signal_index = coalesce(_get(row, :edf_signal_index), i)
+        return rowmerge(row; edf_signal_index)
+    end
+    
+    grouped_rows = groupby(grouper(onda_signal_groupby), plan_rows)
+    sorted_keys = sort!(collect(keys(grouped_rows)))
+    plan_rows = mapreduce(vcat, enumerate(sorted_keys)) do (onda_signal_index, key)
+        rows = grouped_rows[key]
+        encoding = promote_encodings(rows)
+        return [rowmerge(row, encoding, (; onda_signal_index)) for row in rows]
+    end
+    return plan_rows
+end
+
+_get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missing
+function grouper(vars=(:kind, :sample_unit, :sample_rate))
+    return x -> NamedTuple{vars}(_get.(Ref(x), vars))
+end
+grouper(vars::AbstractVector{Symbol}) = grouper((vars..., ))
+grouper(var::Symbol) = grouper((var, ))
+
+# return Samples for each :onda_signal_index
+"""
+    edf_to_onda_samples(edf::EDF.File, plan_table; validate=true)
+
+Convert Signals found in an EDF File to `Onda.Samples` according to the plan
+specified in `plan_table` (e.g., as generated by [`plan_edf_to_onda_samples`](@ref)), returning an
+iterable of the generated `Onda.Samples` and the plan as actually executed.
+
+The input plan is transformed by using [`merge_samples_info`](@ref) to combine
+rows with the same `:onda_signal_index` into a common `Onda.SamplesInfo`.  Then
+[`OndaEDF.onda_samples_from_edf_signals`](@ref) is used to combine the EDF
+signals data into a single `Onda.Samples` per group.
+
+The `label` of the original `EDF.Signal`s are preserved in the `:edf_channels`
+field of the resulting `SamplesInfo`s for each `Samples` generated.
+
+Any errors that occur are shown as `String`s (with backtrace) and inserted into
+the `:error` column for the corresponding rows from the plan.
+
+Samples are returned in the order of `:onda_signal_index`.  Signals that could
+not be matched or otherwise caused an error during execution are not returned.
+
+If `validate=true` (the default), the plan is validated against the
+[`FilePlan`](@ref) schema, and the signal headers in the `EDF.File`.
+"""
+function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true)
+                             
+    true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
+    
+    if validate
+        Legolas.validate(plan_table, Legolas.Schema("ondaedf.file-plan@1"))
+        for row in Tables.rows(plan_table)
+            signal = true_signals[row.edf_signal_index]
+            signal.header.label == row.label ||
+                throw(ArgumentError("Plan's label $(row.label) does not match EDF label $(signal.header.label)!"))
         end
     end
 
-    return ([info_channels for info_channels in results if !isa(info_channels, Exception)],
-            [e for e in results if isa(e, Exception)])
+    EDF.read!(edf)
+    plan_rows = Tables.rows(plan_table)
+    grouped_plan_rows = groupby(grouper((:onda_signal_index, )), plan_rows)
+    exec_rows = map(collect(grouped_plan_rows)) do (idx, rows)
+        try
+            info = merge_samples_info(rows)
+            if ismissing(info)
+                # merge_samples_info returns missing is any of :kind,
+                # :sample_unit, :sample_rate, or :channel is missing in any of
+                # the rows, to indicate that it's not possible to generate
+                # samples.  this keeps us from overwriting any existing, more
+                # specific :errors in the plan with nonsense about promote_type
+                # etc.
+                samples = missing
+            else
+                signals = [true_signals[row.edf_signal_index] for row in rows]
+                samples = onda_samples_from_edf_signals(info, signals,
+                                                        edf.header.seconds_per_record)
+            end
+            return (; idx, samples, plan_rows=rows)
+        catch e
+            plan_rows = _errored_rows(rows, e)
+            return (; idx, samples=missing, plan_rows)
+        end
+    end
+
+    sort!(exec_rows; by=(row -> row.idx))
+    exec = Tables.columntable(exec_rows)
+
+    exec_plan = reduce(vcat, exec.plan_rows)
+
+    return collect(skipmissing(exec.samples)), exec_plan
+end
+
+"""
+    OndaEDF.merge_samples_info(plan_rows)
+
+Create a single, merged `SamplesInfo` from plan rows, such as generated by
+[`plan_edf_to_onda_samples`](@ref).  Encodings are promoted with `promote_encodings`.
+
+The input rows must have the same values for `:kind`, `:sample_unit`, and
+`:sample_rate`; otherwise an `ArgumentError` is thrown.
+
+If any of these values is `missing`, or any row's `:channel` value is `missing`,
+this returns `missing` to indicate it is not possible to determine a shared
+`SamplesInfo`.
+
+The original EDF labels are included in the output in the `:edf_channels`
+column.
+
+!!! note
+
+    This is an internal function and is not meant to be called direclty.
+"""
+function merge_samples_info(rows)
+    # we enforce that kind, sample_unit, and sample_rate are all equal here
+    key = unique(grouper((:kind, :sample_unit, :sample_rate)).(rows))
+    if length(key) != 1
+        throw(ArgumentError("couldn't merge samples info from rows: multiple " *
+                            "kind/sample_unit/sample_rate combinations:\n\n" *
+                            "$(pretty_table(String, key))\n\n" *
+                            "$(pretty_table(String, rows))"))
+    end
+
+    key = only(key)
+    if any(ismissing, key) || any(ismissing, _get.(rows, :channel))
+        # we use missing as a sentinel value to indicate that it's not possible
+        # to create Samples from these rows
+        return missing
+    else
+        onda_encoding = promote_encodings(rows)
+        channels = [row.channel for row in rows]
+        edf_channels = [row.label for row in rows]
+        return SamplesInfo(; onda_encoding..., NamedTuple(key)..., channels, edf_channels)
+    end
 end
 
 #####
 ##### `import_edf!`
 #####
 
+"""
+    OndaEDF.onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
+                                          edf_seconds_per_record)
+
+Generate an `Onda.Samples` struct from an iterable of `EDF.Signal`s, based on
+the `Onda.SamplesInfo` in `target`.  This checks for matching sample rates in
+the source signals.  If the encoding of `target` is the same as the encoding in
+a signal, its encoded (usually `Int16`) data is copied directly into the
+`Samples` data matrix; otherwise it is re-encoded.
+
+!!! note
+
+    This function is not meant to be called directly, but through 
+    [`edf_to_onda_samples`](@ref)
+
+"""
 function onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
                                        edf_seconds_per_record)
     sample_count = length(first(edf_signals).samples)
@@ -331,45 +639,41 @@ in `\$path/samples/`, and write the Onda signals and annotations tables to
 "edf", and if a prefix is provided for signals but not annotations both will use
 the signals prefix.  The prefixes cannot reference (sub)directories.
 
-Returns `(; recording_uuid, signals, annotations, signals_path, annotations_path)`.
+Returns `(; recording_uuid, signals, annotations, signals_path, annotations_path, plan)`.
 
-Samples are extracted with [`edf_to_onda_samples`](@ref), and EDF+ annotations are
-extracted with [`edf_to_onda_annotations`](@ref) if `import_annotations==true`
-(the default).
+This is a convenience function that first formulates an import plan via
+[`plan_edf_to_onda_samples`](@ref), and then immediately executes this plan with
+[`edf_to_onda_samples`](@ref).
 
-Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
-"extractor" callbacks of the form:
+The samples and executed plan are returned; it is **strongly advised** that you
+review the plan for un-extracted signals (where `:kind` or `:channel` is
+`missing`) and errors (non-`nothing` values in `:error`).
 
-    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
-                      edf_signals::Vector{EDF.Signal})
-
-`store_edf_as_onda` automatically uses a variety of default extractors derived
-from the EDF standard texts; see `src/standards.jl` and
-[`extract_channels_by_label`](@ref) for details. The caller can provide
-alternative extractors via the `custom_extractors` keyword argument, and the
-[`edf_signals_to_samplesinfo`](@ref) utility can be used to extract a common
-`Onda.SamplesInfo` from a collection of EDF.Signals.
+Groups of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
+[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the
+plan via the `labels` and `units` keyword arguments, all of which are forwarded
+to [`plan_edf_to_onda_samples`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
 
-- the label's prepended signal type is matched against known types, if present
-- the remainder of the label is whitespace-stripped, parens-stripped, and lowercased
+- the label is whitespace-stripped, parens-stripped, and lowercased
 - trailing generic EDF references (e.g. "ref", "ref2", etc.) are dropped
 - any instance of `+` is replaced with `_plus_` and `/` with `_over_`
 - all component names are converted to their "canonical names" when possible
-  (e.g. for an EOG matched channel, "eogl", "loc", "lefteye", etc. are converted
-  to "left").
+  (e.g. "3" in an ECG-matched channel name will be converted to "iii").
 
-`EDF.Signal`s which get extracted into more than one `Onda.Samples` are removed
-and an `AmbiguousChannelError` displayed as a warning.
+If more control (e.g. preprocessing signal labels) is required, callers should
+use [`plan_edf_to_onda_samples`](@ref) and [`edf_to_onda_samples`](@ref)
+directly, and `Onda.store` the resulting samples manually.
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
 function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
-                           custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
+                           import_annotations::Bool=true,
                            postprocess_samples=identity,
-                           signals_prefix="edf", annotations_prefix=signals_prefix)
+                           signals_prefix="edf", annotations_prefix=signals_prefix,
+                           kwargs...)
 
     # Validate input argument early on
     signals_path = joinpath(onda_dir, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
@@ -382,10 +686,20 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
     mkpath(joinpath(onda_dir, "samples") * '/')
 
     signals = Onda.Signal[]
-    edf_samples, diagnostics = edf_to_onda_samples(edf; custom_extractors=custom_extractors)
-    for e in diagnostics.errors
-        @warn sprint(showerror, e)
+    edf_samples, plan = edf_to_onda_samples(edf; kwargs...)
+    
+    errors = _get(Tables.columns(plan), :error)
+    if !ismissing(errors)
+        # why unique?  because errors that occur during execution get inserted
+        # into all plan rows for that group of EDF signals, so they may be
+        # repeated
+        for e in unique(errors)
+            if e !== nothing
+                @warn sprint(showerror, e)
+            end
+        end
     end
+    
     edf_samples = postprocess_samples(edf_samples)
     for samples in edf_samples
         sample_filename = string(recording_uuid, "_", samples.info.kind, ".", file_format)
@@ -407,17 +721,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         annotations = Onda.Annotation[]
     end
 
-    return @compat (; recording_uuid, signals, annotations, signals_path, annotations_path)
-end
-
-function store_edf_as_onda(path, edf::EDF.File, uuid::UUID=uuid4(); kwargs...)
-    Base.depwarn("`store_edf_as_onda(path, edf, ...)` is deprecated, use " *
-                 "`nt = store_edf_as_onda(edf, path, ...); nt.recording_uuid => (nt.signals, nt.annotations)` " *
-                 "instead.",
-                 :store_edf_as_onda)
-    nt = store_edf_as_onda(edf, path, uuid; kwargs...)
-    signals = [rowmerge(s; file_path=string(s.file_path)) for s in nt.signals]
-    return nt.recording_uuid => (nt.signals, nt.annotations)
+    return (; recording_uuid, signals, annotations, signals_path, annotations_path, plan)
 end
 
 function validate_arrow_prefix(prefix)
@@ -430,49 +734,21 @@ function validate_arrow_prefix(prefix)
     return prefix
 end
 
-# the same EDF.Signal was extracted into multiple `Onda.SampleInfos`.
-struct AmbiguousChannelError <: Exception
-    summary
-end
-
-Base.showerror(io::IO, e::AmbiguousChannelError) = print(io, "AmbiguousChannelError: the same `EDF.Signal` was extracted into multiple `Onda.SampleInfo`s\n", e.summary)
-
-# return a list of tuples describing sample info channels that are ambiguous
-# because they were extracted from the same edf_signal
-# modifies `infos` and associated `edf_signals::Vector{EDF.Signal}` in place to remove ambiguous signals
-function _ambiguous_channels!(extracted, edf_signal)
-    ambiguous = []
-    for (info, edf_signals) in extracted
-        i = findfirst(==(edf_signal), edf_signals)
-        isnothing(i) && continue
-        channel_name = info.channels[i]
-        summary = (info.kind, channel_name, info.sample_unit)
-        push!(ambiguous, (info, edf_signals) => summary)
-    end
-    length(ambiguous) < 2 && return nothing
-    for ((info, edf_signals), (_, channel_name, _)) in ambiguous
-        filter!(!=(channel_name), info.channels)
-        filter!(!=(edf_signal), edf_signals)
-    end
-    return map(last, ambiguous)
-end
-
 """
-    edf_to_onda_samples(edf::EDF.File; custom_extractors=())
+    edf_to_onda_samples(edf::EDF.File; kwargs...)
 
-Read signals from an `EDF.File` into a vector of `Onda.Samples`,
-which are returned along with a NamedTuple with diagnostic information
-(the same info returned by [`edf_header_to_onda_samples_info`](@ref)).
+Read signals from an `EDF.File` into a vector of `Onda.Samples`.  This is a
+convenience function that first formulates an import plan via [`plan_edf_to_onda_samples`](@ref),
+and then immediately executes this plan with [`edf_to_onda_samples`](@ref).
 
-Collections of `EDF.Signal`s are mapped as channels to `Onda.Signal`s via simple
-"extractor" callbacks of the form:
+The samples and executed plan are returned; it is **strongly advised** that you
+review the plan for un-extracted signals (where `:kind` or `:channel` is
+`missing`) and errors (non-`nothing` values in `:error`).
 
-    edf::EDF.File -> (samples_info::Onda.SamplesInfo,
-                      edf_signals::Vector{EDF.Signal})
-
-`edf_to_onda_samples` automatically uses a variety of default extractors derived from
-the EDF standard texts; see `src/standards.jl` for details. The caller can also
-provide additional extractors via the `custom_extractors` keyword argument.
+Collections of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
+[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the
+plan via the `labels` and `units` keyword arguments, all of which are forwarded
+to [`plan_edf_to_onda_samples`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
@@ -485,69 +761,11 @@ following transformations:
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
-function edf_to_onda_samples(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
+function edf_to_onda_samples(edf::EDF.File; kwargs...)
+    signals_plan = plan_edf_to_onda_samples(edf; kwargs...)
     EDF.read!(edf)
-    info_map, nt = edf_header_to_onda_samples_info(edf; custom_extractors=custom_extractors)
-    edf_samples = [onda_samples_from_edf_signals(info,
-                                                 edf_signals,
-                                                 edf.header.seconds_per_record)
-                   for (info, edf_signals) in info_map if !isempty(info.channels)]
-    return edf_samples, nt
-end
-
-"""
-    edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
-
-Read edf header, return a mapping from `Onda.SamplesInfo`s to the vector
-of `EDF.Signals` it was extracted from, along with a `NamedTuple` containing
-diagnostic information in fields:
-- `header_map`: a vector of corresponding `Onda.SamplesInfo`, `Vector{EDF.SignalHeader}` pairs.
-- `unextracted_edf_headers`: a vector of EDF signal headers that could not be extracted.
-- `errors`: vector of exceptions thrown while attempting to extract header info.
-
-The `NamedTuple` can be pretty-printed and used to compare outputs with `SamplesInfo`s
-previously extracted from the same data, for testing purposes.
-
-`EDF.read!` does not get called, this function will work
-with only the first few bytes--30k should be enough--of the edf file,
-which is convenient for developping custom extractors for a dataset without
-reading and converting all the samples data.
-"""
-function edf_header_to_onda_samples_info(edf::EDF.File; custom_extractors=STANDARD_EXTRACTORS)
-    info_map, errors = try
-        matched = []
-        errors = Exception[]
-        for extractor in custom_extractors
-            extracteds, errs = extractor(edf)
-            append!(errors, errs)
-            for extracted in extracteds
-                push!(matched, extracted)
-            end
-        end
-        # each edf_signal should get extracted into at most one SamplesInfo, otherwise it is ambiguous
-        matched_signals = Set(Iterators.flatten(map(last, matched)))
-        ambiguous_edf_signals = []
-        for edf_signal in matched_signals
-            ambiguous_channels = _ambiguous_channels!(matched, edf_signal)
-            if !isnothing(ambiguous_channels)
-                edf_signal_summary = (edf_signal.header.label,
-                                      edf_signal.header.transducer_type,
-                                      edf_signal.header.physical_dimension)
-                push!(errors, AmbiguousChannelError(edf_signal_summary => ambiguous_channels))
-            end
-        end
-        matched = [(info, edf_signals) for (info, edf_signals) in matched if !isempty(info.channels)]
-        sort!(errors; by=string)
-        matched, errors
-    catch e
-        [], [e]
-    end
-    matched_edf_headers = mapreduce(last, union, info_map; init=[])
-    unextracted = [s.header for s in edf.signals if isa(s, EDF.Signal) && s ∉ matched_edf_headers]
-    header_map = [info => [s.header for s in edf_signals if isa(s, EDF.Signal)] for (info, edf_signals) in info_map]
-    return info_map, (header_map=header_map,
-                      unextracted_edf_headers=unextracted,
-                      errors=errors)
+    samples, exec_plan = edf_to_onda_samples(edf, signals_plan)
+    return samples, exec_plan
 end
 
 """

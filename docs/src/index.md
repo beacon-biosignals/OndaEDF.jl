@@ -18,14 +18,17 @@ or manipulated in memory as desired.
 
 ```@docs
 edf_to_onda_samples
+plan_edf_to_onda_samples
+plan_edf_to_onda_samples_groups
 edf_to_onda_annotations
 ```
 
-### Import utilities
+### Import plan table schemas
 
 ```@docs
-extract_channels_by_label
-edf_signals_to_samplesinfo
+Plan
+FilePlan
+write_plan
 ```
 
 ### Full-service import
@@ -35,6 +38,14 @@ extract `Onda.Samples` and `Onda.Annotations` and then write them to disk:
 
 ```@docs
 store_edf_as_onda
+```
+
+### Internal import utilities
+
+```@docs
+OndaEDF.match_edf_label
+OndaEDF.merge_samples_info
+OndaEDF.onda_samples_from_edf_signals
 ```
 
 ## Export EDF from Onda
