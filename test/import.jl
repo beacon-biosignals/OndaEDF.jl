@@ -28,22 +28,22 @@ using Legolas: validate, Schema, read
                                                  edf.header.seconds_per_record)
 
         @testset "signal-wise plan" begin
-            grouped_plans = OndaEDF.plan_edf_to_onda_samples_groups(signal_plans)
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
             returned_samples, plan = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
 
             validate_extracted_signals(s.info for s in returned_samples)
         end
-            
+        
         @testset "custom grouping" begin
             signal_plans = [rowmerge(plan; grp=string(plan.kind, plan.sample_unit, plan.sample_rate))
                             for plan in signal_plans]
-            grouped_plans = OndaEDF.plan_edf_to_onda_samples_groups(signal_plans,
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
                                                                     onda_signal_groupby=:grp)
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
             validate_extracted_signals(s.info for s in returned_samples)
 
             # one channel per signal, group by label
-            grouped_plans = OndaEDF.plan_edf_to_onda_samples_groups(signal_plans,
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
                                                                     onda_signal_groupby=:label)
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
             @test all(==(1), channel_count.(returned_samples))
@@ -58,7 +58,7 @@ using Legolas: validate, Schema, read
             plans_rev = reverse!(plans_numbered)
             @test last(plans_rev).edf_signal_index == 1
 
-            grouped_plans_rev = OndaEDF.plan_edf_to_onda_samples_groups(plans_rev)
+            grouped_plans_rev = plan_edf_to_onda_samples_groups(plans_rev)
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans_rev)
             # we need to re-reverse the order of channels to get to what's
             # expected in teh tests
@@ -70,7 +70,7 @@ using Legolas: validate, Schema, read
             # and signal label without pre-numbering
             plans_rev_bad = [rowmerge(plan; edf_signal_index=missing)
                              for plan in plans_rev]
-            grouped_plans_rev_bad = OndaEDF.plan_edf_to_onda_samples_groups(plans_rev_bad)
+            grouped_plans_rev_bad = plan_edf_to_onda_samples_groups(plans_rev_bad)
             @test_throws(ArgumentError("Plan's label EcG EKGL does not match EDF label EEG C3-M2!"),
                          edf_to_onda_samples(edf, grouped_plans_rev_bad))
             

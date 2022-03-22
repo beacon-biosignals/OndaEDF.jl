@@ -98,7 +98,7 @@ end
 
 new_plan = map(fix_emg, Tables.rows(plans))
 # re-compute the grouping of EDF signals into Onda signals:
-new_plan = OndaEDF.plan_edf_to_onda_signal_groups(new_plan)
+new_plan = plan_edf_to_onda_samples_groups(new_plan)
 samples, plan_executed = edf_to_onda_samples(edf, new_plan)
 ```
 
@@ -119,6 +119,6 @@ function corrected_header(signal::EDF.Signal)
 end
 
 plans = map(plan_edf_to_onda_samples ∘ corrected_header, edf.signals)
-grouped_plans = OndaEDF.plan_edf_to_onda_signal_groups(plans)
+grouped_plans = plan_edf_to_onda_samples_groups(plans)
 samples, plan_executed = edf_to_onda_samples(edf, grouped_plans)
 ```

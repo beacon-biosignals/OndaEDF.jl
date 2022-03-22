@@ -16,7 +16,7 @@ using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type, convert_nu
 using Tables: rowmerge
 
 export write_plan
-export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, store_edf_as_onda
+export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, plan_edf_to_onda_samples_groups, store_edf_as_onda
 export onda_to_edf
 
 # can be dropped if we drop Onda<0.14
