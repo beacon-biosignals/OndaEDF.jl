@@ -38,13 +38,13 @@ using Legolas: validate, Schema, read
             signal_plans = [rowmerge(plan; grp=string(plan.kind, plan.sample_unit, plan.sample_rate))
                             for plan in signal_plans]
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
-                                                                    onda_signal_groupby=:grp)
+                                                            onda_signal_groupby=:grp)
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
             validate_extracted_signals(s.info for s in returned_samples)
 
             # one channel per signal, group by label
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
-                                                                    onda_signal_groupby=:label)
+                                                            onda_signal_groupby=:label)
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
             @test all(==(1), channel_count.(returned_samples))
         end
