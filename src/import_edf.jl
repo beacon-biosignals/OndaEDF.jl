@@ -144,7 +144,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     #   matching against `"xpap cpap"`.  the fix for this is to add the full
     #   signal name to the (end) of `signal_names` in the label set.
     # - if the signal name itself contains whitespace or one of `",[]"`, it
-    #   will not match.  the fix for this is to pass a preprocessor function to
+    #   will not match.  the fix for this is to preprocess signal headers before
     #   `plan_edf_to_onda_samples` to normalize known instances (after reviewing the plan)
     m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
     if !isnothing(m) && m[:signal] in signal_names
@@ -276,7 +276,7 @@ plan_edf_to_onda_samples(header::EDF.SignalHeader, s; kwargs...) = plan_edf_to_o
 
 """
     plan_edf_to_onda_samples(header, seconds_per_record; labels=STANDARD_LABELS,
-                             units=STANDARD_UNITS, preprocess_labels=(l,t) -> l)
+                             units=STANDARD_UNITS)
     plan_edf_to_onda_samples(signal::EDF.Signal, args...; kwargs...)
 
 Formulate a plan for converting an EDF signal into Onda format.  This returns a
@@ -325,16 +325,22 @@ function plan_edf_to_onda_samples(header,
                                                           :seconds_per_record);
                                   labels=STANDARD_LABELS,
                                   units=STANDARD_UNITS,
-                                  preprocess_labels=(l,t) -> l)
+                                  preprocess_labels=nothing)
     # we don't check this inside the try/catch because it's a user/method error
     # rather than a data/ingest error
     ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
 
+    # keep the kwarg so we can throw a more informative error
+    if preprocess_labels !== nothing
+        throw(ArgumentError("the `preprocess_labels` argument has been removed.  " *
+                            "Instead, preprocess signal header rows to before calling " *
+                            "`plan_edf_to_onda_samples`"))
+    end
+    
     row = (; header..., seconds_per_record, error=nothing)
 
     try
-        # TODO: remove this in favor of users modifying the header row
-        edf_label = preprocess_labels(header.label, header.transducer_type)
+        edf_label = header.label
         for (signal_names, channel_names) in labels
             # channel names is iterable of channel specs, which are either "channel"
             # or "canonical => ["alt1", ...]
@@ -373,7 +379,6 @@ end
     plan_edf_to_onda_samples(edf::EDF.File;
                              labels=STANDARD_LABELS,
                              units=STANDARD_UNITS,
-                             preprocess_labels=(l,t) -> l,
                              onda_signal_groupby=grouper((:kind, :sample_unit, :sample_rate)))
 
 Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
@@ -395,12 +400,20 @@ stored in the `:edf_signal_index` column, and the rows are sorted in order of
 function plan_edf_to_onda_samples(edf::EDF.File;
                                   labels=STANDARD_LABELS,
                                   units=STANDARD_UNITS,
-                                  preprocess_labels=(l,t) -> l,
+                                  preprocess_labels=nothing,
                                   onda_signal_groupby=(:kind, :sample_unit, :sample_rate))
+    # keep the kwarg so we can throw a more informative error
+    if preprocess_labels !== nothing
+        throw(ArgumentError("the `preprocess_labels` argument has been removed.  " *
+                            "Instead, preprocess signal header rows to before calling " *
+                            "`plan_edf_to_onda_samples`.  See the OndaEDF README."))
+    end
+
+    
     true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
     plan_rows = map(true_signals) do s
         return plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
-                                        labels, units, preprocess_labels)
+                                        labels, units)
     end
 
     # group signals by which Samples they will belong to, promote_encoding, and
@@ -620,8 +633,8 @@ review the plan for un-extracted signals (where `:kind` or `:channel` is
 
 Groups of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
 [`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the
-plan via the `labels`, `units`, and `preprocess_labels` keyword arguments, all
-of which are forwarded to [`plan_edf_to_onda_samples`](@ref).
+plan via the `labels` and `units` keyword arguments, all of which are forwarded
+to [`plan_edf_to_onda_samples`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
@@ -631,6 +644,10 @@ following transformations:
 - any instance of `+` is replaced with `_plus_` and `/` with `_over_`
 - all component names are converted to their "canonical names" when possible
   (e.g. "3" in an ECG-matched channel name will be converted to "iii").
+
+If more control (e.g. preprocessing signal labels) is required, callers should
+use [`plan_edf_to_onda_samples`](@ref) directly, and `Onda.store` the resulting
+samples manually.
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
@@ -712,9 +729,9 @@ review the plan for un-extracted signals (where `:kind` or `:channel` is
 `missing`) and errors (non-`nothing` values in `:error`).
 
 Collections of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
-[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the plan via the
-`labels`, `units`, and `preprocess_labels` keyword arguments, all of
-which are forwarded to [`plan_edf_to_onda_samples`](@ref).
+[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the
+plan via the `labels` and `units` keyword arguments, all of which are forwarded
+to [`plan_edf_to_onda_samples`](@ref).
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:

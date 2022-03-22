@@ -202,10 +202,12 @@ using Legolas: validate, Schema, read
         one_plan = plan_edf_to_onda_samples(one_signal, edf.header.seconds_per_record)
         @test one_plan.label == one_signal.header.label
 
-        preproc_err = (l, t) -> throw(ErrorException("testing"))
-        err_plan = @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; preprocess_labels=preproc_err)
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal, 1.0; preprocess_labels=identity)
+
+        err_plan = @test_logs (:error, ) plan_edf_to_onda_samples(one_signal, 1.0; units=[1, 2, 3])
         @test err_plan.error isa String
-        @test occursin("testing", err_plan.error)
+        # malformed units arg: elements should be de-structurable
+        @test contains(err_plan.error, "BoundsError")
 
         # malformed labels/units
         @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; labels=[["signal"] => nothing])
