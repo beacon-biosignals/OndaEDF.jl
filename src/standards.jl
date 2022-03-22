@@ -42,28 +42,49 @@ function onda_to_edf_unit(onda_sample_unit::String, unit_alternatives=STANDARD_U
     return lift(first, units)
 end
 
-const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 and 10/10
+const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20, 10/10, and 10/05
                              # physical montage; channels are ordered from left-to-right,
                              # front-to-back w.r.t a top-down, nose-up view of the head.
                              # 10/20 channel names that aren't in the 10/10 system (and
                              # vice versa) are interleaved into their appropriate location
                              # on the head relative to other channels.
+                             # Reference: Jurcak, V., Tsuzuki, D., and Dan, I. (2007). 
+                             # 10/20, 10/10, and 10/5 systems revisited: Their validity as 
+                             # relative head-surface-based positioning systems. NeuroImage 34,
+                             # 1600-1611. https://doi.org/10.1016/j.neuroimage.2006.09.024.
+
                              #
                              # Note that other commonly used (but non-EDF-standard) labels
                              # used as references include `LE` ("Linked Ear") and `AR`
                              # ("Average Reference"). See the following paper for details:
                              # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5479869/
-                             ["eeg"] => ["pg1", "nz", "pg2",
-                                         "fp1", "fpz", "fp2",
-                                         "af7", "af3", "afz", "af4", "af8",
-                                         "f9", "f7", "f5", "f3", "f1", "fz", "f2", "f4", "f6", "f8", "f10",
-                                         "ft9", "ft7", "fc5", "fc3", "fc1", "fcz", "fc2", "fc4", "fc6", "ft8", "ft10",
-                                         "a1", "m1", "t9", "t7", "t3", "c5", "c3", "c1", "cz", "c2", "c4", "c6", "t4", "t8", "t10", "a2", "m2",
-                                         "tp9", "tp7", "cp5", "cp3", "cp1", "cpz", "cp2", "cp4", "cp6", "tp8", "tp10",
-                                         "t5", "p9", "p7", "p5", "p3", "p1", "pz", "p2", "p4", "p6", "p8", "p10", "t6",
-                                         "po7", "po3", "poz", "po4", "po8",
-                                         "o1" => ["01"], "oz", "o2" => ["02"],
-                                         "iz"],
+                             ["eeg"] =>  ["nas",
+                                          "n1", "n1h", "nz", "n2h", "n2", 
+                                          "nfp1", "nfp1h", "nfpz", "nfp2h", "nfp2",
+                                          "fp1", "fp1h", "fpz", "fp2h", "fp2", 
+                                          "afp9", "afp9h", "afp7", "afp7h", "afp5", "afp5h", "afp3", "afp3h", "afp1", "afp1h", "afpz", "afp2h", "afp2", "afp4h", "afp4", "afp6h", "afp6", "afp8h", "afp8", "afp10h", "afp10", 
+                                          "af9", "af9h",  "af7", "af7h", "af5", "af5h", "af3", "af3h", "af1", "af1h", "afz", "af2h", "af2", "af4h", "af4", "af6h", "af6",  "af8h", "af8", "af10h", "af10", 
+                                          "aff9", "aff9h", "aff7", "aff7h", "aff5", "aff5h", "aff3", "aff3h", "aff1", "aff1h",  "affz", "aff2h", "aff2", "aff4h", "aff4", "aff6h",  "aff6", "aff8h",  "aff8", "aff10h", "aff10", 
+                                          "f9", "f9h", "f7", "f7h",  "f5", "f5h", "f3", "f3h", "f1",  "f1h", "fz", "f2h", "f2", "f4h", "f4", "f6h", "f6", "f8h", "f8",  "f10h", "f10",
+                                          "fft9", "fft9h", "fft7", "fft7h", "ffc5", "ffc5h", "ffc3", "ffc3h", "ffc1", "ffc1h", "ffcz", "ffc2h",  "ffc2",  "ffc4h", "ffc4", "ffc6h", "ffc6", "fft8h", "fft8", "fft10h", "fft10", 
+                                          "ft9", "ft9h", "ft7", "ft7h", "fc5", "fc5h", "fc3", "fc3h", "fc1", "fc1h", "fcz", "fc2h", "fc2", "fc4h",  "fc4", "fc6h", "fc6", "ft8h", "ft8", "ft10h",  "ft10", 
+                                          "ftt9", "ftt9h", "ftt7", "ftt7h", "fcc5", "fcc5h", "fcc3", "fcc3h", "fcc1", "fcc1h", "fccz", "fcc2h", "fcc2", "fcc4h", "fcc4", "fcc6h", "fcc6", "ftt8h", "ftt8", "ftt10h", "ftt10", 
+                                          "t9", "t9h", "t7", "t7h", "c5", "c5h", "c3", "c3h", "c1", "c1h", "cz", "c2h", "c2", "c4h", "c4", "c6h", "c6", "t8h", "t8", "t10h", "t10", 
+                                          "ttp9", "ttp9h", "ttp7", "ttp7h", "ccp5", "ccp5h", "ccp3", "ccp3h", "ccp1", "ccp1h", "ccpz", "ccp2h", "ccp2", "ccp4h",  "ccp4", "ccp6h",  "ccp6", "ttp8h", "ttp8", "ttp10h", "ttp10",
+                                          "tp9", "tp9h", "tp7", "tp7h", "cp5", "cp5h", "cp3", "cp3h", "cp1", "cp1h", "cpz", "cp2h", "cp2", "cp4h", "cp4", "cp6h", "cp6", "tp8h", "tp8", "tp10h", "tp10", 
+                                          "tpp9", "tpp9h", "tpp7", "tpp7h", "cpp5", "cpp5h", "cpp3", "cpp3h", "cpp1", "cpp1h",  "cppz", "cpp2h", "cpp2", "cpp4h", "cpp4", "cpp6h", "cpp6", "tpp8h", "tpp8", "tpp10h",  "tpp10", 
+                                          "p9", "p9h", "p7", "p7h", "p5", "p5h", "p3", "p3h", "p1", "p1h", "pz", "p2h", "p2", "p4h", "p4", "p6h", "p6", "p8h", "p8", "p10h", "p10", 
+                                          "ppo9", "ppo9h",  "ppo7", "ppo7h", "ppo5", "ppo5h", "ppo3", "ppo3h", "ppo1", "ppo1h", "ppoz", "ppo2h", "ppo2", "ppo4h", "ppo4", "ppo6h", "ppo6", "ppo8h", "ppo8", "ppo10h", "ppo10",
+                                          "po9", "po9h", "po7", "po7h", "po5", "po5h", "po3", "po3h", "po1", "po1h", "poz", "po2h", "po2", "po4h", "po4", "po6h", "po6", "po8h",  "po8", "po10h", "po10",
+                                          "poo9", "poo9h", "poo7", "poo7h", "poo5", "poo5h", "poo3", "poo3h", "poo1", "poo1h", "pooz", "poo2h", "poo2", "poo4h", "poo4", "poo6h", "poo6", "poo8h", "poo8", "poo10h", "poo10",
+                                          "o1" => ["01"], "o1h", "oz", "o2h", "o2" => ["02"], 
+                                          "oi1", "oi1h", "oiz", "oi2h", "oi2",
+                                          "i1", "i1h", "iz", "i2h", "i2",
+
+                                          "t3", "t4", "t5", "t6", # T3, T4, T5 and T6 in 10/20 system aren named T7, T8, P7, P8 in 10/10 system.
+                                          "a1", "a2", "m1", "m2",
+                                          "lpa", "rpa",
+                                          "pg1", "pg2"],
                              # It is very common in the wild to see "EKG1", "EKG2", etc., and it's not possible
                              # by label alone to tell whether such channels refer to I, II, etc. or aVL, aVR,
                              # etc., so there's a burden on users to preprocess their EKG labels
