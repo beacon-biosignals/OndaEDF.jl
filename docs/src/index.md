@@ -31,14 +31,6 @@ FilePlan
 write_plan
 ```
 
-### Import utilities
-
-```@docs
-match_edf_label
-merge_samples_info
-OndaEDF.onda_samples_from_edf_signals
-```
-
 ### Full-service import
 
 For a more "full-service" experience, OndaEDF.jl also provides functionality to
@@ -46,6 +38,14 @@ extract `Onda.Samples` and `Onda.Annotations` and then write them to disk:
 
 ```@docs
 store_edf_as_onda
+```
+
+### Internal import utilities
+
+```@docs
+match_edf_label
+merge_samples_info
+OndaEDF.onda_samples_from_edf_signals
 ```
 
 ## Export EDF from Onda
