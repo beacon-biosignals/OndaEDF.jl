@@ -39,15 +39,15 @@ include("standards.jl")
                 # EDF.FileHeader field,
                 seconds_per_record::Float64
                 # Onda.SamplesInfo fields (channels -> channel), may be missing
-                kind::Union{Missing, AbstractString}
-                channel::Union{Missing, AbstractString}
-                sample_unit::Union{Missing, AbstractString}
-                sample_resolution_in_unit::Union{Missing, LPCM_SAMPLE_TYPE_UNION}
-                sample_offset_in_unit::Union{Missing, LPCM_SAMPLE_TYPE_UNION}
-                sample_type::Union{Missing, AbstractString}
-                sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION}
+                kind::Union{Missing,AbstractString}
+                channel::Union{Missing,AbstractString}
+                sample_unit::Union{Missing,AbstractString}
+                sample_resolution_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION}
+                sample_offset_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION}
+                sample_type::Union{Missing,AbstractString}
+                sample_rate::Union{Missing,LPCM_SAMPLE_TYPE_UNION}
                 # errors, use `nothing` to indicate no error
-                error::Union{Nothing, String})
+                error::Union{Nothing,String})
 
 A type-alias for a Legolas row describing a single EDF signal-to-Onda channel
 conversion.  The columns are the union of
@@ -81,15 +81,15 @@ const Plan = @row("ondaedf.plan@1",
                   # EDF.FileHeader field,
                   seconds_per_record::Float64,
                   # Onda.SamplesInfo fields (channels -> channel), may be missing
-                  kind::Union{Missing, AbstractString} = lift(String, kind),
-                  channel::Union{Missing, AbstractString} = lift(String, channel),
-                  sample_unit::Union{Missing, AbstractString} = lift(String, sample_unit),
-                  sample_resolution_in_unit::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_resolution_in_unit),
-                  sample_offset_in_unit::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_offset_in_unit),
-                  sample_type::Union{Missing, AbstractString} = lift(Onda.onda_sample_type_from_julia_type, sample_type),
-                  sample_rate::Union{Missing, LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_rate),
+                  kind::Union{Missing,AbstractString} = lift(String, kind),
+                  channel::Union{Missing,AbstractString} = lift(String, channel),
+                  sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit),
+                  sample_resolution_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_resolution_in_unit),
+                  sample_offset_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_offset_in_unit),
+                  sample_type::Union{Missing,AbstractString} = lift(Onda.onda_sample_type_from_julia_type, sample_type),
+                  sample_rate::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_rate),
                   # errors, use `nothing` to indicate no error
-                  error::Union{Nothing, String} = coalesce(error, nothing))
+                  error::Union{Nothing,String} = coalesce(error, nothing))
 
 """
     const FilePlan = @row("ondaedf.file-plan@1" > "ondaedf.plan@1",
