@@ -36,6 +36,7 @@ write_plan
 ```@docs
 match_edf_label
 merge_samples_info
+OndaEDF.onda_samples_from_edf_signals
 ```
 
 ### Full-service import
