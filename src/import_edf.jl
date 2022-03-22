@@ -477,9 +477,8 @@ field of the resulting `SamplesInfo`s for each `Samples` generated.
 Any errors that occur are shown as `String`s (with backtrace) and inserted into
 the `:error` column for the corresponding rows from the plan.
 
-Samples are returned in the order of `:onda_signal_index` (or otherwise the output
-of the `samples_groups` function).  Signals that could not be matched or
-otherwise caused an error during execution are not returned.
+Samples are returned in the order of `:onda_signal_index`.  Signals that could
+not be matched or otherwise caused an error during execution are not returned.
 
 If `validate=true` (the default), the plan is validated against the
 [`FilePlan`](@ref) schema, and the signal headers in the `EDF.File`.
@@ -641,8 +640,8 @@ following transformations:
   (e.g. "3" in an ECG-matched channel name will be converted to "iii").
 
 If more control (e.g. preprocessing signal labels) is required, callers should
-use [`plan_edf_to_onda_samples`](@ref) directly, and `Onda.store` the resulting
-samples manually.
+use [`plan_edf_to_onda_samples`](@ref) and [`edf_to_onda_samples`](@ref)
+directly, and `Onda.store` the resulting samples manually.
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
 """
@@ -716,8 +715,7 @@ end
 
 Read signals from an `EDF.File` into a vector of `Onda.Samples`.  This is a
 convenience function that first formulates an import plan via [`plan_edf_to_onda_samples`](@ref),
-and then immediately executes this plan with [`edf_to_onda_samples`](@ref).  The vector
-of `Onda.Samples` and the executed plan are returned
+and then immediately executes this plan with [`edf_to_onda_samples`](@ref).
 
 The samples and executed plan are returned; it is **strongly advised** that you
 review the plan for un-extracted signals (where `:kind` or `:channel` is
