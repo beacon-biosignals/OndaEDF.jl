@@ -43,8 +43,8 @@ store_edf_as_onda
 ### Internal import utilities
 
 ```@docs
-match_edf_label
-merge_samples_info
+OndaEDF.match_edf_label
+OndaEDF.merge_samples_info
 OndaEDF.onda_samples_from_edf_signals
 ```
 
