@@ -41,7 +41,7 @@ The executed plan as returned is a [Tables.jl](https://github.com/JuliaData/Tabl
 - `:error`, any errors that were caught during planning and/or execution.
 
 This table could, for instance, be recorded somewhere during ingest of large or complex datasets, as a record of how the `Onda.Samples` were generated.
-OndaEDF provides [Legolas.jl Schemas](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas-Schemas-and-Rows-1) for this purpose: `Plan` (`"ondaedf.plan@1"`) which corresponds to the columns for a single EDF signla-to-Onda channel conversion, and `FilePlan` (`"ondaedf.file-plan@1"`) which includes the additional file-level linkage columns `:edf_signal_idx` and `:onda_signal_idx`.
+OndaEDF provides [Legolas.jl Schemas](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas-Schemas-and-Rows-1) for this purpose: `Plan` (`"ondaedf.plan@1"`) which corresponds to the columns for a single EDF signal-to-Onda channel conversion, and `FilePlan` (`"ondaedf.file-plan@1"`) which includes the additional file-level linkage columns `:edf_signal_index` and `:onda_signal_index`.
 The `write_plan(io_or_path, plan_table)` provides a wrapper around [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) which writes a table following the `"ondaedf.file-plan@1"` schema to a generic path-like destination.
 
 It can also be manipulated programmatically, by manually or semi-automatically modifying the `:kind`, `:channel`, or other columns to correct for missed signals by the default labels (for which `:kind` and `:channel` will be `missing`).
