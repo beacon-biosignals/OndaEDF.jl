@@ -19,6 +19,7 @@ or manipulated in memory as desired.
 ```@docs
 edf_to_onda_samples
 plan_edf_to_onda_samples
+plan_edf_to_onda_samples_groups
 edf_to_onda_annotations
 ```
 
