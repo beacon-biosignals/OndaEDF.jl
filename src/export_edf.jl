@@ -141,7 +141,8 @@ table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.ar
 
 Following the Onda v0.5 format, `annotations` can be any Tables.jl-compatible
 table (DataFrame, Arrow.Table, NamedTuple of vectors, vector of NamedTuples)
-which follow the annotation schema (respectively).
+which follows the [annotation
+schema](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.arrow-1).
 
 Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an
 input `Onda.Samples`.
