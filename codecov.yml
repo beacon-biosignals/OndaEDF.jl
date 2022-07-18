@@ -1,1 +1,22 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 90%
+      ondaedf:
+        flags:
+          - ondaedf
+      ondaedfschemas:
+        flags:
+          - ondaedfschemas
+
 comment: off
+
+flags:
+  ondaedf:
+    paths:
+      - 'src/**'
+  ondaedfschemas:
+    paths:
+      - 'OndaEDFSchemas.jl/src/**'
+      
