@@ -1,11 +1,13 @@
-name: CI
+name: OndaEDFSchemas CI
 on:
   push:
     branches:
       - main
       - master
     tags: ["*"]
+    paths: ["OndaEDFSchemas.jl/**", ".github/workflows/CI-OndaEDFSchemas.yml"]
   pull_request:
+    paths: ["OndaEDFSchemas.jl/**", ".github/workflows/CI-OndaEDFSchemas.yml"]
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
@@ -39,9 +41,15 @@ jobs:
           key: ${{ runner.os }}-test-artifacts-${{ hashFiles('**/Project.toml') }}
           restore-keys: ${{ runner.os }}-test-artifacts
       - uses: julia-actions/julia-buildpkg@v1
+        with:
+          project: 'OndaEDFSchemas.jl'
       - uses: julia-actions/julia-runtest@v1
+        with:
+          project: 'OndaEDFSchemas.jl'
       - uses: julia-actions/julia-processcoverage@v1
+        with:
+          directories: 'OndaEDFSchemas.jl/src/'
       - uses: codecov/codecov-action@v2
         with:
           file: lcov.info
-          flags: OndaEDF.jl
+          flags: OndaEDFSchemas.jl
