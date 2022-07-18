@@ -1,22 +1,10 @@
-coverage:
-  status:
-    project:
-      default:
+flag_management:
+  default_rules: # the rules that will be followed for any flag added, generally
+    carryforward: true
+    statuses:
+      - type: project
+        target: auto
+        threshold: 1%
+      - type: patch
         target: 90%
-      ondaedf:
-        flags:
-          - ondaedf
-      ondaedfschemas:
-        flags:
-          - ondaedfschemas
-
 comment: off
-
-flags:
-  ondaedf:
-    paths:
-      - 'src/**'
-  ondaedfschemas:
-    paths:
-      - 'OndaEDFSchemas.jl/src/**'
-      

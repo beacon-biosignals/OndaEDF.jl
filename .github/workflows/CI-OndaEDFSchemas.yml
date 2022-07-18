@@ -52,4 +52,4 @@ jobs:
       - uses: codecov/codecov-action@v2
         with:
           file: lcov.info
-          flags: ondaedfschemas
+          flags: OndaEDFSchemas.jl
