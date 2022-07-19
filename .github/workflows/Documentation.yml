@@ -17,7 +17,7 @@ jobs:
             using Pkg
             Pkg.instantiate()
             Pkg.develop(PackageSpec(; path="OndaEDFSchemas.jl"))
-            Pkg.develop(PackageSpec(; path=cwd()))'
+            Pkg.develop(PackageSpec(; path=pwd()))'
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-docdeploy@latest
         with:
