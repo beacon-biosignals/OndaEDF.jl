@@ -139,10 +139,11 @@ Return an `EDF.File` containing signal data converted from a collection of Onda
 (optionally) annotations from an [`annotations`
 table](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.arrow-1).
 
-Following the Onda v0.5 format, `annotations` can be any Tables.jl-compatible
-table (DataFrame, Arrow.Table, NamedTuple of vectors, vector of NamedTuples)
-which follows the [annotation
-schema](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.arrow-1).
+Annotations can be provided in any Tables.jl-compatible table (DataFrame,
+Arrow.Table, NamedTuple of vectors, vector of NamedTuples) which follows the
+`"edf.annotation@1"` schema, which extends the [`"onda.annotation@1"`
+schema](https://beacon-biosignals.github.io/Onda.jl/stable/#*.onda.annotations.arrow-1)
+to include a mandatory `value` column which contains `String` values.
 
 Each `EDF.Signal` in the returned `EDF.File` corresponds to a channel of an
 input `Onda.Samples`.
