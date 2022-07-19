@@ -73,7 +73,7 @@
     @testset "annotation import/export via round trip" begin
         round_tripped = edf_to_onda_annotations(exported_edf, uuid)
 
-        @test round_tripped isa Vector{<:Onda.Annotation}
+        @test round_tripped isa Vector{<:EDFAnnotation}
         # annotations are sorted by start time on export
         ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
         @test getproperty.(round_tripped, :span) == getproperty.(ann_sorted, :span)
@@ -87,7 +87,7 @@
     @testset "full service" begin
         # import annotations
         nt = store_edf_as_onda(exported_edf, mktempdir(), uuid)
-        @test nt.annotations isa Vector{<:Onda.Annotation}
+        @test nt.annotations isa Vector{<:EDFAnnotation}
         # annotations are sorted by start time on export
         ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
         @test getproperty.(nt.annotations, :span) == getproperty.(ann_sorted, :span)
@@ -114,7 +114,7 @@
 
         # don't import annotations
         nt = store_edf_as_onda(exported_edf, mktempdir(), uuid; import_annotations=false)
-        @test nt.annotations isa Vector{<:Onda.Annotation}
+        @test nt.annotations isa Vector{<:EDFAnnotation}
         @test length(nt.annotations) == 0
 
         # import empty annotations

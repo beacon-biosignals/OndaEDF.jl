@@ -1,6 +1,7 @@
 using Test, Dates, Random, UUIDs, Statistics
 using OndaEDF, Onda, EDF, Tables
 using FilePathsBase: AbstractPath, PosixPath
+using OndaEDF: EDFAnnotation
 
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,

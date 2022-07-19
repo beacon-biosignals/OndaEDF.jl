@@ -116,6 +116,7 @@ using Legolas: validate, Schema, read
 
         @testset "Annotations import" begin
             @test length(nt.annotations) == n_records * 4
+            @test nothing === Legolas.validate(nt.annotations, Legolas.Schema("edf.annotation@1"))
             # check whether all four types of annotations are preserved on import:
             for i in 1:n_records
                 start = Nanosecond(Second(i))

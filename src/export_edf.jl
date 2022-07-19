@@ -155,6 +155,9 @@ function onda_to_edf(samples::AbstractVector{<:Samples}, annotations=[]; kwargs.
     edf_header = onda_samples_to_edf_header(samples; kwargs...)
     edf_signals = onda_samples_to_edf_signals(samples, edf_header.seconds_per_record)
     if !isempty(annotations)
+        # this ensures that the annotations table has a :value columns that
+        # contains Strings
+        Legolas.validate(annotations, Legolas.Schema("edf.annotation@1"))
         records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
                    for i in 0:(edf_header.record_count - 1)]
         for annotation in sort(Tables.rowtable(annotations); by=row -> start(row.span))

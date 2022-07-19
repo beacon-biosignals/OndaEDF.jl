@@ -718,7 +718,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
             annotations_path = nothing
         end
     else
-        annotations = Onda.Annotation[]
+        annotations = EDFAnnotation[]
     end
 
     return (; recording_uuid, signals, annotations, signals_path, annotations_path, plan)
@@ -781,7 +781,7 @@ returned.
 """
 function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
     EDF.read!(edf)
-    annotations = Annotation[]
+    annotations = EDFAnnotation[]
     for annotation_signal in edf.signals
         annotation_signal isa EDF.AnnotationsSignal || continue
         for record in annotation_signal.records
@@ -794,9 +794,9 @@ function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
                 end
                 for annotation_string in tal.annotations
                     isempty(annotation_string) && continue
-                    annotation = Annotation(; recording=uuid, id=uuid4(),
-                                            span=TimeSpan(start_nanosecond, stop_nanosecond),
-                                            value=annotation_string)
+                    annotation = EDFAnnotation(; recording=uuid, id=uuid4(),
+                                               span=TimeSpan(start_nanosecond, stop_nanosecond),
+                                               value=annotation_string)
                     push!(annotations, annotation)
                 end
             end
