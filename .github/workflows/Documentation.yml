@@ -12,8 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - run: |
+          julia --project=docs -e '
+            using Pkg
+            Pkg.instantiate()
+            Pkg.develop(PackageSpec(; path="OndaEDFSchemas.jl"))
+            Pkg.develop(PackageSpec(; path=cwd()))'
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-docdeploy@latest
+        with:
+          install-package: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
