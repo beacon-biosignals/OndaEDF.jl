@@ -3,7 +3,18 @@ module OndaEDFSchemas
 using Legolas: @row, lift
 using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type, convert_number_to_lpcm_sample_type
 
-export Plan, FilePlan
+export Plan, FilePlan, EDFAnnotation
+
+"""
+    EDFAnnotation = @row("edf.annotation@1" > "onda.annotation@1",
+                         value::String = string(value))
+
+A type-alias for a Legolas row that represents one annotation extracted from an
+EDF file.  The only extra field is `value`, which holds the string stored in the
+elements of `annotations` in the EDF annotation.
+"""
+const EDFAnnotation = @row("edf.annotation@1" > "onda.annotation@1",
+                           value::String = string(value))
 
 """
     Plan = @row("ondaedf.plan@1",
