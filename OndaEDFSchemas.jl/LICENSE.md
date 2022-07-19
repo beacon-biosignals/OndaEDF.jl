@@ -1,4 +1,4 @@
-The OndaEDF.jl package is licensed under the MIT "Expat" License:
+The OndaEDFSchemas.jl package is licensed under the MIT "Expat" License:
 
 > Copyright (c) 2020: Beacon Biosignals, Inc.
 >
