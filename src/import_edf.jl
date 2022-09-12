@@ -51,7 +51,7 @@ function _normalize_references(original_label, canonical_names)
         label = only(m.captures)
     end
     parts = split(label, '…'; keepempty=false)
-    final = findlast(part -> replace(part, r"\d" => "") != "ref", parts)
+    final = findlast(part -> !(replace(part, r"\d" => "") in ("ref", "org")), parts)
     parts = parts[1:something(final, 0)]
     isempty(parts) && return ("", "")
     for n in canonical_names
