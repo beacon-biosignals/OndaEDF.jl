@@ -99,4 +99,4 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              ["tidal_volume"] => ["tidal_volume"=> ["tvol", "tidal"]],
                              ["spo2"] => ["spo2"],
                              ["sao2"] => ["sao2", "osat"],
-                             ["etco2"] => ["etco2 "=> ["capno"]])
+                             ["etco2"] => ["etco2"=> ["capno"]])
