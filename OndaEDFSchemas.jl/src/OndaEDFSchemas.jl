@@ -136,7 +136,7 @@ const FILE_PLAN_DOC_TEMPLATE = """
         onda_signal_index::Int
     end
 
-Type alias for a Legolas row for one EDF signal-to-Onda channel conversion,
+A Legolas-generated record type representing one EDF signal-to-Onda channel conversion,
 which includes the columns of a [`PlanV{{ VERSION }}`](@ref) and additional file-level context:
 - `edf_signal_index` gives the index of the `signals` in the source `EDF.File`
   corresponding to this row
