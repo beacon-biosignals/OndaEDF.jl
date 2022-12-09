@@ -5,7 +5,7 @@ using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type,
             convert_number_to_lpcm_sample_type, _validate_signal_channel,
             _validate_signal_sensor_label, _validate_signal_sensor_type
 
-export PlanV1, PlanV2, FilePlanV1, FilePlanV2
+export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
 
 @schema "ondaedf.plan" Plan
 
@@ -154,5 +154,22 @@ end
 
 @doc _file_plan_doc(1) FilePlanV1
 @doc _file_plan_doc(2) FilePlanV2
+
+@schema "edf.annotation" EDFAnnotation
+
+@version EDFAnnotationV1 > AnnotationV1 begin
+    value::String
+end
+
+"""
+    @version EDFAnnotationV1 > AnnotationV1 begin
+        value::String
+    end
+
+A Legolas-generated record type that represents a single annotation imported
+from an EDF Annotation signal.  The `value` field contains the annotation value
+as a string.
+
+"""
 
 end # module
