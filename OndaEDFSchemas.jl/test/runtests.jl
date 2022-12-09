@@ -17,7 +17,8 @@ function mock_plan(; v, rng=GLOBAL_RNG)
     specific_kwargs = if v == 1
         (; kind=ingested ? "eeg" : missing)
     elseif v == 2
-        (; sensor_type=ingested ? "eeg" : missing)
+        (; sensor_type=ingested ? "eeg" : missing,
+         sensor_label=ingested ? "eeg" : missing)
     else
         error("Invalid version")
     end
