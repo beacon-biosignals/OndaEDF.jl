@@ -60,6 +60,8 @@ function mock_file_plan(; v, rng=GLOBAL_RNG)
 end
 
 @testset "Schema version $v" for v in (1, 2)
+    SamplesInfo = v == 1 ? Onda.SamplesInfoV1 : SamplesInfoV2
+    
     @testset "ondaedf.plan@$v" begin
         rng = StableRNG(10)
         plans = mock_plan(30; v, rng)
@@ -67,6 +69,11 @@ end
         @test nothing === Legolas.validate(schema, Legolas.SchemaVersion("ondaedf.plan", v))
         tbl = Arrow.Table(Arrow.tobuffer(plans; maxdepth=9))
         @test isequal(Tables.columntable(tbl), Tables.columntable(plans))
+
+        # conversion to samples info with channel -> channels
+        @test all(x -> isa(x, SamplesInfo),
+                  SamplesInfo(Tables.rowmerge(p; channels=[p.channel]))
+                              for p in plans if !ismissing(p.channel))
     end
 
     @testset "ondaedf.file-plan@$v" begin
@@ -76,6 +83,11 @@ end
         @test nothing === Legolas.validate(schema, Legolas.SchemaVersion("ondaedf.file-plan", v))
         tbl = Arrow.Table(Arrow.tobuffer(file_plans; maxdepth=9))
         @test isequal(Tables.columntable(tbl), Tables.columntable(file_plans))
+
+        # conversion to samples info with channel -> channels
+        @test all(x -> isa(x, SamplesInfo),
+                  SamplesInfo(Tables.rowmerge(p; channels=[p.channel]))
+                              for p in file_plans if !ismissing(p.channel))
     end
 end
 
