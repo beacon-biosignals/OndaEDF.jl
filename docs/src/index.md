@@ -26,8 +26,8 @@ edf_to_onda_annotations
 ### Import plan table schemas
 
 ```@docs
-Plan
-FilePlan
+PlanV2
+FilePlanV2
 write_plan
 ```
 
@@ -52,4 +52,15 @@ OndaEDF.onda_samples_from_edf_signals
 
 ```@docs
 onda_to_edf
+```
+
+## Deprecations
+
+To support deserializing plan tables generated with old versions of OndaEDF +
+Onda, the following schemas are provided.  These are deprecated and will be
+removed in a future release.
+
+```@docs
+PlanV1
+FilePlanV1
 ```
