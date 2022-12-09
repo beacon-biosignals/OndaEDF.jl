@@ -21,6 +21,7 @@ edf_to_onda_samples
 plan_edf_to_onda_samples
 plan_edf_to_onda_samples_groups
 edf_to_onda_annotations
+EDFAnnotationV1
 ```
 
 ### Import plan table schemas

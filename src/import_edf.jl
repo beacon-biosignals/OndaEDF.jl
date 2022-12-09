@@ -794,9 +794,9 @@ function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
                 end
                 for annotation_string in tal.annotations
                     isempty(annotation_string) && continue
-                    annotation = Annotation(; recording=uuid, id=uuid4(),
-                                            span=TimeSpan(start_nanosecond, stop_nanosecond),
-                                            value=annotation_string)
+                    annotation = EDFAnnotationV1(; recording=uuid, id=uuid4(),
+                                                 span=TimeSpan(start_nanosecond, stop_nanosecond),
+                                                 value=annotation_string)
                     push!(annotations, annotation)
                 end
             end
