@@ -6,6 +6,8 @@ using OndaEDFSchemas
 using StableRNGs
 using Tables
 using Test
+using TimeSpans
+using UUIDs
 
 function mock_plan(n; v, rng=GLOBAL_RNG)
     tbl = [mock_plan(; v, rng) for _ in 1:n]
@@ -75,6 +77,16 @@ end
         tbl = Arrow.Table(Arrow.tobuffer(file_plans; maxdepth=9))
         @test isequal(Tables.columntable(tbl), Tables.columntable(file_plans))
     end
+end
+
+@testset "EDFAnnotationV1" begin
+    anno = EDFAnnotationV1(; id=uuid4(),
+                           span=TimeSpan(0, 1e9),
+                           recording=uuid4(),
+                           value="hello world!")
+    tbl = Arrow.Table(Arrow.tobuffer([anno]))
+    anno_rt = EDFAnnotationV1(first(Tables.rows(tbl)))
+    @test anno_rt == anno
 end
 
 end

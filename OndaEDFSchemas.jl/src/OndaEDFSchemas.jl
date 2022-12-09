@@ -3,7 +3,8 @@ module OndaEDFSchemas
 using Legolas: Legolas, @schema, @version, lift
 using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type,
             convert_number_to_lpcm_sample_type, _validate_signal_channel,
-            _validate_signal_sensor_label, _validate_signal_sensor_type
+            _validate_signal_sensor_label, _validate_signal_sensor_type,
+            AnnotationV1
 
 export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
 
