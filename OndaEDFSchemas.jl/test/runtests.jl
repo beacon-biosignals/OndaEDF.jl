@@ -2,6 +2,7 @@ module OndaEDFSchemasTests
 
 using Arrow
 using Legolas
+using Onda
 using OndaEDFSchemas
 using StableRNGs
 using Tables
