@@ -1,7 +1,7 @@
 using OndaEDF: validate_arrow_prefix
 using Tables: rowmerge
 using Legolas
-using Legolas: validate, Schema, read
+using Legolas: validate, SchemaVersion, read
 
 @testset "Import EDF" begin
 
@@ -35,7 +35,7 @@ using Legolas: validate, Schema, read
         end
         
         @testset "custom grouping" begin
-            signal_plans = [rowmerge(plan; grp=string(plan.kind, plan.sample_unit, plan.sample_rate))
+            signal_plans = [rowmerge(plan; grp=string(plan.sensor_type, plan.sample_unit, plan.sample_rate))
                             for plan in signal_plans]
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
                                                             onda_signal_groupby=:grp)
@@ -102,7 +102,7 @@ using Legolas: validate, Schema, read
             @test signal.file_format == "lpcm.zst"
         end
 
-        signals = Dict(s.kind => s for s in nt.signals)
+        signals = Dict(s.sensor_type => s for s in nt.signals)
 
         @testset "Signal roundtrip" begin 
             for (signal_name, edf_indices) in edf_channel_indices
@@ -220,8 +220,8 @@ using Legolas: validate, Schema, read
         
         # error on execution
         plans = plan_edf_to_onda_samples(edf)
-        # intentionally combine signals of different kinds
-        different = findfirst(row -> !isequal(row.kind, first(plans).kind), plans)
+        # intentionally combine signals of different sensor_types
+        different = findfirst(row -> !isequal(row.sensor_type, first(plans).sensor_type), plans)
         bad_plans = rowmerge.(plans[[1, different]]; onda_signal_index=1)
         bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
         @test all(row.error isa String for row in bad_plans_exec)
@@ -232,10 +232,12 @@ using Legolas: validate, Schema, read
     @testset "de/serialization of plans" begin
         edf, _ = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
-        @test validate(plan, Schema("ondaedf.file-plan@1")) === nothing
+        @test validate(Tables.schema(plan),
+                       SchemaVersion("ondaedf.file-plan", 1)) === nothing
 
         samples, plan_exec = edf_to_onda_samples(edf, plan)
-        @test validate(plan_exec, Schema("ondaedf.file-plan@1")) === nothing
+        @test validate(Tables.schema(plan_exec),
+                       SchemaVersion("ondaedf.file-plan", 1)) === nothing
 
         plan_rt = let io=IOBuffer()
             OndaEDF.write_plan(io, plan)

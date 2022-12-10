@@ -30,7 +30,7 @@
     end
     @testset "Record metadata" begin
         function change_sample_rate(samples; sample_rate)
-            info = SamplesInfo(Tables.rowmerge(samples.info; sample_rate=sample_rate))
+            info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_rate=sample_rate))
             new_data = similar(samples.data, 0, Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1)
             return Samples(new_data, info, samples.encoded; validate=false)
         end
@@ -73,7 +73,7 @@
     @testset "annotation import/export via round trip" begin
         round_tripped = edf_to_onda_annotations(exported_edf, uuid)
 
-        @test round_tripped isa Vector{<:Onda.Annotation}
+        @test round_tripped isa Vector{EDFAnnotationV1}
         # annotations are sorted by start time on export
         ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
         @test getproperty.(round_tripped, :span) == getproperty.(ann_sorted, :span)
@@ -87,7 +87,7 @@
     @testset "full service" begin
         # import annotations
         nt = store_edf_as_onda(exported_edf, mktempdir(), uuid)
-        @test nt.annotations isa Vector{<:Onda.Annotation}
+        @test nt.annotations isa Vector{EDFAnnotationV1}
         # annotations are sorted by start time on export
         ann_sorted = sort(annotations; by=row -> Onda.start(row.span))
         @test getproperty.(nt.annotations, :span) == getproperty.(ann_sorted, :span)
@@ -99,7 +99,7 @@
 
         for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
             info_orig = samples_orig.info
-            info_round_tripped = SamplesInfo(signal_round_tripped)
+            info_round_tripped = SamplesInfoV2(signal_round_tripped)
             for p in setdiff(propertynames(info_orig),
                              (:edf_channels, :sample_type, :sample_resolution_in_unit))
                 @test getproperty(info_orig, p) == getproperty(info_round_tripped, p)
@@ -114,7 +114,7 @@
 
         # don't import annotations
         nt = store_edf_as_onda(exported_edf, mktempdir(), uuid; import_annotations=false)
-        @test nt.annotations isa Vector{<:Onda.Annotation}
+        @test nt.annotations isa Vector{EDFAnnotationV1}
         @test length(nt.annotations) == 0
 
         # import empty annotations
