@@ -10,12 +10,12 @@
     signal_names = ["eeg", "eog", "ecg", "emg", "heart_rate", "tidal_volume",
                     "respiratory_effort", "snore", "positive_airway_pressure",
                     "pap_device_leak", "pap_device_cflow", "sao2", "ptaf"]
-    samples_to_export = onda_samples[indexin(signal_names, getproperty.(getproperty.(onda_samples, :info), :kind))]
+    samples_to_export = onda_samples[indexin(signal_names, getproperty.(getproperty.(onda_samples, :info), :sensor_type))]
     exported_edf = onda_to_edf(samples_to_export, annotations)
     @test exported_edf.header.record_count == 200
     offset = 0
     for signal_name in signal_names
-        samples = only(filter(s -> s.info.kind == signal_name, onda_samples))
+        samples = only(filter(s -> s.info.sensor_type == signal_name, onda_samples))
         channel_names = samples.info.channels
         edf_indices = (1:length(channel_names)) .+ offset
         offset += length(channel_names)
@@ -35,8 +35,8 @@
             return Samples(new_data, info, samples.encoded; validate=false)
         end
 
-        eeg_samples = only(filter(row -> row.info.kind == "eeg", onda_samples))
-        ecg_samples = only(filter(row -> row.info.kind == "ecg", onda_samples))
+        eeg_samples = only(filter(row -> row.info.sensor_type == "eeg", onda_samples))
+        ecg_samples = only(filter(row -> row.info.sensor_type == "ecg", onda_samples))
 
         massive_eeg = change_sample_rate(eeg_samples, sample_rate=5000.0)
         @test OndaEDF.edf_record_metadata([massive_eeg]) == (1000000, 1 / 5000)
