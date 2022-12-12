@@ -36,6 +36,9 @@ export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
 end
 
 Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{String}) = AbstractString
+# we need this because Arrow write can introduce a Missing for the error column
+# (I think because of how missing/nothing sentinels are handled?)
+Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
 
 @version PlanV2 begin
     # EDF.SignalHeader fields
@@ -64,6 +67,10 @@ Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{String}) = AbstractStr
 end
 
 Legolas.accepted_field_type(::PlanV2SchemaVersion, ::Type{String}) = AbstractString
+# we need this because Arrow write can introduce a Missing for the error column
+# (I think because of how missing/nothing sentinels are handled?)
+Legolas.accepted_field_type(::PlanV2SchemaVersion, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
+
 
 const PLAN_DOC_TEMPLATE = """
     @version PlanV{{ VERSION }} begin
@@ -126,10 +133,14 @@ end
     onda_signal_index::Int
 end
 
+Legolas.accepted_field_type(::FilePlanV1SchemaVersion, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
+
 @version FilePlanV2 > PlanV2 begin
     edf_signal_index::Int
     onda_signal_index::Int
 end
+
+Legolas.accepted_field_type(::FilePlanV2SchemaVersion, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
 
 const FILE_PLAN_DOC_TEMPLATE = """
     @version FilePlanV{{ VERSION }} > PlanV{{ VERSION }} begin
@@ -170,7 +181,6 @@ end
 A Legolas-generated record type that represents a single annotation imported
 from an EDF Annotation signal.  The `value` field contains the annotation value
 as a string.
-
 """
 
 end # module
