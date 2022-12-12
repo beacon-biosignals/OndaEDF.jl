@@ -182,5 +182,6 @@ A Legolas-generated record type that represents a single annotation imported
 from an EDF Annotation signal.  The `value` field contains the annotation value
 as a string.
 """
+EDFAnnotationV1
 
 end # module
