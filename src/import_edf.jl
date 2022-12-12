@@ -709,11 +709,12 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         push!(signals, signal)
     end
 
-    write_signals(signals_path, signals)
+    Legolas.write(signals_path, signals, SignalV2SchemaVersion())
     if import_annotations
         annotations = edf_to_onda_annotations(edf, recording_uuid)
         if !isempty(annotations)
-            write_annotations(annotations_path, annotations)
+            Legolas.write(annotations_path, annotations,
+                          EDFAnnotationV1SchemaVersion())
         else
             @warn "No annotations found in $onda_dir"
             annotations_path = nothing
