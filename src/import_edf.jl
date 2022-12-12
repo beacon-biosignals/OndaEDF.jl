@@ -714,7 +714,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         annotations = edf_to_onda_annotations(edf, recording_uuid)
         if !isempty(annotations)
             Legolas.write(annotations_path, annotations,
-                          EDFAnnotationV1SchemaVersion())
+                          OndaEDFSchemas.EDFAnnotationV1SchemaVersion())
         else
             @warn "No annotations found in $onda_dir"
             annotations_path = nothing
