@@ -108,7 +108,7 @@ function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, se
         else
             samples = Onda.encode(samples)
         end
-        signal_name = samples.info.kind
+        signal_name = samples.info.sensor_type
         extrema = SignalExtrema(samples)
         for channel_name in samples.info.channels
             sample_count = edf_sample_count_per_record(samples, seconds_per_record)
