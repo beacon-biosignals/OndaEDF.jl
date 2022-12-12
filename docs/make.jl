@@ -1,7 +1,8 @@
 using OndaEDF
+using OndaEDFSchemas
 using Documenter
 
-makedocs(modules=[OndaEDF],
+makedocs(modules=[OndaEDF, OndaEDFSchemas],
          sitename="OndaEDF",
          authors="Beacon Biosignals and other contributors",
          pages=["API Documentation" => "index.md"])

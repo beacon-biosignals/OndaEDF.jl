@@ -1,6 +1,7 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 OndaEDF = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
+OndaEDFSchemas = "9c87d999-769b-4741-85b2-6f554d09e731"
 
 [compat]
 Documenter = "0.26"
