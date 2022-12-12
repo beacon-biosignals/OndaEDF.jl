@@ -233,11 +233,11 @@ using Legolas: validate, SchemaVersion, read
         edf, _ = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
         @test validate(Tables.schema(plan),
-                       SchemaVersion("ondaedf.file-plan", 1)) === nothing
+                       SchemaVersion("ondaedf.file-plan", 2)) === nothing
 
         samples, plan_exec = edf_to_onda_samples(edf, plan)
         @test validate(Tables.schema(plan_exec),
-                       SchemaVersion("ondaedf.file-plan", 1)) === nothing
+                       SchemaVersion("ondaedf.file-plan", 2)) === nothing
 
         plan_rt = let io=IOBuffer()
             OndaEDF.write_plan(io, plan)
