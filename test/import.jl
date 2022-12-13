@@ -212,7 +212,7 @@ using Legolas: validate, SchemaVersion, read
 
         plan = plan_edf_to_onda_samples(test_edf)
         sensors = Tables.columntable(unique((; p.sensor_type, p.sensor_label, p.onda_signal_index) for p in plan))
-        @test length(sensors) == 2
+        @test length(sensors.sensor_type) == 2
         @test all(==("emg"), sensors.sensor_type)
         # TODO: uniquify this in the grouping...
         @test_broken allunique(sensors.sensor_label)
