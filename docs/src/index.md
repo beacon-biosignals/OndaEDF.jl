@@ -9,11 +9,11 @@ CurrentModule = OndaEDF
 OndaEDF.jl prefers "self-service" import over "automagic", and provides
 functionality to extract
 [`Onda.Samples`](https://beacon-biosignals.github.io/Onda.jl/stable/#Samples-1)
-and
-[`Onda.Annotation`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.Annotation)s
+and [`EDFAnnotationV1`](@ref)s (which extend 
+[`Onda.AnnotationV1`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.AnnotationV1)s)
 from an `EDF.File`.  These can be written to disk (with
 [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store) /
-[`Onda.write_annotations`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.write_annotations))
+[`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write)
 or manipulated in memory as desired.
 
 ```@docs
