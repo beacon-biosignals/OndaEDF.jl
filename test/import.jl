@@ -193,6 +193,31 @@ using Legolas: validate, SchemaVersion, read
         end
     end
 
+    @testset "duplicate sensor_type" begin
+        rng = MersenneTwister(1234)
+        _signal = function(label, transducer, unit, lo, hi)
+            return test_edf_signal(rng, label, transducer, unit, lo, hi,
+                                   Float32(typemin(Int16)),
+                                   Float32(typemax(Int16)),
+                                   128, 10, Int16)
+        end
+        T = Union{EDF.AnnotationsSignal, EDF.Signal{Int16}}
+        edf_signals = T[_signal("EMG Chin1", "E", "mV", -100, 100),
+                        _signal("EMG Chin2", "E", "mV", -120, 90),
+                        _signal("EMG LAT", "E", "uV", 0, 1000)]
+        edf_header = EDF.FileHeader("0", "", "", DateTime("2014-10-27T22:24:28"),
+                                    true, 10, 1)
+        test_edf = EDF.File((io = IOBuffer(); close(io); io),
+                            edf_header, edf_signals)
+
+        plan = plan_edf_to_onda_samples(test_edf)
+        sensors = Tables.columntable(unique((; p.sensor_type, p.sensor_label, p.onda_signal_index) for p in plan))
+        @test length(sensors) == 2
+        @test all(==("emg"), sensors.sensor_type)
+        # TODO: uniquify this in the grouping...
+        @test_broken allunique(sensors.sensor_label)
+    end
+
     @testset "error handling" begin
         edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
 
