@@ -354,6 +354,7 @@ function plan_edf_to_onda_samples(header,
                     row = rowmerge(row; 
                                    channel=matched,
                                    sensor_type=first(signal_names),
+                                   sensor_label=first(signal_names),
                                    sample_unit=edf_to_onda_unit(header.physical_dimension, units),
                                    edf_signal_encoding(header, seconds_per_record)...)
                     return PlanV2(row)
