@@ -33,8 +33,8 @@ end
 ```
 The executed plan as returned is a [Tables.jl](https://github.com/JuliaData/Tables.jl)-compatible table, with one row per `EDF.Signal` and columns for
 - the fields of the original `EDF.SignalHeader`
-- the fields of the generated `Onda.SamplesInfo`, including
-  - `:kind`, the extracted signal kind
+- the fields of the generated `Onda.SamplesInfoV2`, including
+  - `:sensor_type`, the extracted sensor type
   - `:channel`, the extracted channel label (instead of `:channels`, since each `EDF.Signal` is exactly one channel in `Onda.Samples`)
 - `:edf_signal_index`, the 1-based numerical index of the source signal in `edf.signals`
 - `:onda_signal_index`, the ordinal index of the resulting samples (not necessarily the index into `samples`, since some groups might be skipped)
@@ -45,7 +45,7 @@ OndaEDF includes the OndaEDFSchemas sub-package, which provides [Legolas.jl Sche
 The `write_plan(io_or_path, plan_table)` provides a wrapper around [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) which writes a table following the `"ondaedf.file-plan@1"` schema to a generic path-like destination.
 If you are including the plan tables in a dataset, you can add a dependency on OndaEDFSchemas to make sure the relevant schemas are defined without the full OndaEDF dependency.
 
-It can also be manipulated programmatically, by manually or semi-automatically modifying the `:kind`, `:channel`, or other columns to correct for missed signals by the default labels (for which `:kind` and `:channel` will be `missing`).
+It can also be manipulated programmatically, by manually or semi-automatically modifying the `:sensor_type`, `:channel`, or other columns to correct for missed signals by the default labels (for which `:sensor_type` and `:channel` will be `missing`).
 We give two examples of how such a workflow might work here: one where the plan is modified before being executed, and another where EDF signal headers are be _preprocessed_ before the plan is constructed.
 
 ### Modification of a plan
@@ -59,7 +59,7 @@ edf = EDF.File(my_edf_file_path)
 plans = plan_edf_to_onda_samples(edf; label=my_labels)
 
 function fix_millivolts(plan)
-    if plan.sample_unit == "millivolt" && plan.kind == "eeg"
+    if plan.sample_unit == "millivolt" && plan.sensor_type == "eeg"
         sample_resolution_in_unit = plan.sample_resolution_in_unit * 1000
         sample_offset_in_unit = plan.sample_offset_in_unit * 1000
         return Tables.rowmerge(plan; sample_unit="microvolt",
@@ -75,7 +75,7 @@ samples, plan_executed = edf_to_onda_samples(edf, new_plan)
 ```
 
 As another, similar example, sometimes EMG channels get recorded with different physical units.
-In such a case, OndaEDF will store them with different `kind` values (`emg_1`, `emg_2`, etc.).
+In such a case, OndaEDF will store them with different `sensor_label` values (`emg_1`, `emg_2`, etc.).
 This can be corrected in a similar way, for exmaple by converting millivolts to microvolts (adjusting of course depending on the nature of your dataset) and re-grouping into Onda signals:
 
 ```julia
@@ -83,7 +83,7 @@ edf = EDF.File(my_edf_file_path)
 plans = plan_edf_to_onda_samples(edf; label=my_labels)
 
 function fix_emg(plan)
-    if startswith(plan.kind, "emg")
+    if plan.sensor_type == "emg"
         if plan.sample_unit == "millivolt"
             sample_resolution_in_unit = plan.sample_resolution_in_unit * 1000
             sample_offset_in_unit = plan.sample_offset_in_unit * 1000
@@ -91,7 +91,7 @@ function fix_emg(plan)
                                    sample_resolution_in_unit,
                                    sample_offset_in_unit)
         end
-        return Tables.rowmerge(plan; kind="emg")
+        return Tables.rowmerge(plan; sensor_label="emg")
     else
         return plan
     end
