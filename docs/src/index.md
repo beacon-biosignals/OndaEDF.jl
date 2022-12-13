@@ -16,10 +16,17 @@ from an `EDF.File`.  These can be written to disk (with
 [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write)
 or manipulated in memory as desired.
 
+### Import signal data as `Samples`
+
 ```@docs
 edf_to_onda_samples
 plan_edf_to_onda_samples
 plan_edf_to_onda_samples_groups
+```
+
+### Import annotations
+
+```@docs
 edf_to_onda_annotations
 EDFAnnotationV1
 ```
@@ -35,7 +42,7 @@ write_plan
 ### Full-service import
 
 For a more "full-service" experience, OndaEDF.jl also provides functionality to
-extract `Onda.Samples` and `Onda.Annotations` and then write them to disk:
+extract `Onda.Samples` and `EDFAnnotationV1`s and then write them to disk:
 
 ```@docs
 store_edf_as_onda
@@ -47,6 +54,7 @@ store_edf_as_onda
 OndaEDF.match_edf_label
 OndaEDF.merge_samples_info
 OndaEDF.onda_samples_from_edf_signals
+OndaEDF.promote_encodings
 ```
 
 ## Export EDF from Onda

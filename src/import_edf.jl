@@ -204,6 +204,19 @@ function edf_signal_encoding(edf_signal_header, edf_seconds_per_record)
 end
 
 # TODO: replace this with float type for mismatched
+"""
+    promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
+
+Return a common encoding for input `encodings`, as a `NamedTuple` with fields
+`sample_type`, `sample_offset_in_unit`, `sample_resolution_in_unit`, and
+`sample_rate`.  If input encodings' `sample_rate`s are not all equal, an error
+is thrown.  If sample rates/offests are not equal, then `pick_offset` and
+`pick_resolution` are used to combine them into a common offset/resolution.
+
+!!! note
+
+    This is an internal function and is not meant to be called direclty.
+"""
 function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
     if any(any(ismissing, row) for row in encodings)
         return (; sample_type=missing,
@@ -429,7 +442,7 @@ end
 
 Group together `plan_rows` based on the values of the `onda_signal_groupby`
 columns, creating the `:onda_signal_index` column and promoting the Onda encodings
-for each group using [`promote_encodings`](@ref).
+for each group using [`OndaEDF.promote_encodings`](@ref).
 
 If the `:edf_signal_index` column is not present or otherwise missing, it will
 be filled in based on the order of the input rows.
