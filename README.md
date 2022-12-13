@@ -75,9 +75,8 @@ samples, plan_executed = edf_to_onda_samples(edf, new_plan)
 ```
 
 As another, similar example, sometimes EMG channels get recorded with different physical units.
-In such a case, OndaEDF will store them with different `sensor_label` values (`emg_1`, `emg_2`, etc.).
-This can be corrected in a similar way, for exmaple by converting millivolts to microvolts (adjusting of course depending on the nature of your dataset) and re-grouping into Onda signals:
-
+In such a case, OndaEDF cannot merge these channels and will create multiple separate `Samples` objects which each have `sensor_type = "emg"`.
+This can be corrected in a similar way, for exmaple by converting millivolts to microvolts (adjusting of course depending on the nature of your dataset) and re-grouping into Onda samples:
 ```julia
 edf = EDF.File(my_edf_file_path)
 plans = plan_edf_to_onda_samples(edf; label=my_labels)
