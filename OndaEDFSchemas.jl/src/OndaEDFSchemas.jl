@@ -55,7 +55,8 @@ Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{Union{Nothing,String}}
     seconds_per_record::Float64
     # Onda.SamplesInfoV2 fields (channels -> channel), may be missing
     sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
-    sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label, sensor_type)
+    sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label,
+                                                       coalesce(sensor_label, sensor_type))
     channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
     sample_resolution_in_unit::Union{Missing,Float64}
