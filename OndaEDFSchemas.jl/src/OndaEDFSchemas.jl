@@ -155,7 +155,7 @@ end
 @doc _file_plan_doc(1) FilePlanV1
 @doc _file_plan_doc(2) FilePlanV2
 
-const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,PlanV2SchemaVersion,FilePlanV1SchemaVersion,FilePlanV1SchemaVersion}
+const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,PlanV2SchemaVersion,FilePlanV1SchemaVersion,FilePlanV2SchemaVersion}
 Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
 # we need this because Arrow write can introduce a Missing for the error column
 # (I think because of how missing/nothing sentinels are handled?)
