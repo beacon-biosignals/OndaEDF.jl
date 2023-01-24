@@ -2,13 +2,14 @@ using OndaEDF: validate_arrow_prefix
 using Tables: rowmerge
 using Legolas
 using Legolas: validate, SchemaVersion, read
+using StableRNGs
 
 @testset "Import EDF" begin
 
     @testset "edf_to_onda_samples" begin
         n_records = 100
         for T in (Int16, EDF.Int24)
-            edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, T)
+            edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, T)
 
             returned_samples, plan = OndaEDF.edf_to_onda_samples(edf)
             @test length(returned_samples) == 13
@@ -20,7 +21,7 @@ using Legolas: validate, SchemaVersion, read
 
     @testset "edf_to_onda_samples with manual override" begin
         n_records = 100
-        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records, Int16)
+        edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
         @test_throws(ArgumentError(":seconds_per_record not found in header, or missing"),
                      plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals)))
 
@@ -79,7 +80,7 @@ using Legolas: validate, SchemaVersion, read
     
     @testset "store_edf_as_onda" begin
         n_records = 100
-        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
+        edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records)
 
         root = mktempdir()
         uuid = uuid4()
@@ -194,7 +195,7 @@ using Legolas: validate, SchemaVersion, read
     end
 
     @testset "duplicate sensor_type" begin
-        rng = MersenneTwister(1234)
+        rng = StableRNG(1234)
         _signal = function(label, transducer, unit, lo, hi)
             return test_edf_signal(rng, label, transducer, unit, lo, hi,
                                    Float32(typemin(Int16)),
@@ -219,7 +220,7 @@ using Legolas: validate, SchemaVersion, read
     end
 
     @testset "error handling" begin
-        edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
+        edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, 100, Int16)
 
         one_signal = first(edf.signals)
         @test_throws ArgumentError plan_edf_to_onda_samples(one_signal)
@@ -255,7 +256,7 @@ using Legolas: validate, SchemaVersion, read
     end
 
     @testset "de/serialization of plans" begin
-        edf, _ = make_test_data(MersenneTwister(42), 256, 512, 100, Int16)
+        edf, _ = make_test_data(StableRNG(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
         @test validate(Tables.schema(plan),
                        SchemaVersion("ondaedf.file-plan", 2)) === nothing
