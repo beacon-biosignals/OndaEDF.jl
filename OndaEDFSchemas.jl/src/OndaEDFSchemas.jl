@@ -35,12 +35,6 @@ export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
 
-const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,PlanV2SchemaVersion,FilePlanV1SchemaVersion,FilePlanV1SchemaVersion}
-Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
-# we need this because Arrow write can introduce a Missing for the error column
-# (I think because of how missing/nothing sentinels are handled?)
-Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
-
 @version PlanV2 begin
     # EDF.SignalHeader fields
     label::String
@@ -160,6 +154,12 @@ end
 
 @doc _file_plan_doc(1) FilePlanV1
 @doc _file_plan_doc(2) FilePlanV2
+
+const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,PlanV2SchemaVersion,FilePlanV1SchemaVersion,FilePlanV1SchemaVersion}
+Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
+# we need this because Arrow write can introduce a Missing for the error column
+# (I think because of how missing/nothing sentinels are handled?)
+Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
 
 @schema "edf.annotation" EDFAnnotation
 
