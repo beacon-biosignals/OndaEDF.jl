@@ -163,10 +163,6 @@ Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{Union{Nothing,String
 
 @schema "edf.annotation" EDFAnnotation
 
-@version EDFAnnotationV1 > AnnotationV1 begin
-    value::String
-end
-
 """
     @version EDFAnnotationV1 > AnnotationV1 begin
         value::String
@@ -176,6 +172,8 @@ A Legolas-generated record type that represents a single annotation imported
 from an EDF Annotation signal.  The `value` field contains the annotation value
 as a string.
 """
-EDFAnnotationV1
+@version EDFAnnotationV1 > AnnotationV1 begin
+    value::String
+end
 
 end # module
