@@ -20,7 +20,6 @@ jobs:
           using Pkg
           Pkg.develop([PackageSpec(; path="./OndaEDFSchemas.jl"),
                        PackageSpec(; path=".")])
-      - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-docdeploy@latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
