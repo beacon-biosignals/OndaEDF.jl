@@ -15,7 +15,7 @@ jobs:
       - name: "Monorepo setup"
         # also dev OndaEDFSchemas.jl for pull request builds
         if: ${{ github.event_name == 'pull_request' }}
-        shell: julia --color=yes --project {0}
+        shell: julia --color=yes --project=docs {0}
         run: |
           using Pkg
           Pkg.develop(PackageSpec(; path="./OndaEDFSchemas.jl"))
