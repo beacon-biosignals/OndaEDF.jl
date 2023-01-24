@@ -3,7 +3,6 @@
 [![CI](https://github.com/beacon-biosignals/OndaEDF.jl/actions/workflows/CI.yml/badge.svg)](https://github.com/beacon-biosignals/OndaEDF.jl/actions/workflows/CI.yml)
 [![codecov](https://codecov.io/gh/beacon-biosignals/OndaEDF.jl/branch/master/graph/badge.svg?token=7oZhx7P9kq)](https://codecov.io/gh/beacon-biosignals/OndaEDF.jl)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://beacon-biosignals.github.io/OndaEDF.jl/stable)
-[![](https://img.shields.io/badge/docs-dev-blue.svg)](https://beacon-biosignals.github.io/OndaEDF.jl/dev)
 
 OndaEDF provides functionality to convert/import/export EDF files to/from Onda recordings; see the `edf_to_onda_samples`, `edf_to_onda_annotations`, and `onda_to_edf` docs/tests for details.
 
