@@ -90,7 +90,7 @@ function fix_emg(plan)
                                    sample_resolution_in_unit,
                                    sample_offset_in_unit)
         end
-        return Tables.rowmerge(plan; sensor_label="emg")
+        return plan
     else
         return plan
     end
