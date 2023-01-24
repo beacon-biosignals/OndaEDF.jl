@@ -18,7 +18,8 @@ jobs:
         shell: julia --color=yes --project=docs {0}
         run: |
           using Pkg
-          Pkg.develop(PackageSpec(; path="./OndaEDFSchemas.jl"))
+          Pkg.develop([PackageSpec(; path="./OndaEDFSchemas.jl"),
+                       PackageSpec(; path=".")])
       - uses: julia-actions/julia-buildpkg@latest
       - uses: julia-actions/julia-docdeploy@latest
         env:
