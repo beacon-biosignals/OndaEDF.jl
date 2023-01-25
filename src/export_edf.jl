@@ -10,7 +10,7 @@ struct SignalExtrema
 end
 
 SignalExtrema(samples::Samples) = SignalExtrema(samples.info)
-function SignalExtrema(info::SamplesInfo)
+function SignalExtrema(info::SamplesInfoV2)
     digital_extrema = (typemin(sample_type(info)), typemax(sample_type(info)))
     physical_extrema = @. (info.sample_resolution_in_unit * digital_extrema) + info.sample_offset_in_unit
     return SignalExtrema(physical_extrema..., digital_extrema...)
@@ -103,12 +103,12 @@ function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, se
         if sizeof(sample_type(samples.info)) > sizeof(Int16)
             decoded_samples = Onda.decode(samples)
             scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type(samples.info)) / sizeof(Int16))
-            encode_info = SamplesInfo(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
+            encode_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
             samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
         else
             samples = Onda.encode(samples)
         end
-        signal_name = samples.info.kind
+        signal_name = samples.info.sensor_type
         extrema = SignalExtrema(samples)
         for channel_name in samples.info.channels
             sample_count = edf_sample_count_per_record(samples, seconds_per_record)

@@ -35,8 +35,6 @@ export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
 
-Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{String}) = AbstractString
-
 @version PlanV2 begin
     # EDF.SignalHeader fields
     label::String
@@ -52,7 +50,8 @@ Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{String}) = AbstractStr
     seconds_per_record::Float64
     # Onda.SamplesInfoV2 fields (channels -> channel), may be missing
     sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
-    sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label, sensor_type)
+    sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label,
+                                                       coalesce(sensor_label, sensor_type))
     channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
     sample_resolution_in_unit::Union{Missing,Float64}
@@ -63,7 +62,7 @@ Legolas.accepted_field_type(::PlanV1SchemaVersion, ::Type{String}) = AbstractStr
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
 
-Legolas.accepted_field_type(::PlanV2SchemaVersion, ::Type{String}) = AbstractString
+
 
 const PLAN_DOC_TEMPLATE = """
     @version PlanV{{ VERSION }} begin
@@ -156,11 +155,13 @@ end
 @doc _file_plan_doc(1) FilePlanV1
 @doc _file_plan_doc(2) FilePlanV2
 
-@schema "edf.annotation" EDFAnnotation
+const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,PlanV2SchemaVersion,FilePlanV1SchemaVersion,FilePlanV2SchemaVersion}
+Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
+# we need this because Arrow write can introduce a Missing for the error column
+# (I think because of how missing/nothing sentinels are handled?)
+Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
 
-@version EDFAnnotationV1 > AnnotationV1 begin
-    value::String
-end
+@schema "edf.annotation" EDFAnnotation
 
 """
     @version EDFAnnotationV1 > AnnotationV1 begin
@@ -170,7 +171,9 @@ end
 A Legolas-generated record type that represents a single annotation imported
 from an EDF Annotation signal.  The `value` field contains the annotation value
 as a string.
-
 """
+@version EDFAnnotationV1 > AnnotationV1 begin
+    value::String
+end
 
 end # module

@@ -1,5 +1,5 @@
 using Test, Dates, Random, UUIDs, Statistics
-using OndaEDF, Onda, EDF, Tables
+using OndaEDF, OndaEDFSchemas, Onda, EDF, Tables
 using FilePathsBase: AbstractPath, PosixPath
 
 function test_edf_signal(rng, label, transducer, physical_units,
@@ -72,7 +72,7 @@ function make_test_data(rng, sample_rate, samples_per_record, n_records, ::Type{
 end
 
 function validate_extracted_signals(signals)
-    signals = Dict(s.kind => s for s in signals)
+    signals = Dict(s.sensor_type => s for s in signals)
     @test signals["tidal_volume"].channels == ["tidal_volume"]
     @test signals["tidal_volume"].sample_unit == "milliliter"
     @test signals["respiratory_effort"].channels == ["chest", "abdomen"]

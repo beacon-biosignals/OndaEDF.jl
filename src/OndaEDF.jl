@@ -12,15 +12,12 @@ using TimeSpans
 using Tables
 using UUIDs
 
-using Legolas: @row, lift
+using Legolas: lift
 using Tables: rowmerge
 
 export write_plan
 export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, plan_edf_to_onda_samples_groups, store_edf_as_onda
 export onda_to_edf
-
-# can be dropped if we drop Onda<0.14
-sample_type(x) = isdefined(Onda, :sample_type) ? Onda.sample_type(x) : x.sample_type
 
 include("standards.jl")
 
@@ -32,7 +29,7 @@ Write a plan table to `io_or_path` using `Legolas.write`, using the
 """
 function write_plan(io_or_path, plan_table; kwargs...)
     return Legolas.write(io_or_path, plan_table,
-                         Legolas.Schema("ondaedf.file-plan@1");
+                         Legolas.SchemaVersion("ondaedf.file-plan", 2);
                          kwargs...)
 end
 

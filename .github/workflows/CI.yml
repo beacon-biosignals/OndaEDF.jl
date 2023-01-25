@@ -26,7 +26,7 @@ jobs:
         arch:
           - x64
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: julia-actions/setup-julia@v1
@@ -38,6 +38,11 @@ jobs:
           path: ~/.julia/artifacts
           key: ${{ runner.os }}-test-artifacts-${{ hashFiles('**/Project.toml') }}
           restore-keys: ${{ runner.os }}-test-artifacts
+      - name: "Monorepo setup"
+        shell: julia --color=yes --project {0}
+        run: |
+          using Pkg
+          Pkg.develop(PackageSpec(; path="./OndaEDFSchemas.jl"))
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
