@@ -44,6 +44,7 @@ function mock_plan(; v, rng=GLOBAL_RNG)
                        sample_type=ingested ? "float32" : missing,
                        sample_rate=ingested ? 1/128 : missing,
                        error=errored ? "Error blah blah" : nothing,
+                       recording= (ingested && rand(rng, Bool)) ? uuid4() : missing,
                        specific_kwargs...)
 end
 

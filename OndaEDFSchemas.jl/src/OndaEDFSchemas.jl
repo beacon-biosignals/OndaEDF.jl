@@ -5,6 +5,7 @@ using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type,
             convert_number_to_lpcm_sample_type, _validate_signal_channel,
             _validate_signal_sensor_label, _validate_signal_sensor_type,
             AnnotationV1
+using UUIDs
 
 export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
 
@@ -23,7 +24,8 @@ export PlanV1, PlanV2, FilePlanV1, FilePlanV2, EDFAnnotationV1
     samples_per_record::Int16
     # EDF.FileHeader field
     seconds_per_record::Float64
-    # Onda.SamplesInfoV1 fields (channels -> channel), may be missing
+    # Onda.SignalV1 fields (channels -> channel), may be missing
+    recording::Union{UUID,Missing} = lift(UUID, recording)
     kind::Union{Missing,AbstractString} = lift(String, kind)
     channel::Union{Missing,AbstractString} = lift(String, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
@@ -48,7 +50,8 @@ end
     samples_per_record::Int16
     # EDF.FileHeader field
     seconds_per_record::Float64
-    # Onda.SamplesInfoV2 fields (channels -> channel), may be missing
+    # Onda.SignalV2 fields (channels -> channel), may be missing
+    recording::Union{UUID,Missing} = lift(UUID, recording)
     sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
     sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label,
                                                        coalesce(sensor_label, sensor_type))
@@ -78,7 +81,8 @@ const PLAN_DOC_TEMPLATE = """
         samples_per_record::Int16
         # EDF.FileHeader field
         seconds_per_record::Float64
-        # Onda.SamplesInfo fields (channels -> channel), may be missing
+        # Onda.SignalV{{ VERSION }} fields (channels -> channel), may be missing
+        recording::Union{UUID,Missing} = passmissing(UUID)
 {{ SAMPLES_INFO_UNIQUE_FIELDS }}
         channel::Union{Missing,AbstractString}
         sample_unit::Union{Missing,AbstractString}
@@ -94,8 +98,8 @@ A Legolas-generated record type describing a single EDF signal-to-Onda channel
 conversion.  The columns are the union of
 - fields from `EDF.SignalHeader` (all mandatory)
 - the `seconds_per_record` field from `EDF.FileHeader` (mandatory)
-- fields from `Onda.SamplesInfoV{{ VERSION }}` (optional, may be `missing` to indicate failed
-  conversion)
+- fields from `Onda.SignalV{{ VERSION }}` (optional, may be `missing` to indicate failed
+  conversion), except for `file_path`
 - `error`, which is `nothing` for a conversion that is or is expected to be
   successful, and a `String` describing the source of the error (with backtrace)
   in the case of a caught error.

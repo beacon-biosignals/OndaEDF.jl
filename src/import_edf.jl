@@ -218,7 +218,14 @@ is thrown.  If sample rates/offests are not equal, then `pick_offset` and
     This is an internal function and is not meant to be called direclty.
 """
 function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=minimum)
-    if any(any(ismissing, row) for row in encodings)
+    encoding_fields = (:sample_rate,
+                       :sample_offset_in_unit,
+                       :sample_resolution_in_unit,
+                       :sample_type)
+    if any(ismissing,
+           getproperty(row, p)
+           for p in encoding_fields
+           for row in encodings)
         return (; sample_type=missing,
                 sample_offset_in_unit=missing,
                 sample_resolution_in_unit=missing,
