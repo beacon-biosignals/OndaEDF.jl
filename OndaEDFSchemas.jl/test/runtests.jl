@@ -26,7 +26,6 @@ function mock_plan(; v, rng=GLOBAL_RNG)
         error("Invalid version")
     end
     errored = !ingested && rand(rng, Bool)
-    recording = 
     PlanVersion = v == 1 ? PlanV1 : PlanV2
     return PlanVersion(; label="EEG CZ-M1",
                        transducer_type="Ag-Cl electrode",
