@@ -26,6 +26,7 @@ function mock_plan(; v, rng=GLOBAL_RNG)
         error("Invalid version")
     end
     errored = !ingested && rand(rng, Bool)
+    recording = 
     PlanVersion = v == 1 ? PlanV1 : PlanV2
     return PlanVersion(; label="EEG CZ-M1",
                        transducer_type="Ag-Cl electrode",
@@ -44,6 +45,7 @@ function mock_plan(; v, rng=GLOBAL_RNG)
                        sample_type=ingested ? "float32" : missing,
                        sample_rate=ingested ? 1/128 : missing,
                        error=errored ? "Error blah blah" : nothing,
+                       recording= (ingested && rand(rng, Bool)) ? uuid4() : missing
                        specific_kwargs...)
 end
 
