@@ -73,8 +73,8 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                                                 "v1r", "v2r", "v3r", "v4r", "v5r", "v6r", "v7r", "v8r", "v9r",
                                                 "x", "y", "z"],
                              # EOG should not have any channel names overlapping with EEG channel names
-                             ["eog", "eeg"] => ["left"=> ["eogl", "loc", "lefteye", "leye", "e1", "eog1", "l", "left eye", "leog", "log", "li"],
-                                                "right"=> ["eogr", "roc", "righteye", "reye", "e2", "eog2", "r", "right eye", "reog", "rog", "re"]],
+                             ["eog", "eeg"] => ["left"=> ["eogl", "loc", "lefteye", "leye", "e1", "eog1", "l", "left eye", "leog", "log", "li", "lue"],
+                                                "right"=> ["eogr", "roc", "righteye", "reye", "e2", "eog2", "r", "right eye", "reog", "rog", "re", "rae"]],
                              ["emg"] => ["chin1" => ["chn", "chin_1", "chn1", "kinn", "menton", "submental", "submentalis", "submental1", "subm1", "chin", "mentalis", "chinl", "chinli", "chinleft", "subm_1", "subment"],
                                          "chin2" => ["chn2", "chin_2", "submental2", "subm2", "chinr", "chinre", "chinright", "subm_2"],
                                          "chin3" => ["chn3", "submental3", "subm3", "chincenter"],
