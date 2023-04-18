@@ -2,7 +2,6 @@
     signal_names = ["eeg", "eog", "test"]
     canonical_names = OndaEDF.STANDARD_LABELS[["eeg"]]
     @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", signal_names, "c3", canonical_names) == "c3-m1_plus_a2_over_2"
-    @test OndaEDF.match_edf_label("EEG_C3-(M1 +A2)/2 - rEf3", signal_names, "c3", canonical_names) == "c3-m1_plus_a2_over_2"
     @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", ["ecg"], "c3", canonical_names) == nothing
     @test OndaEDF.match_edf_label("EEG C3-(M1 +A2)/2 - rEf3", signal_names, "c4", canonical_names) == nothing
     @test OndaEDF.match_edf_label(" TEsT   -Fpz  -REF-cpz", signal_names, "fpz", canonical_names) == "-fpz-ref-cpz"
@@ -17,6 +16,8 @@
             @test name == "avr" ? x == "avr" : x == nothing
         end
     end
+    # #70
+    @test OndaEDF.match_edf_label("EEG_C3-A2", signal_names, "c3", canonical_names) == "c3-a2"
     @test OndaEDF.export_edf_label("eeg", "t4") == "EEG T4-Ref"
     @test OndaEDF.export_edf_label("eeg", "t4-a1") == "EEG T4-A1"
     @test OndaEDF.export_edf_label("emg", "lat") == "EMG LAT"
