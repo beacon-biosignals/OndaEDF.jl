@@ -608,13 +608,16 @@ end
 
 """
     OndaEDF.onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
-                                          edf_seconds_per_record)
+                                          edf_seconds_per_record; dither_storage)
 
 Generate an `Onda.Samples` struct from an iterable of `EDF.Signal`s, based on
 the `Onda.SamplesInfo` in `target`.  This checks for matching sample rates in
 the source signals.  If the encoding of `target` is the same as the encoding in
 a signal, its encoded (usually `Int16`) data is copied directly into the
 `Samples` data matrix; otherwise it is re-encoded.
+                                                                                        
+`dither_storage` keyword argument is used for `Onda.encode`. See `Onda.encode`'s
+docstring for more details.                                                        
 
 !!! note
 
