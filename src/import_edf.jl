@@ -647,7 +647,13 @@ function onda_samples_from_edf_signals(target::SamplesInfoV2, edf_signals,
             encoded_samples = try
                 Onda.encode(sample_type(target), target.sample_resolution_in_unit,
                             target.sample_offset_in_unit, decoded_samples,
-                                          dither_storage)
+                            dither_storage)
+             catch e
+                 if e isa DomainError
+                     @warn "DomainError during `Onda.encode` can be due to a dithering bug; try calling with `dither_storage=nothing` to disable dithering."
+                 end
+                 rethrow()
+             end
         else
             encoded_samples = edf_signal.samples
         end
