@@ -644,8 +644,9 @@ function onda_samples_from_edf_signals(target::SamplesInfoV2, edf_signals,
             decoded_samples = Onda.decode(edf_encoding.sample_resolution_in_unit,
                                           edf_encoding.sample_offset_in_unit,
                                           edf_signal.samples)
-            encoded_samples = Onda.encode(sample_type(target), target.sample_resolution_in_unit,
-                                          target.sample_offset_in_unit, decoded_samples,
+            encoded_samples = try
+                Onda.encode(sample_type(target), target.sample_resolution_in_unit,
+                            target.sample_offset_in_unit, decoded_samples,
                                           dither_storage)
         else
             encoded_samples = edf_signal.samples
