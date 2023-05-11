@@ -608,7 +608,7 @@ end
 
 """
     OndaEDF.onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
-                                          edf_seconds_per_record; dither_storage)
+                                          edf_seconds_per_record; dither_storage=missing)
 
 Generate an `Onda.Samples` struct from an iterable of `EDF.Signal`s, based on
 the `Onda.SamplesInfo` in `target`.  This checks for matching sample rates in
@@ -616,8 +616,9 @@ the source signals.  If the encoding of `target` is the same as the encoding in
 a signal, its encoded (usually `Int16`) data is copied directly into the
 `Samples` data matrix; otherwise it is re-encoded.
                                                                                         
-`dither_storage` keyword argument is used for `Onda.encode`. See `Onda.encode`'s
-docstring for more details.                                                        
+If `dither_storage=missing` (the default), dither storage is allocated automatically
+as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering. 
+See `Onda.encode`'s docstring for more details.
 
 !!! note
 
@@ -626,7 +627,7 @@ docstring for more details.
 
 """
 function onda_samples_from_edf_signals(target::SamplesInfoV2, edf_signals,
-                                       edf_seconds_per_record; dither_storage)
+                                       edf_seconds_per_record; dither_storage=missing)
     sample_count = length(first(edf_signals).samples)
     if !all(length(s.samples) == sample_count for s in edf_signals)
         error("mismatched sample counts between `EDF.Signal`s: ", [length(s.samples) for s in edf_signals])
