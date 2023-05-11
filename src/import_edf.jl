@@ -509,7 +509,7 @@ If `validate=true` (the default), the plan is validated against the
 [`FilePlanV2`](@ref) schema, and the signal headers in the `EDF.File`.
 
 If `dither_storage=missing` (the default), dither storage is allocated automatically
-as specified in the docstring for `Onda.encode`.
+as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering.
 """
 function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_storage=missing)
                              
