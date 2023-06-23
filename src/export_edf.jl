@@ -96,45 +96,54 @@ function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
                           is_contiguous, edf_record_metadata(samples)...)
 end
 
-# TODO: change offset for UInt -> Int, change resolution for width.  handle float-encoded values separately
+"""
+    reencode_samples(samples::Samples, sample_type::Type=Int16)
 
-function reencode_samples(samples::Samples, sample_type::Type{T}) where {T<:Signed}
-    if sizeof(sample_type) > sizeof(Int16)
-        decoded_samples = Onda.decode(samples)
-        scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type) / sizeof(Int16))
-        encode_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
-        samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
-    end
-    return samples
-end
+Re-compute encoding parameters for `samples` so that they can be encoded as
+`sample_type`.  The default `sample_type` is `Int16` which is the target for EDF
+format.
 
-# unsigned, we have to adjust resolution in the same way as signed, and offset by TODO
-function reencode_samples(samples::Samples, sample_type::Type{T}) where {T<:Unsigned}
-    # anything smaller by even 1 bit we can just convert
-    if sizeof(sample_type) >= sizeof(Int16)
-        decoded_samples = Onda.decode(samples)
-        scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type) / sizeof(Int16))
-        offset = 
-        
-    end
-end
+This uses the actual signal extrema, choosing a resolution/offset that maps them
+to `typemin(sample_type), typemax(sample_type`.
 
-function reencode_samples(samples::Samples, sample_type::Type{T}) where {T<:AbstractFloat}
+Returns an encoded `Samples`, possibly with updated info.  If the current
+encoded values can be represented with `sample_type`, nothing is changed.  If
+they cannot, the `sample_type`, `sample_resolution_in_unit`, and
+`sample_offset_in_unit` fields are changed to reflect the new encoding.
+"""
+function reencode_samples(samples::Samples, sample_type::Type=Int16)
+    current_type = Onda.sample_type(samples.info)
+    typemin(current_type) > typemin(sample_type) &&
+        typemax(current_type) < typemax(sample_type) &&
+        return samples
 
+    samples = decode(samples)
+    smin, smax = extrema(samples.data)
+
+    emin, emax = typemin(sample_type), typemax(sample_type)
+
+    # re-use the import encoding calculator here:
+    # need to convert the digital min/max to floats due to overflow
+    mock_header = (; digital_minimum=Float64(emin), digital_maximum=Float64(emax),
+                   physical_minimum=smin, physical_maximum=smax,
+                   samples_per_record=0) # not using this
+
+    (; sample_resolution_in_unit, sample_offset_in_unit) = edf_signal_encoding(mock_header, 1)
+
+    new_info = Tables.rowmerge(samples.info;
+                               sample_resolution_in_unit,
+                               sample_offset_in_unit,
+                               sample_type)
+
+    new_samples = Samples(samples.data, SamplesInfoV2(new_info), samples.encoded)
+    return encode(new_samples)
 end
 
 function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[]
     for samples in onda_samples
         # encode samples, rescaling if necessary
-        if sizeof(sample_type(samples.info)) > sizeof(Int16)
-            decoded_samples = Onda.decode(samples)
-            scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type(samples.info)) / sizeof(Int16))
-            encode_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
-            samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
-        else
-            samples = Onda.encode(samples)
-        end
+        samples = reencode_samples(samples, Int16)
         signal_name = samples.info.sensor_type
         extrema = SignalExtrema(samples)
         for channel_name in samples.info.channels
@@ -145,6 +154,8 @@ function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, se
                                                  extrema.physical_min, extrema.physical_max,
                                                  extrema.digital_min, extrema.digital_max,
                                                  "", sample_count)
+            # manually convert here in case we have input samples whose encoded
+            # values are convertible losslessly to Int16:
             sample_data = Int16.(vec(samples[channel_name, :].data))
             padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
             edf_signal_samples = append!(sample_data, padding)
