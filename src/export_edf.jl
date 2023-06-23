@@ -96,6 +96,33 @@ function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
                           is_contiguous, edf_record_metadata(samples)...)
 end
 
+# TODO: change offset for UInt -> Int, change resolution for width.  handle float-encoded values separately
+
+function reencode_samples(samples::Samples, sample_type::Type{T}) where {T<:Signed}
+    if sizeof(sample_type) > sizeof(Int16)
+        decoded_samples = Onda.decode(samples)
+        scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type) / sizeof(Int16))
+        encode_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
+        samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
+    end
+    return samples
+end
+
+# unsigned, we have to adjust resolution in the same way as signed, and offset by TODO
+function reencode_samples(samples::Samples, sample_type::Type{T}) where {T<:Unsigned}
+    # anything smaller by even 1 bit we can just convert
+    if sizeof(sample_type) >= sizeof(Int16)
+        decoded_samples = Onda.decode(samples)
+        scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type) / sizeof(Int16))
+        offset = 
+        
+    end
+end
+
+function reencode_samples(samples::Samples, sample_type::Type{T}) where {T<:AbstractFloat}
+
+end
+
 function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[]
     for samples in onda_samples
@@ -118,7 +145,7 @@ function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, se
                                                  extrema.physical_min, extrema.physical_max,
                                                  extrema.digital_min, extrema.digital_max,
                                                  "", sample_count)
-            sample_data = vec(samples[channel_name, :].data)
+            sample_data = Int16.(vec(samples[channel_name, :].data))
             padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
             edf_signal_samples = append!(sample_data, padding)
             push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
