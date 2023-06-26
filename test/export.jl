@@ -122,4 +122,39 @@
         @test_logs (:warn, r"No annotations found in") store_edf_as_onda(exported_edf2, mktempdir(), uuid; import_annotations=true)
     end
 
+    @testset "re-encoding" begin
+        _flatten_union(T::Union) = vcat(T.a, _flatten_union(T.b))
+        _flatten_union(T::Type) = T
+
+        onda_types = _flatten_union(Onda.LPCM_SAMPLE_TYPE_UNION)
+
+        @testset "encoding $T" for T in onda_types
+            info = SamplesInfoV2(; sensor_type="x",
+                                 channels=["x"],
+                                 sample_unit="microvolt",
+                                 sample_resolution_in_unit=1.234,
+                                 sample_offset_in_unit=4.567,
+                                 sample_type=T,
+                                 sample_rate=1)
+
+            min = typemin(T)
+            max = typemax(T)
+
+            if T <: AbstractFloat
+                min = nextfloat(min)
+                max = prevfloat(max)
+            end
+
+            data = range(min, max; length=9)
+            data = T <: AbstractFloat ? data : round.(T, data)
+            data = reshape(data, 1, :)
+
+            samples = Samples(data, info, true)
+
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+
+            @test vec(decode(samples).data) ≈ EDF.decode(signal)
+        end
+    end
+
 end
