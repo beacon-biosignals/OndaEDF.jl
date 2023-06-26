@@ -128,12 +128,15 @@
 
         onda_types = _flatten_union(Onda.LPCM_SAMPLE_TYPE_UNION)
 
+        # test that we can encode the full range of values expressible in each
+        # possible Onda sample type.
+        #
         @testset "encoding $T" for T in onda_types
             info = SamplesInfoV2(; sensor_type="x",
                                  channels=["x"],
                                  sample_unit="microvolt",
-                                 sample_resolution_in_unit=1.234,
-                                 sample_offset_in_unit=4.567,
+                                 sample_resolution_in_unit=2,
+                                 sample_offset_in_unit=1,
                                  sample_type=T,
                                  sample_rate=1)
 
@@ -150,6 +153,19 @@
             data = reshape(data, 1, :)
 
             samples = Samples(data, info, true)
+
+            # for r e a s o n s we need to be a bit careful with just how large
+            # the values are that we're trying to use; EDF.jl (and maybe EDF
+            # generally, unclear) can't handle physical min/max more than like
+            # 1e8 (actually for EDF.jl it's 99999995 because Float32 precision).
+            # so, we try to do typemax/min of the encoded type, and if that
+            # leads to physical min/max that are too big, we clamp and
+            # re-encode.
+            if !all(<(1e10) ∘ abs ∘ float, decode(samples).data)
+                min_d, max_d = -1e10, 1e10
+                data_d = reshape(range(min_d, max_d; length=9), 1, :)
+                samples = Onda.encode(Samples(data_d, info, false))
+            end
 
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
 
