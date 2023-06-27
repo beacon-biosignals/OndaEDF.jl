@@ -128,9 +128,12 @@
 
         onda_types = _flatten_union(Onda.LPCM_SAMPLE_TYPE_UNION)
 
-        # test that we can encode the full range of values expressible in each
+        onda_ints = filter(x -> x <: Integer, onda_types)
+        onda_floats = filter(x -> x <: AbstractFloat, onda_types)
+        @test issetequal(union(onda_ints, onda_floats), onda_types)
+
+        # test that we can encode ≈ the full range of values expressible in each
         # possible Onda sample type.
-        #
         @testset "encoding $T" for T in onda_types
             info = SamplesInfoV2(; sensor_type="x",
                                  channels=["x"],
@@ -140,18 +143,19 @@
                                  sample_type=T,
                                  sample_rate=1)
 
-            min = typemin(T)
-            max = typemax(T)
 
             if T <: AbstractFloat
-                min = nextfloat(min)
-                max = prevfloat(max)
+                min = nextfloat(typemin(T))
+                max = prevfloat(typemax(T))
+                data = range(min, max; length=9)
+            else
+                min = typemin(T)
+                max = typemax(T)
+                step = max ÷ T(8) - min ÷ T(8)
+                data = range(min, max; step)
             end
 
-            data = range(min, max; length=9)
-            data = T <: AbstractFloat ? data : round.(T, data)
             data = reshape(data, 1, :)
-
             samples = Samples(data, info, true)
 
             # for r e a s o n s we need to be a bit careful with just how large
@@ -162,6 +166,7 @@
             # leads to physical min/max that are too big, we clamp and
             # re-encode.
             if !all(<(1e10) ∘ abs ∘ float, decode(samples).data)
+                @info "clamped decoded $(T) samples to ±1e10"
                 min_d, max_d = -1e10, 1e10
                 data_d = reshape(range(min_d, max_d; length=9), 1, :)
                 samples = Onda.encode(Samples(data_d, info, false))
