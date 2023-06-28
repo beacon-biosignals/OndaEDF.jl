@@ -101,6 +101,7 @@
             info_orig = samples_orig.info
             info_round_tripped = SamplesInfoV2(signal_round_tripped)
 
+            # anything else, the encoding parameters may change on export
             if info_orig.sample_type == "int16"
                 @test info_orig == info_round_tripped
             end
@@ -141,7 +142,6 @@
                                  sample_type=T,
                                  sample_rate=1)
 
-
             if T <: AbstractFloat
                 min = nextfloat(typemin(T))
                 max = prevfloat(typemax(T))
@@ -156,7 +156,7 @@
             data = reshape(data, 1, :)
             samples = Samples(data, info, true)
 
-            # for r e a s o n s we need to be a bit careful with just how large
+            # for  r e a s o n s  we need to be a bit careful with just how large
             # the values are that we're trying to use; EDF.jl (and maybe EDF
             # generally, unclear) can't handle physical min/max more than like
             # 1e8 (actually for EDF.jl it's 99999995 because Float32 precision).
@@ -173,6 +173,49 @@
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
 
             @test vec(decode(samples).data) ≈ EDF.decode(signal)
+        end
+
+        @testset "skip reencoding" begin
+            info = SamplesInfoV2(; sensor_type="x",
+                                 channels=["x"],
+                                 sample_unit="microvolt",
+                                 sample_resolution_in_unit=2,
+                                 sample_offset_in_unit=1,
+                                 sample_type=Int32,
+                                 sample_rate=1)
+
+            data = Int32[typemin(Int16) typemax(Int16)]
+
+            samples = Samples(data, info, true)
+            # data is re-used if already encoded
+            @test OndaEDF.reencode_samples(samples, Int16).data === samples.data
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+
+            # bump just outside the range representable as Int16
+            samples.data .+= Int32[-1 1]
+            new_samples = OndaEDF.reencode_samples(samples, Int16)
+            @test new_samples != samples
+            @test decode(new_samples).data == decode(samples).data
+
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+
+
+            uinfo = SamplesInfoV2(Tables.rowmerge(info; sample_type="uint64"))
+            data = UInt64[0 typemax(Int16)]
+            samples = Samples(data, uinfo, true)
+            @test OndaEDF.reencode_samples(samples, Int16).data === samples.data
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+
+            samples.data .+= UInt64[0 1]
+            new_samples = OndaEDF.reencode_samples(samples, Int16)
+            @test new_samples != samples
+            @test decode(new_samples).data == decode(samples).data
+
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
         end
     end
 
