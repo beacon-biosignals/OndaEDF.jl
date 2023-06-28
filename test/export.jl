@@ -14,7 +14,8 @@
     exported_edf = onda_to_edf(samples_to_export, annotations)
     @test exported_edf.header.record_count == 200
     offset = 0
-    for signal_name in signal_names
+    @testset "export $signal_name" for signal_name in signal_names
+        global offset
         samples = only(filter(s -> s.info.sensor_type == signal_name, onda_samples))
         channel_names = samples.info.channels
         edf_indices = (1:length(channel_names)) .+ offset

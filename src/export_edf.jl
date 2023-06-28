@@ -113,8 +113,10 @@ they cannot, the `sample_type`, `sample_resolution_in_unit`, and
 """
 function reencode_samples(samples::Samples, sample_type::Type=Int16)
     current_type = Onda.sample_type(samples.info)
-    typemin(current_type) > typemin(sample_type) &&
-        typemax(current_type) < typemax(sample_type) &&
+    # if we can fit the encoded values in `sample_type` without any changes,
+    # return as-is.
+    typemin(current_type) >= typemin(sample_type) &&
+        typemax(current_type) <= typemax(sample_type) &&
         return samples
 
     samples = decode(samples)
@@ -123,9 +125,9 @@ function reencode_samples(samples::Samples, sample_type::Type=Int16)
     emin, emax = typemin(sample_type), typemax(sample_type)
 
     # re-use the import encoding calculator here:
-    # need to convert the digital min/max to floats due to overflow
+    # need to convert all the min/max to floats due to overflow
     mock_header = (; digital_minimum=Float64(emin), digital_maximum=Float64(emax),
-                   physical_minimum=smin, physical_maximum=smax,
+                   physical_minimum=Float64(smin), physical_maximum=Float64(smax),
                    samples_per_record=0) # not using this
 
     (; sample_resolution_in_unit, sample_offset_in_unit) = edf_signal_encoding(mock_header, 1)
