@@ -159,7 +159,9 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
                    physical_minimum=Float64(smin), physical_maximum=Float64(smax),
                    samples_per_record=0) # not using this
 
-    (; sample_resolution_in_unit, sample_offset_in_unit) = edf_signal_encoding(mock_header, 1)
+    donor_info = edf_signal_encoding(mock_header, 1)
+    sample_resolution_in_unit = donor_info.sample_resolution_in_unit
+    sample_offset_in_unit = donor_info.sample_offset_in_unit
 
     new_info = Tables.rowmerge(samples.info;
                                sample_resolution_in_unit,
