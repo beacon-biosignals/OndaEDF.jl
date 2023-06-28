@@ -192,6 +192,12 @@
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
 
+            # make sure it works with decoded too
+            signal2 = only(OndaEDF.onda_samples_to_edf_signals([Onda.decode(samples)], 1.0))
+            @test EDF.decode(signal2) == vec(decode(samples).data)
+            # to confirm quantization settings are the same
+            @test signal.header == signal2.header
+
             # bump just outside the range representable as Int16
             samples.data .+= Int32[-1 1]
             new_samples = OndaEDF.reencode_samples(samples, Int16)
@@ -200,6 +206,8 @@
 
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
+            # to confirm quantization settings are changed
+            @test signal.header != signal2.header
 
 
             uinfo = SamplesInfoV2(Tables.rowmerge(info; sample_type="uint64"))
