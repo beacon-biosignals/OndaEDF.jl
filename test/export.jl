@@ -97,19 +97,17 @@
         # new UUID for each annotation created during import
         @test all(getproperty.(nt.annotations, :id) .!= getproperty.(ann_sorted, :id))
 
-        for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
+        @testset "$(samples_orig.info.sensor_type)" for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
             info_orig = samples_orig.info
             info_round_tripped = SamplesInfoV2(signal_round_tripped)
-            for p in setdiff(propertynames(info_orig),
-                             (:edf_channels, :sample_type, :sample_resolution_in_unit))
-                @test getproperty(info_orig, p) == getproperty(info_round_tripped, p)
+
+            if info_orig.sample_type == "int16"
+                @test info_orig == info_round_tripped
             end
-            if info_orig.sample_type == "int32"
-                resolution_orig = info_orig.sample_resolution_in_unit * 2
-            else
-                resolution_orig = info_orig.sample_resolution_in_unit
-            end
-            @test resolution_orig ≈ info_round_tripped.sample_resolution_in_unit
+
+            samples_rt = Onda.load(signal_round_tripped)
+            @test all(isapprox.(decode(samples_orig).data, decode(samples_rt).data;
+                                atol=info_orig.sample_resolution_in_unit))
         end
 
         # don't import annotations
