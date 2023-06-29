@@ -363,7 +363,8 @@ function plan_edf_to_onda_samples(header,
         # match physical units and encoding first so that we give users better
         # feedback about _which_ thing (labels vs. units) didn't match.
         #
-        # still do it in the try/catch in case edf_to_onda_unit throws an error
+        # still do it in the try/catch in case edf_to_onda_unit or
+        # edf_signal_encoding throws an error
         row = rowmerge(row;
                        sample_unit=edf_to_onda_unit(header.physical_dimension, units),
                        edf_signal_encoding(header, seconds_per_record)...)
