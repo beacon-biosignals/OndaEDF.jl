@@ -255,6 +255,40 @@ using StableRNGs
         @test isempty(bad_samples)
     end
 
+    @testset "units labels and encoding matched independently" begin
+        n_records = 100
+        edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
+
+        signal = edf.signals[1]
+        header = signal.header
+
+        plan = plan_edf_to_onda_samples(header, edf.header.seconds_per_record)
+        no_label = plan_edf_to_onda_samples(header, edf.header.seconds_per_record;
+                                            labels=Dict())
+        no_units = plan_edf_to_onda_samples(header, edf.header.seconds_per_record;
+                                            units=Dict())
+        no_both = plan_edf_to_onda_samples(header, edf.header.seconds_per_record;
+                                           units=Dict(), labels=Dict())
+
+        @test ismissing(no_label.channel)
+        @test ismissing(no_label.sensor_type)
+        @test no_label.sample_unit == plan.sample_unit
+        @test no_label.sample_resolution_in_unit == plan.sample_resolution_in_unit
+        @test no_label.sample_offset_in_unit == plan.sample_offset_in_unit
+
+        @test no_units.channel == plan.channel
+        @test no_units.sensor_type == plan.sensor_type
+        @test ismissing(no_units.sample_unit)
+        @test no_units.sample_resolution_in_unit == plan.sample_resolution_in_unit
+        @test no_units.sample_offset_in_unit == plan.sample_offset_in_unit
+
+        @test ismissing(no_both.channel)
+        @test ismissing(no_both.sensor_type)
+        @test ismissing(no_both.sample_unit)
+        @test no_both.sample_resolution_in_unit == plan.sample_resolution_in_unit
+        @test no_both.sample_offset_in_unit == plan.sample_offset_in_unit
+    end
+
     @testset "de/serialization of plans" begin
         edf, _ = make_test_data(StableRNG(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
