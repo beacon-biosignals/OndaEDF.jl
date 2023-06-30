@@ -104,7 +104,7 @@ Re-compute encoding parameters for `samples` so that they can be encoded as
 format.
 
 This uses the actual signal extrema, choosing a resolution/offset that maps them
-to `typemin(sample_type), typemax(sample_type`.
+to `typemin(sample_type), typemax(sample_type)`.
 
 Returns an encoded `Samples`, possibly with updated info.  If the current
 encoded values can be represented with `sample_type`, nothing is changed.  If
