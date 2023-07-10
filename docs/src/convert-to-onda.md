@@ -160,4 +160,105 @@ The workflow for bulk conversion of multiple EDFs is similar to the workflow for
 The major difference is that the "planning" steps can be conducted in bulk, while the "execution" steps (generally) need to be conducted one at a time, either serially or distributed across multiple workers.
 As discussed above, the planning stage requires only a few KB from the EDF file/signal headers, facilitating rapid plan-review-revise iteration of even fairly large collections of EDFs (10,000+).
 
-### Reading EDF headers
+### Planning multiple EDFs
+
+The main factor to consider when planning conversion of a large batch of EDF files is that planning requires only the (small number) of header bytes, even for very large EDF files.
+Thus, the first step is to read the file headers into memory without reading the signal data itself (which for more than a few EDF files will not in general fit into memory ).
+
+#### Reading headers from local filesystem
+
+For EDF files stored on a normal filesystem, the `EDF.File` constructor will by default create a "header-only" `EDF.File`, so multiple files' headers can be read like
+
+```julia
+files = map(edf_paths) do path
+    open(EDF.File, path, "r")
+end
+```
+
+#### Reading headers from S3
+
+!!! note
+    This section may become obsolete in a future version of EDF.jl which uses the [conditional dependency](https://pkgdocs.julialang.org/v1/creating-packages/#Weak-dependencies) functionality available from Julia 1.9+ to provide tighter integration with AWSS3.jl.
+
+Unfortunately, `open(path::S3Path)` will fetch the entire contents of the object stored at `path`, so we need to be a bit clever to read _only_ header bytes from an S3 file, especially given that the number of bytes we need to read depends on the number of signals.
+The following is an example of one technique for reading EDF file and signal headers from S3:
+
+```julia
+function EDF.read_file_header(path::S3Path)
+    bytes = s3_get(path.bucket, path.key; byte_range=1:256)
+    buffer = IOBuffer(bytes)
+    return EDF.read_file_header(buffer)
+end
+
+function EDF.File(path::S3Path)
+    _, n_signals = EDF.read_file_header(path)
+    bytes = s3_get(path.bucket, path.key; byte_range=1:(256 * (n_signals + 1)))
+    return EDF.File(IOBuffer(bytes))
+end
+
+# use asyncmap because this is mostly bound by request roundtrip latency
+files = asyncmap(EDF.File, edf_paths)
+```
+
+#### Concatenating plans into one big table
+
+When doing bulk review of plans, it's generally helpful to have the individual files' plans concatenated into a single large table.
+It's important to keep track of which plan rows corresopnd to which input file, which can be accomplished via something like this:
+
+```julia
+# create a UUID namespace to make recording ID generation idempotent
+const NAMESPACE = UUID(...)
+function plan_all(edf_paths, files; kwargs...)
+    plans = mapreduce(vcat, edf_paths, files) do origin_uri, edf
+        plan = plan_edf_to_onda_samples(edf; kwargs...)
+        plan = DataFrame(plan)
+        # make sure this is the same every time this function is re-run!
+        recording = uuid5(NAMESPACE, string(origin_uri))
+        return insertcols!(plan, 
+                           :origin_uri => origin_uri,
+                           :recording => recording)
+    end
+end
+```
+
+### Review and revise the plans
+
+This "bulk plan" table can then be reviewed in bulk, looking for patterns in which `label`s are not matched, physical units associated with each `sensor_type`, etc.
+At a minimum, we find it useful to print some basic counts:
+
+```julia
+plans = plan_all(...)
+# helper function to tally rows per group
+tally(df, g, agg...=nrow => :count) = combine(groupby(df, g), agg...)
+unmatched_labels = filter(:channel => ismissing, plans)
+@info "unmatched labels:" tally(unmatched_labels, :label)
+
+unmatched_units = filter(:sample_unit => ismissing, plans)
+@info "unmatched labels:" tally(unmatched_units, :physical_dimension)
+
+matched = subset(plans, :channel => ByRow(!ismissing), :sample_unit => ByRow(!ismissing))
+@info "matched sensor types/channels:" tally(matched, [:sensor_type, :channel, :sample_unit])
+```
+
+Reviewing these summaries is a good first step when revising the plans.
+The revision process is basically the same as with a single EDF: udpate the `labels=` and `units=` as needed to capture any un-matched EDF signals, and failing that, preprocess the headers/postprocess the plan.
+Note that if it is necessary to run [`plan_edf_to_onda_samples_groups`](@ref), this must be done one file at a time, using something like this to preserve the recording-level keys created above:
+
+```julia
+new_plans = combine(groupby(plans, [:recording, :origin_uri])) do plan
+    new_plan = plan_edf_to_onda_samples_groups(Tables.rows(plan))
+    return DataFrame(new_plan)
+end
+```
+
+### Executing bulk plans and storing generated samples
+
+The last step, as with single EDF conversion, is to execute the plans.
+Given that this requires loading signal data into memory, it's generally necessary to do this one recording at a time, either serially on a single process or using [multiprocessing](https://docs.julialang.org/en/v1/manual/distributed-computing/) to distribute work over different processes or even machines.
+A complete introduction to multiprocessing in Julia is outside the scope of this guide, but we offer a few pointers in the hope that we can help avoid common pitfalls.
+
+First, it's generally a good idea to create a function that accepts one recording's plan, EDF file path, and recording ID (or generally any additional metadata that is required to create a persistent record), which will execute the plan and persistently store the resulting samples and executed plan.
+This function then may return either the generated `Onda.SignalV2` and `OndaEDF.FilePlanV2` tables for the completed recording, or pointers to where these are stored.
+This way, the memory pressure involved in loading an entire EDF's signal data is confined to function scope which makes it slightly easier for Julia's garbage collector.
+
+Second, a _separate_ function should handle coordinating these individual jobs and then collecting these results into the ultimate aggregate signal and plan tables, and then persistently storing _those_ to a final destination.
