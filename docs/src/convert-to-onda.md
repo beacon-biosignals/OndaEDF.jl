@@ -34,8 +34,9 @@ As outlined in the documentation for [`plan_edf_to_onda_samples`](@ref), a "plan
 ### Review the plan.
 
 Check for EDF signals whose `label` or `physical_dimension` could not be matched using the standard OndaEDF labels and units, as indicated by `missing` values in the `channel`/`sensor_type` (for un-matched `label`) or `sample_unit` (for un-matched `physical_dimension`).
-It's also a good idea at this point to review the other EDF signal header fields, and how they will be converted to Onda (especially the sample unit, resolution and offset, which correspond to the physical/digital minimum/maximum from the EDF signal header.
-However, it's harder to fix issues with these fields, but it's still better to detect and document any issues with the underlying EDF data at this stage to prevent nasty surprises down the road.
+It's also a good idea at this point to review the other EDF signal header fields, and how they will be converted to Onda (especially the sample unit, resolution and offset, which correspond to the physical/digital minimum/maximum from the EDF signal header.)
+It's harder to fix these issues with the numerical signal header fields as they usually point to issues with how the data was encoded into an EDF initially.
+However, it's still better to detect and document any issues with the underlying EDF data at this stage to prevent nasty surprises down the road.
 
 ### Revise the plan
 
@@ -163,7 +164,7 @@ As discussed above, the planning stage requires only a few KB from the EDF file/
 ### Planning multiple EDFs
 
 The main factor to consider when planning conversion of a large batch of EDF files is that planning requires only the (small number) of header bytes, even for very large EDF files.
-Thus, the first step is to read the file headers into memory without reading the signal data itself (which for more than a few EDF files will not in general fit into memory ).
+Thus, the first step is to read the file headers into memory without reading the signal data itself (which for more than a few EDF files will not usually fit into memory due to the large amount of signal data found in EDF files).
 
 #### Reading headers from local filesystem
 
@@ -241,7 +242,7 @@ matched = subset(plans, :channel => ByRow(!ismissing), :sample_unit => ByRow(!is
 ```
 
 Reviewing these summaries is a good first step when revising the plans.
-The revision process is basically the same as with a single EDF: udpate the `labels=` and `units=` as needed to capture any un-matched EDF signals, and failing that, preprocess the headers/postprocess the plan.
+The revision process is basically the same as with a single EDF: update the `labels=` and `units=` as needed to capture any un-matched EDF signals, and failing that, preprocess the headers/postprocess the plan.
 Note that if it is necessary to run [`plan_edf_to_onda_samples_groups`](@ref), this must be done one file at a time, using something like this to preserve the recording-level keys created above:
 
 ```julia
