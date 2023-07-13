@@ -7,17 +7,21 @@ At a high level, the basic workflow for EDF-to-Onda conversion is iterative:
 2. Review the plan, making sure that all necessary `EDF.Signal`s will be extracted, and that the quantization, sample rate, physical units, etc. are reasonable.
 3. Revise the plan as needed, repeating steps 1-2 until you're happy.
 4. Execute the plan, loading all EDF signal data if necessary and converting into `Onda.Samples`
+5. Review the executed plan for additional errors or issues, and iterate steps 1-4 as needed.
 
 In the following sections, we expand on the philosophy behind OndaEDF's EDF-to-Onda design and present some detailed, opinionated workflows for converting a single EDF and multiple EDFs.
 
 ## Philosophy
 
-The motivation for separating the planning and execution is twofold.
+The motivation for separating the planning and execution is threefold.
 
-First, making the plan a separate intermediate output means that not only can it be reviewed during conversion but can be persisted as a record of how any EDF-derived Onda signals were converted.
+First, while there is an [EDF(+) specification](https://www.edfplus.info/specs/index.html),  it's so commonly violated in so many various ways that an EDF conversion package that _requires_ fully spec-compliant EDFs is of little practical use, but at the same time, anticipating and working around all these possible violations is not practical.
+Separating planning and execution during EDF-to-Onda conversion reverts more control to the user for how their _particular_ EDF files are handled.
+
+Second, making the plan a separate intermediate output means that not only can it be reviewed during conversion but can be persisted as a record of how any EDF-derived Onda signals were converted.
 This kind of provenance information is very useful when investigating issues with a dataset that may crop up long after the initial conversion.
 
-Second, planning only requires that the _headers_ of the `EDF.Signal`s be read into memory, thereby separating the iterative part of the conversion process from the expensive, one-time step which requires _all_ the signal data be read into memory.
+Third, planning only requires that the _headers_ of the `EDF.Signal`s be read into memory, thereby separating the iterative part of the conversion process from the expensive, one-time step which requires _all_ the signal data be read into memory.
 This enables workflows that would be impractical otherwise, like planning bulk conversion of thousands of EDFs at once.
 When dealing with large, messy datasets, we have found that metadata issues are both likely to occur and likely to be _different_ across individual EDFs.
 This makes normalizing the EDF metadata one file at a time extremely tedious, since the metadata issues encountered in a single file may not be representative of the rest of the dataset.
@@ -31,7 +35,11 @@ After the detailed workflow for converting a single EDF file to Onda format, we'
 ### Generate a plan
 
 This is straightforward, using [`plan_edf_to_onda_samples`](@ref).
-As outlined in the documentation for [`plan_edf_to_onda_samples`](@ref), a "plan" is a table with one row per `EDF.Signal`, which contains all the fields from the signal's header as well as the fields of the `Onda.SamplesInfoV2` that will be generated when the plan is executed (with the caveat that the `channels` field is called `channel` to indicate that it corresponds to a single channel in the output).
+As outlined in the documentation for [`plan_edf_to_onda_samples`](@ref), a "plan" is a table with one row per `EDF.Signal`, which contains all the fields from the signal's header as well as the fields of the `Onda.SamplesInfoV2` that will be generated when the plan is executed (with the caveat that the `:channels` field is called `:channel` to indicate that it corresponds to a single channel in the output).
+It also contains a few additional fields for defining the mapping between EDF and Onda signal indices, as well as a field to capture any errors thrown during planning (or, more likely, during execution of the plan):
+- `:edf_signal_index`, the 1-based numerical index of the source signal in `edf.signals`
+- `:onda_signal_index`, the ordinal index of the resulting samples (not necessarily the index into `samples`, since some groups might be skipped)
+- `:error`, any errors that were caught during planning and/or execution.
 
 ### Review the plan.
 
@@ -49,7 +57,7 @@ We recommend you consider them in roughly this order.
 
 The first option to consider is to simply ignore these signals; not all signals are necessarily required for downstream use, and converting each and every signal in an EDF may be more work than is justified!
 
-#### Custom labels and units
+#### Provide custom labels and units
 
 The second option you have is to provide custom `labels=` and `units=` keyword arguments to [`plan_edf_to_onda_samples`](@ref).
 For unambiguous, [spec-compliant](https://www.edfplus.info/specs/edftexts.html#label_physidim) `label`s and `physical_dimension`s, it's generally possible to create custom `label=` or `unit=` specifications to match them.
@@ -70,7 +78,7 @@ For unambiguous, [spec-compliant](https://www.edfplus.info/specs/edftexts.html#l
 
     When using custom labels, make sure that they haven't accidentally changed how other `label`s are matched by reviewing the plan for any unintended changes.
 
-#### Preprocessing signal headers
+#### Preprocess signal headers
 
 The third option, for signals that _must_ be converted and cannot be handled with custom labels (without undue hassle) is to pre-process the signal headers before generating the plan.
 While the canonical input to `plan_edf_to_onda_samples` is an `EDF.File`, the header-matching logic operates fundamentally one signal header at a time.
@@ -97,7 +105,7 @@ Note that an additional step of `plan_edf_to_onda_samples_groups` is required af
 This is due to the fact that EDF is a "single channel" format, where each signal is only a single channel, while Onda is a "multichannel" format where a signal can have mmultiple channels as long as the sampling rate, quantization, and other metadata are consistent.
 Normally, calling `plan_edf_to_onda_samples` with an `EDF.File` will do this grouping for you, but when planning individually pre-processed signal headers, we have to do it ourselves at the end.
 
-#### Modification of the generated plan
+#### Modify the generated plan
 
 The fourth and final option is to modify the generated plan itself.
 This is the least preferred method because it removes a number of safeguards that OndaEDF provides as part of the planning process, but it's also the most flexible in that it enables completely hand-crafted conversion.
@@ -167,7 +175,7 @@ If any errors _were_ encountered, you may need to iterate further.
 
 The final step is to store both the `Onda.Samples` and the executed plan in some persistent storage.
 For storing `Onda.Samples`, see [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store), which supports serializing LPCM-encoded samples to [any "path-like" type](https://beacon-biosignals.github.io/Onda.jl/stable/#Support-For-Generic-Path-Like-Types) (i.e., anything that provides a method for `write`).
-For storing the plan, use `Legolas.write(file_path, plan, FilePlanV2SchemaVersion())` (see the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV2`](@ref).
+For storing the plan, use [`OndaEDF.write_plan`](@ref) (or `Legolas.write(file_path, plan, FilePlanV2SchemaVersion())` (see the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV2`](@ref).
 
 ## Batch conversion of many EDFs
 
