@@ -59,6 +59,17 @@ For unambiguous, [spec-compliant](https://www.edfplus.info/specs/edftexts.html#l
     So to match a label like `"EEG R1-Ref"`, use a label like `"eeg" => ["r1"]`, and not `"EEG" => ["R1"]` or `"eeg" => ["r1-ref"]`.
     See the documentation for [`plan_edf_to_onda_samples`](@ref) for more details, and the internal [`OndaEDF.match_edf_label`](@ref) for low-level details of how labels are matched.
 
+!!! warning
+    Sometimes EDF `label`s are ambiguous and can be matched by multiple different OndaEDF `label=` specifications.
+    Matching is greedy, in that the first label specification that matches is used regardless of any other possible matches, so you should add your custom labels to the end of an existing set, as in
+
+    ```julia
+    my_labels = collect(pairs(OndaEDF.STANDARD_LABELS))
+    push!(my_labels, ["eog"] => ["left" => "eyeleft", "right" => "eyeright"])
+    ```
+
+    When using custom labels, make sure that they haven't accidentally changed how other `label`s are matched by reviewing the plan for any unintended changes.
+
 #### Preprocessing signal headers
 
 The third option, for signals that _must_ be converted and cannot be handled with custom labels (without undue hassle) is to pre-process the signal headers before generating the plan.
