@@ -18,8 +18,10 @@ First, making the plan a separate intermediate output means that not only can it
 This kind of provenance information is very useful when investigating issues with a dataset that may crop up long after the initial conversion.
 
 Second, planning only requires that the _headers_ of the `EDF.Signal`s be read into memory, thereby separating the iterative part of the conversion process from the expensive, one-time step which requires _all_ the signal data be read into memory.
-This enables workflows that would be impossible otherwise, like planning bulk conversion of thousands of EDFs at once.
-When dealing with large, messy datasets, we have found that "long-tail" metadata issues are inevitable and are better dealt with in bulk, and the plan-then-execute workflow enables users to deal with these issues all at once, save out the plan, and then distribute the actual conversion work to as many workers as necessary to execute it in a reasonable timeframe.
+This enables workflows that would be impractical otherwise, like planning bulk conversion of thousands of EDFs at once.
+When dealing with large, messy datasets, we have found that metadata issues are both likely to occur and likely to be _different_ across individual EDFs.
+This makes normalizing the EDF metadata one file at a time extremely tedious, since the metadata issues encountered in a single file may not be representative of the rest of the dataset.
+Thus, in practice it's better to deal with EDF metadata conversion in _bulk_, and the plan-then-execute workflow enables users to deal with these issues all at once, save out the plan, and then distribute the actual conversion work to as many workers as necessary to execute it in a reasonable timeframe.
 
 ## Converting a single EDF to Onda
 
@@ -148,6 +150,7 @@ This is accomplished with the [`edf_to_onda_samples`](@ref) function, which take
 The executed plan may differ from the input plan.
 Most notably, if any errors were encountered during execution, they will be caught and the error and stacktrace will be stored as strings in the `error` field.
 It is important to review the executed plan a final time to ensure everything was converted as expected and no unexpected errors were encountered.
+If any errors _were_ encountered, you may need to iterate further.
 
 ### Store the output
 
