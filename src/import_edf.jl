@@ -360,6 +360,15 @@ function plan_edf_to_onda_samples(header,
     row = (; header..., seconds_per_record, error=nothing)
 
     try
+        # match physical units and encoding first so that we give users better
+        # feedback about _which_ thing (labels vs. units) didn't match.
+        #
+        # still do it in the try/catch in case edf_to_onda_unit or
+        # edf_signal_encoding throws an error
+        row = rowmerge(row;
+                       sample_unit=edf_to_onda_unit(header.physical_dimension, units),
+                       edf_signal_encoding(header, seconds_per_record)...)
+
         edf_label = header.label
         for (signal_names, channel_names) in labels
             # channel names is iterable of channel specs, which are either "channel"
@@ -374,9 +383,7 @@ function plan_edf_to_onda_samples(header,
                     row = rowmerge(row; 
                                    channel=matched,
                                    sensor_type=first(signal_names),
-                                   sensor_label=first(signal_names),
-                                   sample_unit=edf_to_onda_unit(header.physical_dimension, units),
-                                   edf_signal_encoding(header, seconds_per_record)...)
+                                   sensor_label=first(signal_names))
                     return PlanV2(row)
                 end
             end
