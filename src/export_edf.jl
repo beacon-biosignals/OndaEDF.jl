@@ -99,14 +99,17 @@ end
 """
     reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
 
-Re-compute encoding parameters for `samples` so that they can be encoded as
-`sample_type`.  The default `sample_type` is `Int16` which is the target for EDF
-format.
+Encode `samples` so that they can be encoded as `sample_type`.  The default
+`sample_type` is `Int16` which is the target for EDF format.  The returned
+`Samples` will be encoded, with a `info.sample_type` that is either equal to
+`sample_type` or losslessly `convert`ible.
 
-This uses the actual signal extrema, choosing a resolution/offset that maps them
-to `typemin(sample_type), typemax(sample_type)`.
+If the `info.sample_type` of the input samples cannot be losslessly converted to
+`sample_type`, new quantization settings are chosen based on the actual signal
+extrema, choosing a resolution/offset that maps them to `typemin(sample_type),
+typemax(sample_type)`.
 
-Returns an encoded `Samples`, possibly with updated info.  If the current
+Returns an encoded `Samples`, possibly with updated `info`.  If the current
 encoded values can be represented with `sample_type`, nothing is changed.  If
 they cannot, the `sample_type`, `sample_resolution_in_unit`, and
 `sample_offset_in_unit` fields are changed to reflect the new encoding.
