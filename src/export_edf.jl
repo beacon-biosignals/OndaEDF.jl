@@ -99,7 +99,7 @@ end
 """
     reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
 
-Encode `samples` so that they can be encoded as `sample_type`.  The default
+Encode `samples` so that they can be stored as `sample_type`.  The default
 `sample_type` is `Int16` which is the target for EDF format.  The returned
 `Samples` will be encoded, with a `info.sample_type` that is either equal to
 `sample_type` or losslessly `convert`ible.
@@ -110,7 +110,7 @@ extrema, choosing a resolution/offset that maps them to `typemin(sample_type),
 typemax(sample_type)`.
 
 Returns an encoded `Samples`, possibly with updated `info`.  If the current
-encoded values can be represented with `sample_type`, nothing is changed.  If
+encoded values can be represented with `sample_type`, the `.info` is not changed.  If
 they cannot, the `sample_type`, `sample_resolution_in_unit`, and
 `sample_offset_in_unit` fields are changed to reflect the new encoding.
 """
@@ -138,9 +138,9 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
         if smin >= typemin(sample_type) && smax <= typemax(sample_type)
             # XXX: we're being a bit clever here in order to not allocate a
             # whole new sample array, plugging in the new sample_type, re-using
-            # the old encodoed samples data, and skipping validation.  this is
+            # the old encoded samples data, and skipping validation.  this is
             # okay in _this specific context_ since we know we're actually
-            # converting everything to Int16 in the actual export.
+            # converting everything to sample_type in the actual export.
             samples = encode(samples)
             new_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type))
             return Samples(samples.data, new_info, true; validate=false)
@@ -148,7 +148,7 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
     end
 
     # at this point, we know the currently _encoded_ values cannot be
-    # represented losslessly as Int16, so we need to re-encode.  We'll pick new
+    # represented losslessly as sample_type, so we need to re-encode.  We'll pick new
     # encoding parameters based on the actual signal values, in order to
     # maximize the dynamic range of Int16 encoding.
     samples = decode(samples)
