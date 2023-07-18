@@ -96,18 +96,90 @@ function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
                           is_contiguous, edf_record_metadata(samples)...)
 end
 
+"""
+    reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
+
+Encode `samples` so that they can be stored as `sample_type`.  The default
+`sample_type` is `Int16` which is the target for EDF format.  The returned
+`Samples` will be encoded, with a `info.sample_type` that is either equal to
+`sample_type` or losslessly `convert`ible.
+
+If the `info.sample_type` of the input samples cannot be losslessly converted to
+`sample_type`, new quantization settings are chosen based on the actual signal
+extrema, choosing a resolution/offset that maps them to `typemin(sample_type),
+typemax(sample_type)`.
+
+Returns an encoded `Samples`, possibly with updated `info`.  If the current
+encoded values can be represented with `sample_type`, the `.info` is not changed.  If
+they cannot, the `sample_type`, `sample_resolution_in_unit`, and
+`sample_offset_in_unit` fields are changed to reflect the new encoding.
+"""
+function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
+    # if we can fit the encoded values in `sample_type` without any changes,
+    # return as-is.
+    #
+    # first, check at the type level since this is cheap and doesn't require
+    # re-encoding possibly decoded values
+    current_type = Onda.sample_type(samples.info)
+    typemin(current_type) >= typemin(sample_type) &&
+        typemax(current_type) <= typemax(sample_type) &&
+        return encode(samples)
+
+    # next, check whether the encoded values are <: Integers that lie within the
+    # range representable by `sample_type` and can be converted directly.
+    if Onda.sample_type(samples.info) <: Integer
+        smin, smax = extrema(samples.data)
+        if !samples.encoded
+            smin, smax = Onda.encode_sample.(Onda.sample_type(samples.info),
+                                             samples.info.sample_resolution_in_unit,
+                                             samples.info.sample_offset_in_unit,
+                                             (smin, smax))
+        end
+        if smin >= typemin(sample_type) && smax <= typemax(sample_type)
+            # XXX: we're being a bit clever here in order to not allocate a
+            # whole new sample array, plugging in the new sample_type, re-using
+            # the old encoded samples data, and skipping validation.  this is
+            # okay in _this specific context_ since we know we're actually
+            # converting everything to sample_type in the actual export.
+            samples = encode(samples)
+            new_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type))
+            return Samples(samples.data, new_info, true; validate=false)
+        end
+    end
+
+    # at this point, we know the currently _encoded_ values cannot be
+    # represented losslessly as sample_type, so we need to re-encode.  We'll pick new
+    # encoding parameters based on the actual signal values, in order to
+    # maximize the dynamic range of Int16 encoding.
+    samples = decode(samples)
+    smin, smax = extrema(samples.data)
+
+    emin, emax = typemin(sample_type), typemax(sample_type)
+
+    # re-use the import encoding calculator here:
+    # need to convert all the min/max to floats due to possible overflow
+    mock_header = (; digital_minimum=Float64(emin), digital_maximum=Float64(emax),
+                   physical_minimum=Float64(smin), physical_maximum=Float64(smax),
+                   samples_per_record=0) # not using this
+
+    donor_info = edf_signal_encoding(mock_header, 1)
+    sample_resolution_in_unit = donor_info.sample_resolution_in_unit
+    sample_offset_in_unit = donor_info.sample_offset_in_unit
+
+    new_info = Tables.rowmerge(samples.info;
+                               sample_resolution_in_unit,
+                               sample_offset_in_unit,
+                               sample_type)
+
+    new_samples = Samples(samples.data, SamplesInfoV2(new_info), samples.encoded)
+    return encode(new_samples)
+end
+
 function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[]
     for samples in onda_samples
         # encode samples, rescaling if necessary
-        if sizeof(sample_type(samples.info)) > sizeof(Int16)
-            decoded_samples = Onda.decode(samples)
-            scaled_resolution = samples.info.sample_resolution_in_unit * (sizeof(sample_type(samples.info)) / sizeof(Int16))
-            encode_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type=Int16, sample_resolution_in_unit=scaled_resolution))
-            samples = encode(Onda.Samples(decoded_samples.data, encode_info, false))
-        else
-            samples = Onda.encode(samples)
-        end
+        samples = reencode_samples(samples, Int16)
         signal_name = samples.info.sensor_type
         extrema = SignalExtrema(samples)
         for channel_name in samples.info.channels
@@ -118,7 +190,9 @@ function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, se
                                                  extrema.physical_min, extrema.physical_max,
                                                  extrema.digital_min, extrema.digital_max,
                                                  "", sample_count)
-            sample_data = vec(samples[channel_name, :].data)
+            # manually convert here in case we have input samples whose encoded
+            # values are convertible losslessly to Int16:
+            sample_data = Int16.(vec(samples[channel_name, :].data))
             padding = Iterators.repeated(zero(Int16), (sample_count - (length(sample_data) % sample_count)) % sample_count)
             edf_signal_samples = append!(sample_data, padding)
             push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
@@ -150,6 +224,18 @@ input `Onda.Samples`.
 The ordering of `EDF.Signal`s in the output will match the order of the input
 collection of `Samples` (and within each channel grouping, the order of the
 samples' channels).
+
+!!! note
+
+    EDF signals are encoded as Int16, while Onda allows a range of different
+    sample types, some of which provide considerably more resolution than Int16.
+    During export, re-encoding may be necessary if the encoded Onda samples
+    cannot be represented directly as Int16 values.  In this case, new encoding
+    (resolution and offset) will be chosen based on the minimum and maximum
+    values actually present in each _signal_ in the input Onda Samples.  Thus,
+    it may not always be possible to losslessly round trip Onda-formatted
+    datasets to EDF and back.
+
 """
 function onda_to_edf(samples::AbstractVector{<:Samples}, annotations=[]; kwargs...)
     edf_header = onda_samples_to_edf_header(samples; kwargs...)

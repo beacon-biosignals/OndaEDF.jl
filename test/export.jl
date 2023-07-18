@@ -14,7 +14,7 @@
     exported_edf = onda_to_edf(samples_to_export, annotations)
     @test exported_edf.header.record_count == 200
     offset = 0
-    for signal_name in signal_names
+    @testset "export $signal_name" for signal_name in signal_names
         samples = only(filter(s -> s.info.sensor_type == signal_name, onda_samples))
         channel_names = samples.info.channels
         edf_indices = (1:length(channel_names)) .+ offset
@@ -97,19 +97,18 @@
         # new UUID for each annotation created during import
         @test all(getproperty.(nt.annotations, :id) .!= getproperty.(ann_sorted, :id))
 
-        for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
+        @testset "$(samples_orig.info.sensor_type)" for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
             info_orig = samples_orig.info
             info_round_tripped = SamplesInfoV2(signal_round_tripped)
-            for p in setdiff(propertynames(info_orig),
-                             (:edf_channels, :sample_type, :sample_resolution_in_unit))
-                @test getproperty(info_orig, p) == getproperty(info_round_tripped, p)
+
+            # anything else, the encoding parameters may change on export
+            if info_orig.sample_type == "int16"
+                @test info_orig == info_round_tripped
             end
-            if info_orig.sample_type == "int32"
-                resolution_orig = info_orig.sample_resolution_in_unit * 2
-            else
-                resolution_orig = info_orig.sample_resolution_in_unit
-            end
-            @test resolution_orig ≈ info_round_tripped.sample_resolution_in_unit
+
+            samples_rt = Onda.load(signal_round_tripped)
+            @test all(isapprox.(decode(samples_orig).data, decode(samples_rt).data;
+                                atol=info_orig.sample_resolution_in_unit))
         end
 
         # don't import annotations
@@ -120,6 +119,112 @@
         # import empty annotations
         exported_edf2 = onda_to_edf(samples_to_export)
         @test_logs (:warn, r"No annotations found in") store_edf_as_onda(exported_edf2, mktempdir(), uuid; import_annotations=true)
+    end
+
+    @testset "re-encoding" begin
+        _flatten_union(T::Union) = vcat(T.a, _flatten_union(T.b))
+        _flatten_union(T::Type) = T
+
+        onda_types = _flatten_union(Onda.LPCM_SAMPLE_TYPE_UNION)
+
+        onda_ints = filter(x -> x <: Integer, onda_types)
+        onda_floats = filter(x -> x <: AbstractFloat, onda_types)
+        @test issetequal(union(onda_ints, onda_floats), onda_types)
+
+        # test that we can encode ≈ the full range of values expressible in each
+        # possible Onda sample type.
+        @testset "encoding $T" for T in onda_types
+            info = SamplesInfoV2(; sensor_type="x",
+                                 channels=["x"],
+                                 sample_unit="microvolt",
+                                 sample_resolution_in_unit=2,
+                                 sample_offset_in_unit=1,
+                                 sample_type=T,
+                                 sample_rate=1)
+
+            if T <: AbstractFloat
+                min = nextfloat(typemin(T))
+                max = prevfloat(typemax(T))
+                data = range(min, max; length=9)
+            else
+                min = typemin(T)
+                max = typemax(T)
+                step = max ÷ T(8) - min ÷ T(8)
+                data = range(min, max; step)
+            end
+
+            data = reshape(data, 1, :)
+            samples = Samples(data, info, true)
+
+            # for  r e a s o n s  we need to be a bit careful with just how large
+            # the values are that we're trying to use; EDF.jl (and maybe EDF
+            # generally, unclear) can't handle physical min/max more than like
+            # 1e8 (actually for EDF.jl it's 99999995 because Float32 precision).
+            # so, we try to do typemax/min of the encoded type, and if that
+            # leads to physical min/max that are too big, we clamp and
+            # re-encode.
+            if !all(<(1e10) ∘ abs ∘ float, decode(samples).data)
+                @info "clamped decoded $(T) samples to ±1e10"
+                min_d, max_d = -1e10, 1e10
+                data_d = reshape(range(min_d, max_d; length=9), 1, :)
+                samples = Onda.encode(Samples(data_d, info, false))
+            end
+
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+
+            @test vec(decode(samples).data) ≈ EDF.decode(signal)
+        end
+
+        @testset "skip reencoding" begin
+            info = SamplesInfoV2(; sensor_type="x",
+                                 channels=["x"],
+                                 sample_unit="microvolt",
+                                 sample_resolution_in_unit=2,
+                                 sample_offset_in_unit=1,
+                                 sample_type=Int32,
+                                 sample_rate=1)
+
+            data = Int32[typemin(Int16) typemax(Int16)]
+
+            samples = Samples(data, info, true)
+            # data is re-used if already encoded
+            @test OndaEDF.reencode_samples(samples, Int16).data === samples.data
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+
+            # make sure it works with decoded too
+            signal2 = only(OndaEDF.onda_samples_to_edf_signals([Onda.decode(samples)], 1.0))
+            @test EDF.decode(signal2) == vec(decode(samples).data)
+            # to confirm quantization settings are the same
+            @test signal.header == signal2.header
+
+            # bump just outside the range representable as Int16
+            samples.data .+= Int32[-1 1]
+            new_samples = OndaEDF.reencode_samples(samples, Int16)
+            @test new_samples != samples
+            @test decode(new_samples).data == decode(samples).data
+
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+            # to confirm quantization settings are changed
+            @test signal.header != signal2.header
+
+
+            uinfo = SamplesInfoV2(Tables.rowmerge(info; sample_type="uint64"))
+            data = UInt64[0 typemax(Int16)]
+            samples = Samples(data, uinfo, true)
+            @test OndaEDF.reencode_samples(samples, Int16).data === samples.data
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+
+            samples.data .+= UInt64[0 1]
+            new_samples = OndaEDF.reencode_samples(samples, Int16)
+            @test new_samples != samples
+            @test decode(new_samples).data == decode(samples).data
+
+            signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
+            @test EDF.decode(signal) == vec(decode(samples).data)
+        end
     end
 
 end
