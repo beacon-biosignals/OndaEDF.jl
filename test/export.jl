@@ -133,11 +133,11 @@
 
         # test that we can encode ≈ the full range of values expressible in each
         # possible Onda sample type.
-        @testset "encoding $T" for T in onda_types
+        @testset "encoding $T, resolution $res" for T in onda_types, res in (-0.2, 0.2)
             info = SamplesInfoV2(; sensor_type="x",
                                  channels=["x"],
                                  sample_unit="microvolt",
-                                 sample_resolution_in_unit=2,
+                                 sample_resolution_in_unit=res,
                                  sample_offset_in_unit=1,
                                  sample_type=T,
                                  sample_rate=1)
@@ -155,6 +155,7 @@
 
             data = reshape(data, 1, :)
             samples = Samples(data, info, true)
+            samples = Onda.decode(samples)
 
             # for  r e a s o n s  we need to be a bit careful with just how large
             # the values are that we're trying to use; EDF.jl (and maybe EDF
@@ -175,11 +176,11 @@
             @test vec(decode(samples).data) ≈ EDF.decode(signal)
         end
 
-        @testset "skip reencoding" begin
+        @testset "skip reencoding (res = $res)" for res in (-2, 2)
             info = SamplesInfoV2(; sensor_type="x",
                                  channels=["x"],
                                  sample_unit="microvolt",
-                                 sample_resolution_in_unit=2,
+                                 sample_resolution_in_unit=res,
                                  sample_offset_in_unit=1,
                                  sample_type=Int32,
                                  sample_rate=1)
@@ -188,39 +189,59 @@
 
             samples = Samples(data, info, true)
             # data is re-used if already encoded
-            @test OndaEDF.reencode_samples(samples, Int16).data === samples.data
+            samples_reenc = OndaEDF.reencode_samples(samples, Int16)
+            @test samples_reenc.data === samples.data
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
 
             # make sure it works with decoded too
-            signal2 = only(OndaEDF.onda_samples_to_edf_signals([Onda.decode(samples)], 1.0))
-            @test EDF.decode(signal2) == vec(decode(samples).data)
-            # to confirm quantization settings are the same
-            @test signal.header == signal2.header
+            samples_dec = Onda.decode(samples)
+            samples_dec_reenc = OndaEDF.reencode_samples(samples_dec, Int16)
+            @test samples_dec_reenc.data !== samples_reenc.data
+            @test encode(samples_dec_reenc).data == encode(samples).data
+            @test samples_dec_reenc == samples_reenc
+            signal2 = only(OndaEDF.onda_samples_to_edf_signals([samples_dec], 1.0))
+            @test EDF.decode(signal2) == vec(samples_dec.data)
 
             # bump just outside the range representable as Int16
-            samples.data .+= Int32[-1 1]
-            new_samples = OndaEDF.reencode_samples(samples, Int16)
-            @test new_samples != samples
-            @test decode(new_samples).data == decode(samples).data
+            samples = Samples(data .+ Int32[-1 1], info, true)
+            samples_reenc = OndaEDF.reencode_samples(samples, Int16)
+            # make sure encoding has changed:
+            @test encode(samples_reenc).data != encode(samples).data
+            # but actual stored values have not
+            @test decode(samples_reenc).data == decode(samples).data
 
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
-            # to confirm quantization settings are changed
-            @test signal.header != signal2.header
 
+            # make sure it works with decoded too
+            samples_dec = decode(samples)
+            samples_dec_reenc = OndaEDF.reencode_samples(samples_dec, Int16)
+            @test encode(samples_dec_reenc).data == encode(samples_reenc).data
+            # different encoding
+            @test encode(samples_dec_reenc).data != encode(samples).data
+            # ... that's teh same as passing in encoded samples
+            @test encode(samples_dec_reenc).data == encode(samples_reenc).data
+            # same decoded values
+            @test decode(samples_dec_reenc).data == decode(samples).data
 
+            signal3 = only(OndaEDF.onda_samples_to_edf_signals([Onda.decode(samples)], 1.0))
+            @test EDF.decode(signal3) == vec(decode(samples).data)
+
+            # UInt64
             uinfo = SamplesInfoV2(Tables.rowmerge(info; sample_type="uint64"))
             data = UInt64[0 typemax(Int16)]
             samples = Samples(data, uinfo, true)
-            @test OndaEDF.reencode_samples(samples, Int16).data === samples.data
+            samples_reenc = OndaEDF.reencode_samples(samples, Int16)
+            @test samples_reenc.data === samples.data
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
 
             samples.data .+= UInt64[0 1]
-            new_samples = OndaEDF.reencode_samples(samples, Int16)
-            @test new_samples != samples
-            @test decode(new_samples).data == decode(samples).data
+            samples_reenc = OndaEDF.reencode_samples(samples, Int16)
+            @test samples_reenc != samples
+            @test encode(samples_reenc).data != encode(samples).data
+            @test decode(samples_reenc).data == decode(samples).data
 
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
