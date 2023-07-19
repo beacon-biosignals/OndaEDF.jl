@@ -134,6 +134,8 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
                                              samples.info.sample_resolution_in_unit,
                                              samples.info.sample_offset_in_unit,
                                              (smin, smax))
+            # make sure we handle negative resolutions properly!
+            # smin, smax = extrema((smin, smax))
         end
         if smin >= typemin(sample_type) && smax <= typemax(sample_type)
             # XXX: we're being a bit clever here in order to not allocate a
