@@ -267,6 +267,13 @@ end
 ##### `EDF.Signal`s -> `Onda.Samples`
 #####
 
+const SAMPLES_ENCODED_WARNING = """
+                                !!! warning
+                                    Returned samples are integer-encoded. If these samples are being serialized out (e.g. via `Onda.store!`)
+                                    this is not an issue, but if the samples are being immediately analyzed in memory, call `Onda.decode`
+                                    to decode them to recover the time-series voltages.
+                                """
+
 struct SamplesInfoError <: Exception
     msg::String
     cause::Exception
@@ -517,6 +524,8 @@ If `validate=true` (the default), the plan is validated against the
 
 If `dither_storage=missing` (the default), dither storage is allocated automatically
 as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering.
+
+$SAMPLES_ENCODED_WARNING
 """
 function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_storage=missing)
                              
@@ -632,6 +641,7 @@ See `Onda.encode`'s docstring for more details.
     This function is not meant to be called directly, but through 
     [`edf_to_onda_samples`](@ref)
 
+$SAMPLES_ENCODED_WARNING
 """
 function onda_samples_from_edf_signals(target::SamplesInfoV2, edf_signals,
                                        edf_seconds_per_record; dither_storage=missing)
@@ -804,6 +814,8 @@ following transformations:
   (e.g. "m1" in an EEG-matched channel name will be converted to "a1").
 
 See the OndaEDF README for additional details regarding EDF formatting expectations.
+
+$SAMPLES_ENCODED_WARNING
 """
 function edf_to_onda_samples(edf::EDF.File; kwargs...)
     signals_plan = plan_edf_to_onda_samples(edf; kwargs...)
