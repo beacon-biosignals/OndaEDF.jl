@@ -503,9 +503,6 @@ rows with the same `:onda_signal_index` into a common `Onda.SamplesInfo`.  Then
 [`OndaEDF.onda_samples_from_edf_signals`](@ref) is used to combine the EDF
 signals data into a single `Onda.Samples` per group.
 
-The `label` of the original `EDF.Signal`s are preserved in the `:edf_channels`
-field of the resulting `SamplesInfo`s for each `Samples` generated.
-
 Any errors that occur are shown as `String`s (with backtrace) and inserted into
 the `:error` column for the corresponding rows from the plan.
 
