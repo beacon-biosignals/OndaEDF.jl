@@ -155,7 +155,7 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
     # maximize the dynamic range of Int16 encoding.
     samples = decode(samples)
     smin, smax = extrema(samples.data)
-    # If the input is flat, normalize to zero and one
+    # If the input is flat, normalize max to min + 1
     if smin == smax
         smax = smin + one(smax)
     end
