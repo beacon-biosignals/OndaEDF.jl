@@ -258,9 +258,11 @@
             sample_type=Float64,
             sample_rate=1)
 
-        data = zeros(UInt64, 1, 2)
+        data = zeros(UInt64, 1, 2) .+ 0x02
         samples = Samples(data, info, false)
-        @test OndaEDF.reencode_samples(samples) isa Samples
+        samples_reenc = OndaEDF.reencode_samples(samples)
+        @test samples_reenc isa Samples
+        @test decode(samples_reenc).data == data
     end
     
 end
