@@ -97,7 +97,8 @@
         # new UUID for each annotation created during import
         @test all(getproperty.(nt.annotations, :id) .!= getproperty.(ann_sorted, :id))
 
-        @testset "$(samples_orig.info.sensor_type)" for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
+        @testset "$(samples_orig.info.sensor_type)" for
+                (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
             info_orig = samples_orig.info
             info_round_tripped = SamplesInfoV2(signal_round_tripped)
 

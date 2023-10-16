@@ -42,6 +42,7 @@ function onda_to_edf_unit(onda_sample_unit::String, unit_alternatives=STANDARD_U
     return lift(first, units)
 end
 
+#! format: off
 const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 and 10/10
                              # physical montage; channels are ordered from left-to-right,
                              # front-to-back w.r.t a top-down, nose-up view of the head.
@@ -100,3 +101,4 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              ["spo2"] => ["spo2"],
                              ["sao2"] => ["sao2", "osat"],
                              ["etco2"] => ["etco2" => ["capno"]])
+#! format: on
