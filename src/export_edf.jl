@@ -157,8 +157,7 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
     smin, smax = extrema(samples.data)
     # If the input is flat, normalize to zero and one
     if smin == smax
-        smax = one(smax)
-        smin = zero(smin)
+        smax = smin + one(smax)
     end
 
     emin, emax = typemin(sample_type), typemax(sample_type)
