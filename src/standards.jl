@@ -17,7 +17,8 @@ const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
                             "degrees_fahrenheit" => ["degF", "degf"],
                             "kelvin" => ["K"],
                             "percent" => ["%"],
-                            "liter_per_minute" => ["L/m", "l/m", "LPM", "Lpm", "lpm", "LpM", "L/min", "l/min"],
+                            "liter_per_minute" => ["L/m", "l/m", "LPM", "Lpm", "lpm", "LpM",
+                                                   "L/min", "l/min"],
                             "millimeter_of_mercury" => ["mmHg", "mmhg", "MMHG"],
                             "beat_per_minute" => ["B/m", "b/m", "bpm", "BPM", "BpM", "Bpm"],
                             "centimeter_of_water" => ["cmH2O", "cmh2o", "cmH20"],
@@ -29,8 +30,9 @@ const STANDARD_UNITS = Dict("nanovolt" => ["nV"],
 # The case-sensitivity of EDF physical dimension names means you can't/shouldn't
 # naively convert/lowercase them to compliant Onda unit names, so we have to be
 # very conservative here and error if we don't recognize the input.
-function edf_to_onda_unit(edf_physical_dimension::AbstractString, unit_alternatives=STANDARD_UNITS)
-    edf_physical_dimension = replace(edf_physical_dimension, r"\s"=>"")
+function edf_to_onda_unit(edf_physical_dimension::AbstractString,
+                          unit_alternatives=STANDARD_UNITS)
+    edf_physical_dimension = replace(edf_physical_dimension, r"\s" => "")
     for (onda_unit, potential_edf_matches) in unit_alternatives
         any(==(edf_physical_dimension), potential_edf_matches) && return onda_unit
     end
