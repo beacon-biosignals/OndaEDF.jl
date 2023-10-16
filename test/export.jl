@@ -8,8 +8,8 @@
     annotations = edf_to_onda_annotations(edf, uuid)
 
     signal_names = ["eeg", "eog", "ecg", "emg", "heart_rate", "tidal_volume",
-        "respiratory_effort", "snore", "positive_airway_pressure",
-        "pap_device_leak", "pap_device_cflow", "sao2", "ptaf"]
+                    "respiratory_effort", "snore", "positive_airway_pressure",
+                    "pap_device_leak", "pap_device_cflow", "sao2", "ptaf"]
     samples_to_export = onda_samples[indexin(signal_names, getproperty.(getproperty.(onda_samples, :info), :sensor_type))]
     exported_edf = onda_to_edf(samples_to_export, annotations)
     @test exported_edf.header.record_count == 200
@@ -61,7 +61,7 @@
 
         @testset "Exception and Error handling" begin
             messages = ("RecordSizeException: sample rates [9999.0, 425.0] cannot be resolved to a data record size smaller than 61440 bytes",
-                "EDFPrecisionError: String representation of value 2.0576999e7 is longer than 8 ASCII characters")
+                        "EDFPrecisionError: String representation of value 2.0576999e7 is longer than 8 ASCII characters")
             exceptions = (OndaEDF.RecordSizeException([chunky_eeg, chunky_ecg]), OndaEDF.EDFPrecisionError(20576999.0))
             for (message, exception) in zip(messages, exceptions)
                 buffer = IOBuffer()
@@ -108,7 +108,7 @@
 
             samples_rt = Onda.load(signal_round_tripped)
             @test all(isapprox.(decode(samples_orig).data, decode(samples_rt).data;
-                atol=info_orig.sample_resolution_in_unit))
+                                atol=info_orig.sample_resolution_in_unit))
         end
 
         # don't import annotations
@@ -135,12 +135,12 @@
         # possible Onda sample type.
         @testset "encoding $T, resolution $res" for T in onda_types, res in (-0.2, 0.2)
             info = SamplesInfoV2(; sensor_type="x",
-                channels=["x"],
-                sample_unit="microvolt",
-                sample_resolution_in_unit=res,
-                sample_offset_in_unit=1,
-                sample_type=T,
-                sample_rate=1)
+                                 channels=["x"],
+                                 sample_unit="microvolt",
+                                 sample_resolution_in_unit=res,
+                                 sample_offset_in_unit=1,
+                                 sample_type=T,
+                                 sample_rate=1)
 
             if T <: AbstractFloat
                 min = nextfloat(typemin(T))
@@ -178,12 +178,12 @@
 
         @testset "skip reencoding (res = $res)" for res in (-2, 2)
             info = SamplesInfoV2(; sensor_type="x",
-                channels=["x"],
-                sample_unit="microvolt",
-                sample_resolution_in_unit=res,
-                sample_offset_in_unit=1,
-                sample_type=Int32,
-                sample_rate=1)
+                                 channels=["x"],
+                                 sample_unit="microvolt",
+                                 sample_resolution_in_unit=res,
+                                 sample_offset_in_unit=1,
+                                 sample_type=Int32,
+                                 sample_rate=1)
 
             data = Int32[typemin(Int16) typemax(Int16)]
 
@@ -263,5 +263,5 @@
         result = (@test_logs (:warn, r"Unexpected computed `sample_resolution_in_unit`.") OndaEDF.reencode_samples(samples))
         @test result isa Samples
     end
-
+    
 end
