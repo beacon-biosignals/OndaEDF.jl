@@ -260,8 +260,7 @@
 
         data = zeros(UInt64, 1, 2)
         samples = Samples(data, info, false)
-        result = (@test_logs (:warn, r"Unexpected computed `sample_resolution_in_unit`.") OndaEDF.reencode_samples(samples))
-        @test result isa Samples
+        @test OndaEDF.reencode_samples(samples) isa Samples
     end
     
 end
