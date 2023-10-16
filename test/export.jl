@@ -248,7 +248,7 @@
         end
     end
 
-    @testset "`reencode_samples` edge case" begin
+    @testset "`reencode_samples` edge case: constant data" begin
         # Weird encoding
         info = SamplesInfoV2(; sensor_type="x",
             channels=["x"],
