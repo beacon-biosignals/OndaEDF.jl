@@ -194,6 +194,10 @@ function edf_signal_encoding(edf_signal_header, edf_seconds_per_record)
     dmin, dmax = edf_signal_header.digital_minimum, edf_signal_header.digital_maximum
     pmin, pmax = edf_signal_header.physical_minimum, edf_signal_header.physical_maximum
     sample_resolution_in_unit = (pmax - pmin) / (dmax - dmin)
+    if !isfinite(sample_resolution_in_unit) || iszero(sample_resolution_in_unit)
+        @warn "Unexpected computed `sample_resolution_in_unit`. Computed: $(sample_resolution_in_unit). Setting to 1." digital_minimum=dmin digital_maximum=dmax physical_minimum=pmin physical_maximum=pmax maxlog=10
+        sample_resolution_in_unit = one(sample_resolution_in_unit)
+    end
     sample_offset_in_unit = pmin - (sample_resolution_in_unit * dmin)
     sample_rate = edf_signal_header.samples_per_record / edf_seconds_per_record
     sample_type = (dmax > typemax(Int16) || dmin < typemin(Int16)) ? "int32" : "int16"
