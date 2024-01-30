@@ -241,7 +241,10 @@
             samples_reenc = OndaEDF.reencode_samples(samples, Int16)
             @test samples_reenc != samples
             @test encode(samples_reenc).data != encode(samples).data
-            @test decode(samples_reenc).data == decode(samples).data
+            # due to FMA and other floating point details, this may not be exactly equal
+            # but it should be very close. Elementwise approximate equality is a stronger
+            # requirement than matrix approximate equality
+            @test all(isapprox.(decode(samples_reenc).data, decode(samples).data; atol=1e-12))
 
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
@@ -264,5 +267,5 @@
         @test samples_reenc isa Samples
         @test decode(samples_reenc).data == data
     end
-    
+
 end
