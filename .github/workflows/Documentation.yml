@@ -9,7 +9,7 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: "Update dependencies"
         # Only use a released version of dependencies when creating documentation for a tag
         if: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags') }}
