@@ -78,6 +78,31 @@ For unambiguous, [spec-compliant](https://www.edfplus.info/specs/edftexts.html#l
 
     When using custom labels, make sure that they haven't accidentally changed how other `label`s are matched by reviewing the plan for any unintended changes.
 
+##### Example: non-EDF+-compliant label with channel followed by signal type
+
+OndaEDF will be confused by a label like `CHIN EMG` using the default labels.  This label does not conform to the [EDF+ specification for labels and physical dimensions](https://www.edfplus.info/specs/edftexts.html#label_physidim), which
+
+> consists of three components, from left to right:
+>
+> - Type of signal (for example EEG).
+> - A space.
+> - Specification of the sensor (for example Fpz-Cz).
+
+To match this kind of label, we can use a custom label specification like so:
+
+```
+chin_label = ["emg", "chin"] => ["chin" => ["emg"]]
+my_labels = push!(collect(pairs(OndaEDF.STANDARD_LABELS)), chin_label)
+plan = plan_edf_to_onda_samples(edf; labels=my_labels)
+```
+
+To break this label specification down:
+
+- `["emg", "chin"]`: indicates that this specification is for `sensor_type` of `"emg"`, for which `"chin"` is accepted as a non-canonical alternative.
+- `["chin" => ["emg"]]` specifies that there's _one_ possible channel for this sensor type, whose canonical label (used in the output) is `"chin"`, but for which an alternative of `"emg"` is accepted.
+
+This essentially tricks OndaEDF into treating `CHIN EMG` as sensor type of "`CHIN` (alternative for sensor type of `EMG`), and channel label "`EMG` (alternative way to specify `CHIN`)".  For more details on how this matching is carried out, see [`plan_edf_to_onda_samples`](@ref) and [`match_labels`](@ref).
+
 #### Preprocess signal headers
 
 The third option, for signals that _must_ be converted and cannot be handled with custom labels (without undue hassle) is to pre-process the signal headers before generating the plan.
