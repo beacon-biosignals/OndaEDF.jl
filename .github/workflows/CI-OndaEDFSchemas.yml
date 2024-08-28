@@ -28,18 +28,12 @@ jobs:
         arch:
           - x64
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: julia-actions/setup-julia@v1
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: actions/cache@v2
-        with:
-          path: ~/.julia/artifacts
-          key: ${{ runner.os }}-test-artifacts-${{ hashFiles('**/Project.toml') }}
-          restore-keys: ${{ runner.os }}-test-artifacts
+      - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
         with:
           project: 'OndaEDFSchemas.jl'
@@ -49,7 +43,8 @@ jobs:
       - uses: julia-actions/julia-processcoverage@v1
         with:
           directories: 'OndaEDFSchemas.jl/src/'
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           file: lcov.info
           flags: OndaEDFSchemas.jl
+          token: ${{ secrets.CODECOV_TOKEN }}
