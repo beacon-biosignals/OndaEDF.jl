@@ -31,7 +31,7 @@
     @testset "Record metadata" begin
         function change_sample_rate(samples; sample_rate)
             info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_rate=sample_rate))
-            new_data = similar(samples.data, 0, Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1)
+            new_data = similar(samples.data, channel_count(samples), Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1)
             return Samples(new_data, info, samples.encoded; validate=false)
         end
 
