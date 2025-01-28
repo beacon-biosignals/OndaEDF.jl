@@ -1,6 +1,7 @@
 using Test, Dates, Random, UUIDs, Statistics
 using OndaEDF, OndaEDFSchemas, Onda, EDF, Tables
 using FilePathsBase: AbstractPath, PosixPath
+using SparseArrays: spzeros
 
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,
