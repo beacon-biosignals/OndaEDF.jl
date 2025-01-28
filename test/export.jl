@@ -31,7 +31,9 @@
     @testset "Record metadata" begin
         function change_sample_rate(samples; sample_rate)
             info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_rate=sample_rate))
-            new_data = spzeros(eltype(samples.data), channel_count(samples), Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1)
+            # sparse CSC but for wide data we have a huge column pointer
+            # so transposing to get sparse CSR
+            new_data = spzeros(eltype(samples.data), Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1, channel_count(samples))'
             return Samples(new_data, info, samples.encoded; validate=false)
         end
 
