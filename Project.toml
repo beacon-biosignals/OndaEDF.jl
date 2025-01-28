@@ -1,7 +1,7 @@
 name = "OndaEDF"
 uuid = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.12.4"
+version = "0.13.0"
 
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
@@ -18,11 +18,11 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
 Compat = "3.32, 4"
-EDF = "0.7"
+EDF = "0.8"
 FilePathsBase = "0.9"
 Legolas = "0.5"
 Onda = "0.15"
-OndaEDFSchemas = "0.2.1"
+OndaEDFSchemas = "0.3.0"
 PrettyTables = "1.3, 2"
 StableRNGs = "1"
 StatsBase = "0.33, 0.34"

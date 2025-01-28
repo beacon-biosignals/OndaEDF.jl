@@ -19,7 +19,7 @@ function mock_plan(; v, rng=GLOBAL_RNG)
     ingested = rand(rng, Bool)
     specific_kwargs = if v == 1
         (; kind=ingested ? "eeg" : missing)
-    elseif v == 2
+    elseif v in (2, 3)
         (; sensor_type=ingested ? "eeg" : missing,
          sensor_label=ingested ? "eeg" : missing)
     else
@@ -63,7 +63,7 @@ end
 
 @testset "Schema version $v" for v in (1, 2)
     SamplesInfo = v == 1 ? Onda.SamplesInfoV1 : SamplesInfoV2
-    
+
     @testset "ondaedf.plan@$v" begin
         rng = StableRNG(10)
         plans = mock_plan(30; v, rng)

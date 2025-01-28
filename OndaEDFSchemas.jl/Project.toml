@@ -1,7 +1,7 @@
 name = "OndaEDFSchemas"
 uuid = "9c87d999-769b-4741-85b2-6f554d09e731"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.2.2"
+version = "0.3.0"
 
 [deps]
 Legolas = "741b9549-f6ed-4911-9fbf-4a1c0c97f0cd"
