@@ -61,7 +61,7 @@ function mock_file_plan(; v, rng=GLOBAL_RNG)
                                        onda_signal_index=rand(rng, Int)))
 end
 
-@testset "Schema version $v" for v in (1, 2)
+@testset "Schema version $v" for v in (1, 2, 3)
     SamplesInfo = v == 1 ? Onda.SamplesInfoV1 : SamplesInfoV2
 
     @testset "ondaedf.plan@$v" begin
