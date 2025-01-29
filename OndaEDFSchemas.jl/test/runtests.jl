@@ -26,7 +26,13 @@ function mock_plan(; v, rng=GLOBAL_RNG)
         error("Invalid version")
     end
     errored = !ingested && rand(rng, Bool)
-    PlanVersion = v == 1 ? PlanV1 : PlanV2
+    PlanVersion = if v == 1
+        PlanV1
+    elseif v == 2
+        PlanV2
+    else
+        PlanV3
+    end
     return PlanVersion(; label="EEG CZ-M1",
                        transducer_type="Ag-Cl electrode",
                        physical_dimension="uV",
@@ -55,7 +61,13 @@ end
 
 function mock_file_plan(; v, rng=GLOBAL_RNG)
     plan = mock_plan(; v, rng)
-    PlanVersion = v == 1 ? FilePlanV1 : FilePlanV2
+    PlanVersion = if v == 1
+        FilePlanV1
+    elseif v == 2
+        FilePlanV2
+    else
+        FilePlanV3
+    end
     return PlanVersion(Tables.rowmerge(plan;
                                        edf_signal_index=rand(rng, Int),
                                        onda_signal_index=rand(rng, Int)))
