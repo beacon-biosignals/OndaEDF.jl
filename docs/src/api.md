@@ -9,7 +9,7 @@ CurrentModule = OndaEDF
 OndaEDF.jl prefers "self-service" import over "automagic", and provides
 functionality to extract
 [`Onda.Samples`](https://beacon-biosignals.github.io/Onda.jl/stable/#Samples-1)
-and [`EDFAnnotationV1`](@ref)s (which extend 
+and [`EDFAnnotationV1`](@ref)s (which extend
 [`Onda.AnnotationV1`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.AnnotationV1)s)
 from an `EDF.File`.  These can be written to disk (with
 [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store) /
@@ -33,9 +33,17 @@ EDFAnnotationV1
 
 ### Import plan table schemas
 
+!!! note "Plan version is dependent on EDF.jl version"
+    The utilized plan version is dependent on the EDF.jl version.
+    For EDF 0.8+, V3 are used, while V2 is used for for EDF 0.7.
+    The change from V2 to V3 reflects the change from [`Int16` to `Int32`
+    in EDF.jl's `samples_per_record`](https://github.com/beacon-biosignals/EDF.jl/releases/tag/v0.8.0).
+
 ```@docs
 PlanV2
+PlanV3
 FilePlanV2
+FilePlanV3
 write_plan
 ```
 
@@ -61,6 +69,12 @@ OndaEDF.promote_encodings
 
 ```@docs
 onda_to_edf
+```
+
+#### Internal export utilities
+
+```@docs
+OndaEDF.reencode_samples
 ```
 
 ## Deprecations
