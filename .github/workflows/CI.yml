@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - "min"
+          - "1.6"
           - "1"
         os:
           - ubuntu-latest
@@ -45,3 +45,4 @@ jobs:
           file: lcov.info
           flags: OndaEDF.jl
           token: ${{ secrets.CODECOV_TOKEN }}
+
