@@ -35,7 +35,7 @@ EDFAnnotationV1
 
 !!! note "Plan version is dependent on EDF.jl version"
     The utilized plan version is dependent on the EDF.jl version.
-    For EDF 0.8+, V3 are used, while V2 is used for for EDF 0.7.
+    For EDF.jl 0.8+, V3 are used, while V2 is used for for EDF.jl 0.7.
     The change from V2 to V3 reflects the change from [`Int16` to `Int32`
     in EDF.jl's `samples_per_record`](https://github.com/beacon-biosignals/EDF.jl/releases/tag/v0.8.0).
 
