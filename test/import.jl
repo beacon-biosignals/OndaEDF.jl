@@ -34,7 +34,7 @@ using StableRNGs
 
             validate_extracted_signals(s.info for s in returned_samples)
         end
-        
+
         @testset "custom grouping" begin
             signal_plans = [rowmerge(plan; grp=string(plan.sensor_type, plan.sample_unit, plan.sample_rate))
                             for plan in signal_plans]
@@ -74,10 +74,10 @@ using StableRNGs
             grouped_plans_rev_bad = plan_edf_to_onda_samples_groups(plans_rev_bad)
             @test_throws(ArgumentError("Plan's label EcG EKGL does not match EDF label EEG C3-M2!"),
                          edf_to_onda_samples(edf, grouped_plans_rev_bad))
-            
+
         end
     end
-    
+
     @testset "store_edf_as_onda" begin
         n_records = 100
         edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records)
@@ -105,7 +105,7 @@ using StableRNGs
 
         signals = Dict(s.sensor_type => s for s in nt.signals)
 
-        @testset "Signal roundtrip" begin 
+        @testset "Signal roundtrip" begin
             for (signal_name, edf_indices) in edf_channel_indices
                 @testset "$signal_name" begin
                     onda_samples = load(signals[string(signal_name)]).data
@@ -243,7 +243,7 @@ using StableRNGs
         unitless_plan = plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => ["mV"]])
         @test unitless_plan.error === nothing
         @test ismissing(unitless_plan.sample_unit)
-        
+
         # error on execution
         plans = plan_edf_to_onda_samples(edf)
         # intentionally combine signals of different sensor_types
@@ -293,11 +293,11 @@ using StableRNGs
         edf, _ = make_test_data(StableRNG(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
         @test validate(Tables.schema(plan),
-                       SchemaVersion("ondaedf.file-plan", 2)) === nothing
+                       SchemaVersion("ondaedf.file-plan", 3)) === nothing
 
         samples, plan_exec = edf_to_onda_samples(edf, plan)
         @test validate(Tables.schema(plan_exec),
-                       SchemaVersion("ondaedf.file-plan", 2)) === nothing
+                       SchemaVersion("ondaedf.file-plan", 3)) === nothing
 
         plan_rt = let io=IOBuffer()
             OndaEDF.write_plan(io, plan)
