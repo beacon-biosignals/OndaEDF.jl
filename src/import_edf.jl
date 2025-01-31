@@ -117,7 +117,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     label = _safe_lowercase(label)
 
     # ideally, we'd do the original behavior:
-    # 
+    #
     # match exact STANDARD (or custom) signal types at beginning of label,
     # ignoring case possibly bracketed by or prepended with `[`, `]`, `,` or
     # whitespace everything after is included in the spec a.k.a. label
@@ -139,7 +139,7 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     #
     # This is not equivalent to the original behavior in only a handful of
     # cases
-    # 
+    #
     # - if one of the `signal_names` is a suffix of the signal, like `"pap"`
     #   matching against `"xpap cpap"`.  the fix for this is to add the full
     #   signal name to the (end) of `signal_names` in the label set.
@@ -231,7 +231,7 @@ function promote_encodings(encodings; pick_offset=(_ -> 0.0), pick_resolution=mi
                 sample_resolution_in_unit=missing,
                 sample_rate=missing)
     end
-    
+
     sample_type = mapreduce(Onda.sample_type, promote_type, encodings)
 
     sample_rates = [e.sample_rate for e in encodings]
@@ -339,7 +339,7 @@ As an example, here is (a subset of) the default labels for ECG signals:
 
 ```julia
 ["ecg", "ekg"] => ["i" => ["1"], "ii" => ["2"], "iii" => ["3"],
-                   "avl"=> ["ecgl", "ekgl", "ecg", "ekg", "l"], 
+                   "avl"=> ["ecgl", "ekgl", "ecg", "ekg", "l"],
                    "avr"=> ["ekgr", "ecgr", "r"], ...]
 ```
 
@@ -363,7 +363,7 @@ function plan_edf_to_onda_samples(header,
                             "Instead, preprocess signal header rows to before calling " *
                             "`plan_edf_to_onda_samples`"))
     end
-    
+
     row = (; header..., seconds_per_record, error=nothing)
 
     try
@@ -384,23 +384,23 @@ function plan_edf_to_onda_samples(header,
                 channel_name = canonical_channel_name(canonical)
 
                 matched = match_edf_label(edf_label, signal_names, channel_name, channel_names)
-                
+
                 if matched !== nothing
                     # create SamplesInfo and return
-                    row = rowmerge(row; 
+                    row = rowmerge(row;
                                    channel=matched,
                                    sensor_type=first(signal_names),
                                    sensor_label=first(signal_names))
-                    return PlanV2(row)
+                    return PlanV3(row)
                 end
             end
         end
     catch e
-        return PlanV2(_errored_row(row, e))
+        return PlanV3(_errored_row(row, e))
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return PlanV2(row)
+    return PlanV3(row)
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -418,7 +418,7 @@ end
 
 Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
 `plan_edf_to_onda_samples` to each individual signal contained in the file,
-storing `edf_signal_index` as an additional column.  
+storing `edf_signal_index` as an additional column.
 
 The resulting rows are then passed to [`plan_edf_to_onda_samples_groups`](@ref)
 and grouped according to `onda_signal_groupby` (by default, the `:sensor_type`,
@@ -444,7 +444,7 @@ function plan_edf_to_onda_samples(edf::EDF.File;
                             "`plan_edf_to_onda_samples`.  See the OndaEDF README."))
     end
 
-    
+
     true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
     plan_rows = map(true_signals) do s
         return plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
@@ -455,7 +455,7 @@ function plan_edf_to_onda_samples(edf::EDF.File;
     # write index of destination signal into plan to capture grouping
     plan_rows = plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby)
 
-    return FilePlanV2.(plan_rows)
+    return FilePlanV3.(plan_rows)
 end
 
 """
@@ -479,7 +479,7 @@ function plan_edf_to_onda_samples_groups(plan_rows;
         edf_signal_index = coalesce(_get(row, :edf_signal_index), i)
         return rowmerge(row; edf_signal_index)
     end
-    
+
     grouped_rows = groupby(grouper(onda_signal_groupby), plan_rows)
     sorted_keys = sort!(collect(keys(grouped_rows)))
     plan_rows = mapreduce(vcat, enumerate(sorted_keys)) do (onda_signal_index, key)
@@ -517,7 +517,7 @@ Samples are returned in the order of `:onda_signal_index`.  Signals that could
 not be matched or otherwise caused an error during execution are not returned.
 
 If `validate=true` (the default), the plan is validated against the
-[`FilePlanV2`](@ref) schema, and the signal headers in the `EDF.File`.
+[`FilePlanV3`](@ref) schema, and the signal headers in the `EDF.File`.
 
 If `dither_storage=missing` (the default), dither storage is allocated automatically
 as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering.
@@ -525,12 +525,12 @@ as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disabl
 $SAMPLES_ENCODED_WARNING
 """
 function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_storage=missing)
-                             
+
     true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
-    
+
     if validate
         Legolas.validate(Tables.schema(Tables.columns(plan_table)),
-                         Legolas.SchemaVersion("ondaedf.file-plan", 2))
+                         Legolas.SchemaVersion("ondaedf.file-plan", 3))
         for row in Tables.rows(plan_table)
             signal = true_signals[row.edf_signal_index]
             signal.header.label == row.label ||
@@ -628,14 +628,14 @@ the `Onda.SamplesInfo` in `target`.  This checks for matching sample rates in
 the source signals.  If the encoding of `target` is the same as the encoding in
 a signal, its encoded (usually `Int16`) data is copied directly into the
 `Samples` data matrix; otherwise it is re-encoded.
-                                                                                        
+
 If `dither_storage=missing` (the default), dither storage is allocated automatically
-as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering. 
+as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering.
 See `Onda.encode`'s docstring for more details.
 
 !!! note
 
-    This function is not meant to be called directly, but through 
+    This function is not meant to be called directly, but through
     [`edf_to_onda_samples`](@ref)
 
 $SAMPLES_ENCODED_WARNING
@@ -737,7 +737,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
 
     signals = Onda.SignalV2[]
     edf_samples, plan = edf_to_onda_samples(edf; kwargs...)
-    
+
     errors = _get(Tables.columns(plan), :error)
     if !ismissing(errors)
         # why unique?  because errors that occur during execution get inserted
@@ -749,7 +749,7 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
             end
         end
     end
-    
+
     edf_samples = postprocess_samples(edf_samples)
     for samples in edf_samples
         sample_filename = string(recording_uuid, "_", samples.info.sensor_type, ".", file_format)
