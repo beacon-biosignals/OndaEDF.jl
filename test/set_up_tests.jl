@@ -1,3 +1,9 @@
+using OndaEDF: validate_arrow_prefix
+using Tables: rowmerge
+using Legolas
+using Legolas: validate, SchemaVersion, read
+using StableRNGs
+
 using Test, Dates, Random, UUIDs, Statistics
 using OndaEDF, OndaEDFSchemas, Onda, EDF, Tables
 using FilePathsBase: AbstractPath, PosixPath
