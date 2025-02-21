@@ -1,14 +1,22 @@
-using OndaEDF: validate_arrow_prefix
-using Tables: rowmerge
+using Dates
+using EDF
 using Legolas
-using Legolas: validate, SchemaVersion, read
+using Onda
+using OndaEDF
+using OndaEDFSchemas
+using Random
 using StableRNGs
+using Statistics
+using Tables
+using Test
+using UUIDs
 
-using Test, Dates, Random, UUIDs, Statistics
-using OndaEDF, OndaEDFSchemas, Onda, EDF, Tables
 using FilePathsBase: AbstractPath, PosixPath
 using Functors: fmap
+using Legolas: validate, SchemaVersion, read
+using OndaEDF: validate_arrow_prefix
 using SparseArrays: spzeros
+using Tables: rowmerge
 
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,

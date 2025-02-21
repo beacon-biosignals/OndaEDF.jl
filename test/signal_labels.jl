@@ -1,4 +1,3 @@
-
 @testset "EDF.Signal label handling (uppercased: $upper)" for upper in (false, true)
     labels = OndaEDF.STANDARD_LABELS
     signal_names = ["eeg", "eog", "test"]
