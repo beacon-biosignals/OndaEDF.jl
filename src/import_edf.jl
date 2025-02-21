@@ -57,9 +57,9 @@ function _normalize_references(original_label, canonical_names)
     for n in canonical_names
         if n isa Pair
             primary, alternatives = n
-            primary = string(primary)
-            for alternative in (string(a) for a in alternatives)
-                for i in 1:length(parts)
+            primary = lowercase(string(primary))
+            for alternative in (lowercase(string(a)) for a in alternatives)
+                for i in eachindex(parts)
                     if parts[i] == alternative
                         parts[i] = primary
                     end
@@ -147,13 +147,13 @@ function match_edf_label(label, signal_names, channel_name, canonical_names)
     #   will not match.  the fix for this is to preprocess signal headers before
     #   `plan_edf_to_onda_samples` to normalize known instances (after reviewing the plan)
     m = match(r"[\s\[,\]]*(?<signal>.+?)[\s,\]]*\s+(?<spec>.+)"i, label)
-    if !isnothing(m) && m[:signal] in signal_names
+    if !isnothing(m) && m[:signal] in Iterators.map(lowercase, signal_names)
         label = m[:spec]
     end
 
     label = replace(label, r"\s*-\s*" => "-")
     initial, normalized_label = _normalize_references(label, canonical_names)
-    initial == channel_name && return normalized_label
+    initial == lowercase(channel_name) && return normalized_label
     return nothing
 end
 
