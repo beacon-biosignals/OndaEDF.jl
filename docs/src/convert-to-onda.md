@@ -101,7 +101,7 @@ To break this label specification down:
 - `["emg", "chin"]`: indicates that this specification is for `sensor_type` of `"emg"`, for which `"chin"` is accepted as a non-canonical alternative.
 - `["chin" => ["emg"]]` specifies that there's _one_ possible channel for this sensor type, whose canonical label (used in the output) is `"chin"`, but for which an alternative of `"emg"` is accepted.
 
-This essentially tricks OndaEDF into treating `CHIN EMG` as sensor type of "`CHIN` (alternative for sensor type of `EMG`), and channel label "`EMG` (alternative way to specify `CHIN`)".  For more details on how this matching is carried out, see [`plan_edf_to_onda_samples`](@ref) and [`match_labels`](@ref).
+This essentially tricks OndaEDF into treating `CHIN EMG` as sensor type of "`CHIN` (alternative for sensor type of `EMG`), and channel label "`EMG` (alternative way to specify `CHIN`)".  For more details on how this matching is carried out, see [`plan_edf_to_onda_samples`](@ref) and the internal [`OndaEDF.match_edf_label`](@ref).
 
 #### Preprocess signal headers
 
@@ -117,8 +117,8 @@ edf = EDF.File(my_edf_file_path)
 
 function corrected_header(signal::EDF.Signal)
     header = signal.header
-    return Tables.rowmerge(header; 
-                           label=header.transducer_type, 
+    return Tables.rowmerge(header;
+                           label=header.transducer_type,
                            transducer_type=header.label)
 end
 
@@ -200,7 +200,7 @@ If any errors _were_ encountered, you may need to iterate further.
 
 The final step is to store both the `Onda.Samples` and the executed plan in some persistent storage.
 For storing `Onda.Samples`, see [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store), which supports serializing LPCM-encoded samples to [any "path-like" type](https://beacon-biosignals.github.io/Onda.jl/stable/#Support-For-Generic-Path-Like-Types) (i.e., anything that provides a method for `write`).
-For storing the plan, use [`OndaEDF.write_plan`](@ref) (or `Legolas.write(file_path, plan, FilePlanV2SchemaVersion())` (see the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV2`](@ref).
+For storing the plan, use [`OndaEDF.write_plan`](@ref) (or `Legolas.write(file_path, plan, FilePlanV3SchemaVersion())` (see the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV3`](@ref OndaEDF.FilePlanV3).
 
 ## Batch conversion of many EDFs
 
@@ -262,7 +262,7 @@ function plan_all(edf_paths, files; kwargs...)
         plan = DataFrame(plan)
         # make sure this is the same every time this function is re-run!
         recording = uuid5(NAMESPACE, string(origin_uri))
-        return insertcols!(plan, 
+        return insertcols!(plan,
                            :origin_uri => origin_uri,
                            :recording => recording)
     end

@@ -23,7 +23,7 @@ end
 const DATA_RECORD_SIZE_LIMIT = 30720
 const EDF_BYTE_LIMIT = 8
 
-edf_sample_count_per_record(samples::Samples, seconds_per_record::Float64) = Int16(samples.info.sample_rate * seconds_per_record)
+edf_sample_count_per_record(samples::Samples, seconds_per_record::Float64) = Int32(samples.info.sample_rate * seconds_per_record)
 
 _rationalize(x) = rationalize(x)
 _rationalize(x::Int) = x // 1
