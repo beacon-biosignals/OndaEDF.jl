@@ -1,9 +1,3 @@
-using OndaEDF: validate_arrow_prefix
-using Tables: rowmerge
-using Legolas
-using Legolas: validate, SchemaVersion, read
-using StableRNGs
-
 @testset "Import EDF" begin
 
     @testset "edf_to_onda_samples" begin

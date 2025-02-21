@@ -1,7 +1,7 @@
 name = "OndaEDF"
 uuid = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.13.0"
+version = "0.13.1"
 
 [deps]
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
@@ -20,6 +20,7 @@ UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 Compat = "3.32, 4"
 EDF = "0.8"
 FilePathsBase = "0.9"
+Functors = "0.5"
 Legolas = "0.5"
 Onda = "0.15"
 OndaEDFSchemas = "0.2.3"
@@ -29,10 +30,11 @@ StableRNGs = "1"
 StatsBase = "0.33, 0.34"
 Tables = "1.4"
 TimeSpans = "0.3, 1"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
 FilePathsBase = "48062228-2e41-5def-b9a4-89aafe57970f"
+Functors = "d9f16b24-f501-4c13-a1f2-28368ffc5196"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
@@ -40,4 +42,4 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["FilePathsBase", "Test", "Random", "SparseArrays", "StableRNGs", "Statistics"]
+test = ["FilePathsBase", "Functors", "Test", "Random", "SparseArrays", "StableRNGs", "Statistics"]
