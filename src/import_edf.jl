@@ -396,6 +396,7 @@ function plan_edf_to_onda_samples(header,
             end
         end
     catch e
+        e isa InterruptException && rethrow()
         return PlanV3(_errored_row(row, e))
     end
 
@@ -559,6 +560,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
             end
             return (; idx, samples, plan_rows=rows)
         catch e
+            e isa InterruptException && rethrow()
             plan_rows = _errored_rows(rows, e)
             return (; idx, samples=missing, plan_rows)
         end
