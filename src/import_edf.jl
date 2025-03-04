@@ -396,6 +396,7 @@ function plan_edf_to_onda_samples(header,
             end
         end
     catch e
+        e isa InterruptException && rethrow()
         return PlanV3(_errored_row(row, e))
     end
 
