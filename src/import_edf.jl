@@ -568,7 +568,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
     exec = Tables.columntable(exec_rows)
 
     # warn if any of the samples have any duplicate sensor_types
-    samples_types = [samples.info.sensor_type for exec in skipmissing(exec.samples)]
+    samples_types = [samples.info.sensor_type for samples in skipmissing(exec.samples)]
     let
         dups = []
         seen = Set{String}()
