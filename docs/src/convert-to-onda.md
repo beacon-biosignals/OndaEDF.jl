@@ -199,8 +199,46 @@ If any errors _were_ encountered, you may need to iterate further.
 ### Store the output
 
 The final step is to store both the `Onda.Samples` and the executed plan in some persistent storage.
-For storing `Onda.Samples`, see [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store), which supports serializing LPCM-encoded samples to [any "path-like" type](https://beacon-biosignals.github.io/Onda.jl/stable/#Support-For-Generic-Path-Like-Types) (i.e., anything that provides a method for `write`).
 For storing the plan, use [`OndaEDF.write_plan`](@ref) (or `Legolas.write(file_path, plan, FilePlanV3SchemaVersion())` (see the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV3`](@ref OndaEDF.FilePlanV3).
+
+For storing `Onda.Samples`, see [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store), which supports serializing LPCM-encoded samples to [any "path-like" type](https://beacon-biosignals.github.io/Onda.jl/stable/#Support-For-Generic-Path-Like-Types) (i.e., anything that provides a method for `write`).
+Note that `Onda.store` requires at a minimum the file path (or "path-like" writeable), the format to use to serialize the samples (like `"lpcm"` or `"lpcm.zst"`), and the `Samples` themselves.
+However, this only _serializes_ the samples to the file path.
+In most cases, you will want a _signal record_ that can be stored elsewhere, which combines the path and file format to the serialized samples along with the `SamplesInfo` and other metadata required to be able to _deserialize_ and use these samples.
+In this case, you should use the second `Onda.store` method which additionally requires:
+
+- `recording::UUID` (the recording that this signal is associated with)
+- `start::Period` (the start time of this signal _relative to the start of the recording_)
+- `sensor_label::AbstractString` (a _unique label_, defaults to the `sensor_type`)
+
+Note in particular the requirement that the `sensor_label` be _unique_ for this recording (the only exception being a single sensor that records multiple discontiguous periods as in an EDF+D formatted file, but this is not currently supported by EDF.jl).
+OndaEDF _does not_ generate unique sensor labels, and if your plan generates multiple Onda Samples with the same `sensor_type` you _must_ specify the `sensor_label`s for each for the `Onda.SignalV2`s produced by `Onda.store` to be valid!
+
+#### Example: de-duplicating `sensor_label`s
+
+Take for example a PSG recording that includes two sets of EMG signals (leg and chin) with different sampling rates.
+Since these cannot be combined into a single Onda signal, the generated plan will group them into _two_ Onda signals with `sensor_type="emg"`.
+Thus, when serializing the generated `Samples` to persistent storage, we must create unique `sensor_label`s to pass to `Onda.store`.
+
+```julia
+recording = generate_recording_uuid()
+# first sample collected 3 minutes after the start of the procedure.
+start = Minute(3)
+format = "lpcm"
+
+type_counts = Dict{String,Int}()
+signals = map(psg_samples) do samples
+    (; sensor_type) = samples.info
+    count = get!(type_counts, sensor_type, 0) + 1
+    type_counts[sensor_type] = count
+    sensor_label = count > 1 ? sensor_type * '_' * count : sensor_type
+    file_path = joinpath(root, "samples", recording, sensor_label * '.' * format)
+    signal = Onda.store(file_path, format, samples, recording, start, sensor_label)
+end
+
+Legolas.write(joinpath(root, recording * "_signals.arrow"), signals,
+              Onda.SignalV2SchemaVersion())
+```
 
 ## Batch conversion of many EDFs
 
