@@ -570,7 +570,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
     # warn if any of the samples have any duplicate sensor_types
     samples_types = [samples.info.sensor_type for samples in skipmissing(exec.samples)]
     let
-        dups = []
+        dups = Set{String}()
         seen = Set{String}()
         for t in samples_types
             if t in seen
@@ -579,11 +579,11 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
                 push!(seen, t)
             end
         end
+        isempty(dups) ||
+            @warn "Generated samples with duplicate `sensor_type`s:\n\n" *
+            "$(join(dups, ", ", " and ")).\n\n" *
+            "Be sure to create unique `sensor_label`s before storing!"
     end
-    isempty(dups) ||
-        @warn "Generated samples with duplicate `sensor_type`s: " *
-        "$(join(dups, ", ", " and ")).  " *
-        "Be sure to create unique `sensor_label`s before storing!"
 
     exec_plan = reduce(vcat, exec.plan_rows)
 

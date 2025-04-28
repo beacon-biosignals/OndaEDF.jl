@@ -40,7 +40,8 @@
             # one channel per signal, group by label
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
                                                             onda_signal_groupby=:label)
-            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
+            # logs a warning at this stage because of Samples w/ duplicate sensor_types
+            returned_samples, plan = @test_logs (:warn, ) edf_to_onda_samples(edf, grouped_plans)
             @test all(==(1), channel_count.(returned_samples))
         end
 
