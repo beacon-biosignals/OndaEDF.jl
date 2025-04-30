@@ -1,0 +1,68 @@
+name: Documenter
+on:
+  workflow_dispatch:
+  push:
+    tags: ["*"]
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - "src/**"
+      - "Project.toml"
+      - ".github/workflows/Documenter.yaml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "src/**"
+      - "Project.toml"
+      - ".github/workflows/Documenter.yaml"
+      - ".github/workflows/DocPreviewCleanup.yaml"
+jobs:
+  docs:
+    name: Build
+    # These permissions are needed to:
+    # - Deploying documentation: https://documenter.juliadocs.org/stable/man/hosting/#Permissions
+    # - Delete old caches: https://github.com/julia-actions/cache#usage
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1"
+          show-versioninfo: true
+      - uses: julia-actions/cache@v2
+      - name: "Update dependencies"
+        # Only use a released version of dependencies when creating documentation for a tag
+        if: ${{ github.event_name != 'push' || !startsWith(github.ref, 'refs/tags') }}
+        shell: julia --color=yes --project=docs {0}
+        run: |
+          using Pkg
+          Pkg.develop(PackageSpec(; path="./OndaEDFSchemas.jl"))
+      - name: Install dependencies
+        shell: julia --project=docs --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.develop(PackageSpec(path=pwd()))
+          Pkg.instantiate()
+      - name: Build docs
+        uses: julia-actions/julia-docdeploy@v1
+        with:
+          install-package: false  # Avoid instantiating twice
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+      - name: Preview URL
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          repo_owner="${repo%/*}"  # e.g. JuliaLang
+          repo_name="${repo#*/}"  # e.g. Example.jl
+          echo ":books: Documentation preview available at:" | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "<https://${repo_owner}.github.io/${repo_name}/previews/PR${PR}>" | tee -a "$GITHUB_STEP_SUMMARY"
+        env:
+          repo: ${{ github.repository }}  # e.g. JuliaLang/Example.jl
+          PR: ${{ github.event.number }}
