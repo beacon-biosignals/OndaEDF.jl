@@ -7,7 +7,7 @@ using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type,
             AnnotationV1
 using UUIDs
 
-export PlanV1, PlanV2, PlanV3, FilePlanV1, FilePlanV2, FilePlanV3, EDFAnnotationV1
+export PlanV1, PlanV2, PlanV3, PlanV4, FilePlanV1, FilePlanV2, FilePlanV3, FilePlanV4, EDFAnnotationV1
 
 @schema "ondaedf.plan" Plan
 
@@ -199,7 +199,7 @@ end
     @version FilePlanV4 > PlanV4 begin
         recording::Union{UUID,Missing} = lift(UUID, recording)
         edf_signal_index::Int
-        sensor_label::Int
+        sensor_label::Union{String,Missing}
     end
 
 A Legolas-generated record type representing one EDF signal-to-Onda channel conversion,
@@ -213,7 +213,7 @@ which includes the columns of a [`PlanV4`](@ref) and additional file-level conte
 @version FilePlanV4 > PlanV4 begin
     recording::Union{UUID,Missing} = lift(UUID, recording)
     edf_signal_index::Int
-    sensor_label::String
+    sensor_label::Union{String,Missing}
 end
 
 const FILE_PLAN_DOC_TEMPLATE = """
