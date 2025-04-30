@@ -416,7 +416,7 @@ The resulting rows are then passed to [`plan_edf_to_onda_samples_groups`](@ref)
 and grouped according to the `:sensor_type`, `:sample_unit`, and `:sample_rate`
 columns, as well as any additional columns specified in
 `extra_onda_signal_groupby`.  A `sensor_label` is generated for each group,
-based on the `sensor_type` but with a numeric suffix `_$n` for the `n`th
+based on the `sensor_type` but with a numeric suffix `_n` for the `n`th
 occurance of a `sensor_type` after the first.
 
 The resulting plan is returned as a table.  No signal data is actually read from
@@ -627,10 +627,6 @@ function merge_samples_info(rows)
     end
 end
 
-#####
-##### `import_edf!`
-#####
-
 """
     OndaEDF.onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
                                           edf_seconds_per_record; dither_storage=missing)
@@ -797,9 +793,10 @@ end
 """
     edf_to_onda_samples(edf::EDF.File; kwargs...)
 
-Read signals from an `EDF.File` into a vector of `Onda.Samples`.  This is a
-convenience function that first formulates an import plan via [`plan_edf_to_onda_samples`](@ref),
-and then immediately executes this plan with [`edf_to_onda_samples`](@ref).
+Read signals from an `EDF.File` into an `OrderedDict` of `Onda.Samples`, keyed by a
+file-unique `sensor_label`.  This is a convenience function that first formulates an import
+plan via [`plan_edf_to_onda_samples`](@ref), and then immediately executes this plan with
+[`edf_to_onda_samples`](@ref).
 
 The samples and executed plan are returned; it is **strongly advised** that you
 review the plan for un-extracted signals (where `:sensor_type` or `:channel` is
