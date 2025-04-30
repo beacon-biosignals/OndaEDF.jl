@@ -42,8 +42,10 @@ EDFAnnotationV1
 ```@docs
 PlanV2
 PlanV3
+PlanV4
 FilePlanV2
 FilePlanV3
+FilePlanV4
 write_plan
 ```
 

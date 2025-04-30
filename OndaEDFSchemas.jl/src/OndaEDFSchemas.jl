@@ -135,7 +135,6 @@ const PLAN_DOC_TEMPLATE = """
         # EDF.FileHeader field
         seconds_per_record::Float64
         # Onda.SignalV{{ VERSION }} fields (channels -> channel), may be missing
-        recording::Union{UUID,Missing} = passmissing(UUID)
 {{ SAMPLES_INFO_UNIQUE_FIELDS }}
         channel::Union{Missing,AbstractString}
         sample_unit::Union{Missing,AbstractString}
@@ -160,10 +159,14 @@ conversion.  The columns are the union of
 
 function _plan_doc(v)
     uniques = if v == 1
-        ["kind::Union{Missing,AbstractString}"]
+        ["recording::Union{UUID,Missing} = passmissing(UUID)",
+         "kind::Union{Missing,AbstractString}"]
     elseif v == 2 || v == 3
-        ["sensor_type::Union{Missing,AbstractString}",
+        ["recording::Union{UUID,Missing} = passmissing(UUID)",
+         "sensor_type::Union{Missing,AbstractString}",
          "sensor_label::Union{Missing,AbstractString}"]
+    elseif v == 4
+        ["sensor_type::Union{Missing,AbstractString}"]
     else
         throw(ArgumentError("Invalid version"))
     end
@@ -177,6 +180,7 @@ end
 @doc _plan_doc(1) PlanV1
 @doc _plan_doc(2) PlanV2
 @doc _plan_doc(3) PlanV3
+@doc _plan_doc(4) PlanV4
 
 @schema "ondaedf.file-plan" FilePlan
 
