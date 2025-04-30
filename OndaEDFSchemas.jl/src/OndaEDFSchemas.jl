@@ -106,8 +106,7 @@ end
     samples_per_record::Int32
     # EDF.FileHeader field
     seconds_per_record::Float64
-    # Onda.SignalV2 fields (channels -> channel), may be missing
-    recording::Union{UUID,Missing} = lift(UUID, recording)
+    # Onda.SamplesInfoV2 fields (channels -> channel), may be missing
     sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
     channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
@@ -118,6 +117,8 @@ end
     # errors, use `nothing` to indicate no error
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
+
+# TODO: update docstring for v4
 
 const PLAN_DOC_TEMPLATE = """
     @version PlanV{{ VERSION }} begin
@@ -194,9 +195,25 @@ end
     onda_signal_index::Int
 end
 
+"""
+    @version FilePlanV4 > PlanV4 begin
+        recording::Union{UUID,Missing} = lift(UUID, recording)
+        edf_signal_index::Int
+        sensor_label::Int
+    end
+
+A Legolas-generated record type representing one EDF signal-to-Onda channel conversion,
+which includes the columns of a [`PlanV4`](@ref) and additional file-level context:
+- `recording::Union{UUID,Missing}` the UUID of the recording, if known.
+- `edf_signal_index` gives the index of the `signals` in the source `EDF.File`
+  corresponding to this row
+- `sensor_label::AbstractString` gives the unique identifier of the corresponding output
+  `Onda.Samples` after conversion.
+"""
 @version FilePlanV4 > PlanV4 begin
+    recording::Union{UUID,Missing} = lift(UUID, recording)
     edf_signal_index::Int
-    sensor_label::Int
+    sensor_label::String
 end
 
 const FILE_PLAN_DOC_TEMPLATE = """
