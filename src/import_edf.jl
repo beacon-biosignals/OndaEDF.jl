@@ -285,9 +285,9 @@ function Base.showerror(io::IO, e::SamplesInfoError)
 end
 
 function groupby(f, list)
-    d = Dict()
+    d = OrderedDict()
     for v in list
-        push!(get!(d, f(v), Vector{eltype(list)}()), v)
+        push!(get!(d, f(v), Vector{Any}()), v)
     end
     return d
 end
@@ -311,7 +311,7 @@ Tables.jl row with all the columns from the signal header, plus additional
 columns for the `Onda.SamplesInfo` for this signal, and the `seconds_per_record`
 that is passed in here.
 
-If no labels match, then the `channel` and `kind` columns are `missing`; the
+If no labels match, then the `channel` and `sensor_type` columns are `missing`; the
 behavior of other `SamplesInfo` columns is undefined; they are currently set to
 missing but that may change in future versions.
 
@@ -320,12 +320,12 @@ and then printed with backtrace to a `String` in the `error` column.
 
 ## Matching EDF label to Onda labels
 
-The `labels` keyword argument determines how Onda `channel` and signal `kind`
+The `labels` keyword argument determines how Onda `channel` and signal `sensor_type`
 are extracted from the EDF label.
 
 Labels are specified as an iterable of `signal_names => channel_names` pairs.
 `signal_names` should be an iterable of signal names, the first of which is the
-canonical name used as the Onda `kind`.  Each element of `channel_names` gives
+canonical name used as the Onda `sensor_type`.  Each element of `channel_names` gives
 the specification for one channel, which can either be a string, or a
 `canonical_name => alternates` pair.  Occurences of `alternates` will be
 replaces with `canonical_name` in the generated channel label.
@@ -482,15 +482,15 @@ function plan_edf_to_onda_samples_groups(plan_rows;
     sensor_counts = DefaultDict{String,Int}(0)
     for key in sorted_keys
         sensor_type = first(key)
+        ismissing(sensor_type) && continue
         count = sensor_counts[sensor_type] += 1
-        sensor_label = count > 1 ? sensor_type * '_' * count : sensor_type
-        sensor_labels[key] = sensor_labels
+        sensor_labels[key] = count > 1 ? string(sensor_type, '_', count) : sensor_type
     end
 
     output_plan_rows = []
     for key in sorted_keys
         rows = grouped_rows[key]
-        sensor_label = sensor_labels[key]
+        sensor_label = get(sensor_labels, key, missing)
         encoding = promote_encodings(rows)
         append!(output_plan_rows,
                 [rowmerge(row, encoding, (; sensor_label)) for row in rows])
@@ -539,7 +539,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
 
     if validate
         Legolas.validate(Tables.schema(Tables.columns(plan_table)),
-                         Legolas.SchemaVersion("ondaedf.file-plan", 3))
+                         OndaEDFSchemas.FilePlanV4SchemaVersion())
         for row in Tables.rows(plan_table)
             signal = true_signals[row.edf_signal_index]
             signal.header.label == row.label ||
@@ -576,8 +576,8 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
     exec = Tables.columntable(exec_rows)
     exec_plan = reduce(vcat, exec.plan_rows)
 
-    samples = Dict(key.sensor_label => samples
-                   for (; key, samples) in exec_rows if !ismissing(samples))
+    samples = OrderedDict(key.sensor_label => samples
+                          for (; key, samples) in exec_rows if !ismissing(samples))
 
     return samples, exec_plan
 end
@@ -603,11 +603,11 @@ column.
     This is an internal function and is not meant to be called direclty.
 """
 function merge_samples_info(rows)
-    # we enforce that kind, sample_unit, and sample_rate are all equal here
-    key = unique(grouper(REQUIRED_SIGNAL_GROUPING_COLUMNS))
+    # we enforce that sensor_type, sample_unit, and sample_rate are all equal here
+    key = unique(map(grouper(REQUIRED_SIGNAL_GROUPING_COLUMNS), rows))
     if length(key) != 1
         throw(ArgumentError("couldn't merge samples info from rows: multiple " *
-                            "kind/sample_unit/sample_rate combinations:\n\n" *
+                            "sensor_type/sample_unit/sample_rate combinations:\n\n" *
                             "$(pretty_table(String, key))\n\n" *
                             "$(pretty_table(String, rows))"))
     end
@@ -689,7 +689,6 @@ end
 """
     store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
                       custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
-                      postprocess_samples=identity,
                       signals_prefix="edf", annotations_prefix=signals_prefix)
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
@@ -731,7 +730,6 @@ See the OndaEDF README for additional details regarding EDF formatting expectati
 """
 function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
                            import_annotations::Bool=true,
-                           postprocess_samples=identity,
                            signals_prefix="edf", annotations_prefix=signals_prefix,
                            kwargs...)
 
@@ -760,11 +758,10 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         end
     end
 
-    edf_samples = postprocess_samples(edf_samples)
-    for samples in edf_samples
-        sample_filename = string(recording_uuid, "_", samples.info.sensor_type, ".", file_format)
+    for (sensor_label, samples) in edf_samples
+        sample_filename = string(recording_uuid, "_", sensor_label, ".", file_format)
         file_path = joinpath(onda_dir, "samples", sample_filename)
-        signal = store(file_path, file_format, samples, recording_uuid, Second(0))
+        signal = store(file_path, file_format, samples, recording_uuid, Second(0), sensor_label)
         push!(signals, signal)
     end
 

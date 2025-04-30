@@ -8,6 +8,7 @@
             returned_samples, plan = OndaEDF.edf_to_onda_samples(edf)
             @test length(returned_samples) == 13
 
+            returned_samples = values(returned_samples)
             validate_extracted_signals(s.info for s in returned_samples)
             @test all(Onda.duration(s) == Nanosecond(Second(200)) for s in returned_samples)
         end
@@ -26,22 +27,36 @@
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
             returned_samples, plan = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
 
-            validate_extracted_signals(s.info for s in returned_samples)
+            validate_extracted_signals(s.info for s in values(returned_samples))
         end
 
         @testset "custom grouping" begin
-            signal_plans = [rowmerge(plan; grp=string(plan.sensor_type, plan.sample_unit, plan.sample_rate))
-                            for plan in signal_plans]
-            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
-                                                            onda_signal_groupby=:grp)
-            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
-            validate_extracted_signals(s.info for s in returned_samples)
-
             # one channel per signal, group by label
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
-                                                            onda_signal_groupby=:label)
+                                                            extra_onda_signal_groupby=(:label,))
             returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
-            @test all(==(1), channel_count.(returned_samples))
+            @test all(==(1), channel_count.(values(returned_samples)))
+        end
+
+        @testset "plan sensor_labels are respected" begin
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
+            grouped_plans = let
+                ecg_count = 1
+                map(grouped_plans) do plan
+                    sensor_label = "edf_" * plan.sensor_label
+                    if isequal(plan.sensor_type, "ecg")
+                        sensor_label *= string('_', ecg_count)
+                        ecg_count += 1
+                    end
+                    return Tables.rowmerge(plan; sensor_label)
+                end
+            end
+
+            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
+
+            @test haskey(returned_samples, "edf_ecg_1")
+            @test haskey(returned_samples, "edf_ecg_2")
+            @test all(startswith("edf_"), keys(returned_samples))
         end
 
         @testset "preserve existing row index" begin
@@ -58,7 +73,7 @@
             # we need to re-reverse the order of channels to get to what's
             # expected in teh tests
             infos = [rowmerge(s.info; channels=reverse(s.info.channels))
-                     for s in returned_samples]
+                     for s in values(returned_samples)]
             validate_extracted_signals(infos)
 
             # test also that this will error about mismatch between plan label
@@ -68,7 +83,6 @@
             grouped_plans_rev_bad = plan_edf_to_onda_samples_groups(plans_rev_bad)
             @test_throws(ArgumentError("Plan's label EcG EKGL does not match EDF label EEG C3-M2!"),
                          edf_to_onda_samples(edf, grouped_plans_rev_bad))
-
         end
     end
 
@@ -161,8 +175,8 @@
             end
 
             mktempdir() do root
-                @test_logs (:warn, r"Extracting prefix") begin
-                    nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
+                nt = @test_logs (:warn, r"Extracting prefix") begin
+                    OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
                 end
                 @test nt.signals_path == joinpath(root, "edff.onda.signals.arrow")
                 @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
@@ -202,15 +216,13 @@
                         _signal("EMG LAT", "E", "uV", 0, 1000)]
         edf_header = EDF.FileHeader("0", "", "", DateTime("2014-10-27T22:24:28"),
                                     true, 10, 1)
-        test_edf = EDF.File((io = IOBuffer(); close(io); io),
-                            edf_header, edf_signals)
+        test_edf = EDF.File(IOBuffer(), edf_header, edf_signals)
 
         plan = plan_edf_to_onda_samples(test_edf)
-        sensors = Tables.columntable(unique((; p.sensor_type, p.sensor_label, p.onda_signal_index) for p in plan))
+        sensors = Tables.columntable(unique((; p.sensor_type, p.sensor_label) for p in plan))
         @test length(sensors.sensor_type) == 2
         @test all(==("emg"), sensors.sensor_type)
-        # TODO: uniquify this in the grouping...
-        @test_broken allunique(sensors.sensor_label)
+        @test allunique(sensors.sensor_label)
     end
 
     @testset "error handling" begin
@@ -242,7 +254,7 @@
         plans = plan_edf_to_onda_samples(edf)
         # intentionally combine signals of different sensor_types
         different = findfirst(row -> !isequal(row.sensor_type, first(plans).sensor_type), plans)
-        bad_plans = rowmerge.(plans[[1, different]]; onda_signal_index=1)
+        bad_plans = rowmerge.(plans[[1, different]]; sensor_label=plans[1].sensor_label)
         bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
         @test all(row.error isa String for row in bad_plans_exec)
         @test all(occursin("ArgumentError", row.error) for row in bad_plans_exec)

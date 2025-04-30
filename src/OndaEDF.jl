@@ -14,6 +14,7 @@ using UUIDs
 
 using DataStructures: DefaultDict
 using Legolas: lift
+using OrderedCollections: OrderedDict
 using Tables: rowmerge
 
 export write_plan
