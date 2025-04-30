@@ -1,10 +1,14 @@
+coverage:
+  # Make Codecov status checks never fail until we sort out the issues with multiple
+  # conditional workflows: https://github.com/beacon-biosignals/TemplateLab.jl/issues/110
+  status:
+    project:
+      default:
+        informational: true
+    patch:
+      default:
+        informational: true
 flag_management:
   default_rules: # the rules that will be followed for any flag added, generally
     carryforward: true
-    statuses:
-      - type: project
-        target: auto
-        threshold: 1%
-      - type: patch
-        target: 90%
 comment: off
