@@ -93,6 +93,32 @@ end
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
 
+@version PlanV4 begin
+    # EDF.SignalHeader fields
+    label::String
+    transducer_type::String
+    physical_dimension::String
+    physical_minimum::Float32
+    physical_maximum::Float32
+    digital_minimum::Float32
+    digital_maximum::Float32
+    prefilter::String
+    samples_per_record::Int32
+    # EDF.FileHeader field
+    seconds_per_record::Float64
+    # Onda.SignalV2 fields (channels -> channel), may be missing
+    recording::Union{UUID,Missing} = lift(UUID, recording)
+    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
+    channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
+    sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
+    sample_resolution_in_unit::Union{Missing,Float64}
+    sample_offset_in_unit::Union{Missing,Float64}
+    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type, sample_type)
+    sample_rate::Union{Missing,Float64}
+    # errors, use `nothing` to indicate no error
+    error::Union{Nothing,String} = coalesce(error, nothing)
+end
+
 const PLAN_DOC_TEMPLATE = """
     @version PlanV{{ VERSION }} begin
         # EDF.SignalHeader fields
@@ -168,6 +194,11 @@ end
     onda_signal_index::Int
 end
 
+@version FilePlanV4 > PlanV4 begin
+    edf_signal_index::Int
+    sensor_label::Int
+end
+
 const FILE_PLAN_DOC_TEMPLATE = """
     @version FilePlanV{{ VERSION }} > PlanV{{ VERSION }} begin
         edf_signal_index::Int
@@ -196,7 +227,8 @@ end
 
 const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,FilePlanV1SchemaVersion,
                                     PlanV2SchemaVersion,FilePlanV2SchemaVersion,
-                                    PlanV3SchemaVersion,FilePlanV3SchemaVersion}
+                                    PlanV3SchemaVersion,FilePlanV3SchemaVersion,
+                                    PlanV4SchemaVersion,FilePlanV4SchemaVersion}
 Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
 # we need this because Arrow write can introduce a Missing for the error column
 # (I think because of how missing/nothing sentinels are handled?)
