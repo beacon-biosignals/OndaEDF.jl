@@ -389,18 +389,17 @@ function plan_edf_to_onda_samples(header,
                     # create SamplesInfo and return
                     row = rowmerge(row;
                                    channel=matched,
-                                   sensor_type=first(signal_names),
-                                   sensor_label=first(signal_names))
-                    return PlanV3(row)
+                                   sensor_type=first(signal_names))
+                    return PlanV4(row)
                 end
             end
         end
     catch e
-        return PlanV3(_errored_row(row, e))
+        return PlanV4(_errored_row(row, e))
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return PlanV3(row)
+    return PlanV4(row)
 end
 
 # create a table with a plan for converting this EDF file to onda: one row per
@@ -414,7 +413,7 @@ end
     plan_edf_to_onda_samples(edf::EDF.File;
                              labels=STANDARD_LABELS,
                              units=STANDARD_UNITS,
-                             onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
+                             extra_onda_signal_groupby=())
 
 Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
 `plan_edf_to_onda_samples` to each individual signal contained in the file,
@@ -435,16 +434,7 @@ stored in the `:edf_signal_index` column, and the rows are sorted in order of
 function plan_edf_to_onda_samples(edf::EDF.File;
                                   labels=STANDARD_LABELS,
                                   units=STANDARD_UNITS,
-                                  preprocess_labels=nothing,
-                                  onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
-    # keep the kwarg so we can throw a more informative error
-    if preprocess_labels !== nothing
-        throw(ArgumentError("the `preprocess_labels` argument has been removed.  " *
-                            "Instead, preprocess signal header rows to before calling " *
-                            "`plan_edf_to_onda_samples`.  See the OndaEDF README."))
-    end
-
-
+                                  extra_onda_signal_groupby=())
     true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
     plan_rows = map(true_signals) do s
         return plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
@@ -453,26 +443,27 @@ function plan_edf_to_onda_samples(edf::EDF.File;
 
     # group signals by which Samples they will belong to, promote_encoding, and
     # write index of destination signal into plan to capture grouping
-    plan_rows = plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby)
+    plan_rows = plan_edf_to_onda_samples_groups(plan_rows; extra_onda_signal_groupby)
 
-    return FilePlanV3.(plan_rows)
+    return FilePlanV4.(plan_rows)
 end
 
 """
-    plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
+    plan_edf_to_onda_samples_groups(plan_rows; extra_onda_signal_groupby=())
 
-Group together `plan_rows` based on the values of the `onda_signal_groupby`
-columns, creating the `:onda_signal_index` column and promoting the Onda encodings
-for each group using [`OndaEDF.promote_encodings`](@ref).
+Group together `plan_rows` based on the values of the `:sensor_type`,
+`:sample_unit`, `:sample_rate`, and `extra_onda_signal_groupby` columns,
+creating the a unique `:sensor_label` per group and and promoting the Onda
+encodings for each group using [`OndaEDF.promote_encodings`](@ref).
 
 If the `:edf_signal_index` column is not present or otherwise missing, it will
 be filled in based on the order of the input rows.
 
-The updated rows are returned, sorted first by the columns named in
-`onda_signal_groupby` and second by order of occurrence within the input rows.
+The updated rows are returned, sorted first by the grouping columns and second
+by order of occurrence within the input rows.
 """
 function plan_edf_to_onda_samples_groups(plan_rows;
-                                         onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
+                                         extra_onda_signal_groupby=())
     plan_rows = Tables.rows(plan_rows)
     # if `edf_signal_index` is not present, create it before we re-order things
     plan_rows = map(enumerate(plan_rows)) do (i, row)
@@ -480,18 +471,36 @@ function plan_edf_to_onda_samples_groups(plan_rows;
         return rowmerge(row; edf_signal_index)
     end
 
+    onda_signal_groupby = (REQUIRED_SIGNAL_GROUPING_COLUMNS...,
+                           extra_onda_signal_groupby...)
+
     grouped_rows = groupby(grouper(onda_signal_groupby), plan_rows)
     sorted_keys = sort!(collect(keys(grouped_rows)))
-    plan_rows = mapreduce(vcat, enumerate(sorted_keys)) do (onda_signal_index, key)
-        rows = grouped_rows[key]
-        encoding = promote_encodings(rows)
-        return [rowmerge(row, encoding, (; onda_signal_index)) for row in rows]
+
+    # generate a unique sensor label for each group based on sensor_type
+    sensor_labels = Dict{Any,String}()
+    sensor_counts = DefaultDict{String,Int}(0)
+    for key in sorted_keys
+        sensor_type = first(key)
+        count = sensor_counts[sensor_type] += 1
+        sensor_label = count > 1 ? sensor_type * '_' * count : sensor_type
+        sensor_labels[key] = sensor_labels
     end
-    return plan_rows
+
+    output_plan_rows = []
+    for key in sorted_keys
+        rows = grouped_rows[key]
+        sensor_label = sensor_labels[key]
+        encoding = promote_encodings(rows)
+        append!(output_plan_rows,
+                [rowmerge(row, encoding, (; sensor_label)) for row in rows])
+    end
+
+    return output_plan_rows
 end
 
 _get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missing
-function grouper(vars=(:sensor_type, :sample_unit, :sample_rate))
+function grouper(vars=REQUIRED_SIGNAL_GROUPING_COLUMNS)
     return x -> NamedTuple{vars}(_get.(Ref(x), vars))
 end
 grouper(vars::AbstractVector{Symbol}) = grouper((vars..., ))
@@ -517,7 +526,7 @@ Samples are returned in the order of `:onda_signal_index`.  Signals that could
 not be matched or otherwise caused an error during execution are not returned.
 
 If `validate=true` (the default), the plan is validated against the
-[`FilePlanV3`](@ref) schema, and the signal headers in the `EDF.File`.
+[`FilePlanV4`](@ref) schema, and the signal headers in the `EDF.File`.
 
 If `dither_storage=missing` (the default), dither storage is allocated automatically
 as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering.
@@ -540,8 +549,8 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
 
     EDF.read!(edf)
     plan_rows = Tables.rows(plan_table)
-    grouped_plan_rows = groupby(grouper((:onda_signal_index, )), plan_rows)
-    exec_rows = map(collect(grouped_plan_rows)) do (idx, rows)
+    grouped_plan_rows = groupby(grouper((:sensor_label, )), plan_rows)
+    exec_rows = map(collect(grouped_plan_rows)) do (key, rows)
         try
             info = merge_samples_info(rows)
             if ismissing(info)
@@ -557,19 +566,20 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
                 samples = onda_samples_from_edf_signals(SamplesInfoV2(info), signals,
                                                         edf.header.seconds_per_record; dither_storage)
             end
-            return (; idx, samples, plan_rows=rows)
+            return (; key, samples, plan_rows=rows)
         catch e
             plan_rows = _errored_rows(rows, e)
-            return (; idx, samples=missing, plan_rows)
+            return (; key, samples=missing, plan_rows)
         end
     end
 
-    sort!(exec_rows; by=(row -> row.idx))
     exec = Tables.columntable(exec_rows)
-
     exec_plan = reduce(vcat, exec.plan_rows)
 
-    return collect(skipmissing(exec.samples)), exec_plan
+    samples = Dict(key.sensor_label => samples
+                   for (; key, samples) in exec_rows if !ismissing(samples))
+
+    return samples, exec_plan
 end
 
 """
@@ -594,7 +604,7 @@ column.
 """
 function merge_samples_info(rows)
     # we enforce that kind, sample_unit, and sample_rate are all equal here
-    key = unique(grouper((:sensor_type, :sample_unit, :sample_rate)).(rows))
+    key = unique(grouper(REQUIRED_SIGNAL_GROUPING_COLUMNS))
     if length(key) != 1
         throw(ArgumentError("couldn't merge samples info from rows: multiple " *
                             "kind/sample_unit/sample_rate combinations:\n\n" *

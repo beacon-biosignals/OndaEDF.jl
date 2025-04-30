@@ -12,12 +12,15 @@ using TimeSpans
 using Tables
 using UUIDs
 
+using DataStructures: DefaultDict
 using Legolas: lift
 using Tables: rowmerge
 
 export write_plan
 export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, plan_edf_to_onda_samples_groups, store_edf_as_onda
 export onda_to_edf
+
+const REQUIRED_SIGNAL_GROUPING_COLUMNS = (:sensor_type, :sample_unit, :sample_rate)
 
 include("standards.jl")
 
