@@ -299,11 +299,11 @@
         edf, _ = make_test_data(StableRNG(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
         @test validate(Tables.schema(plan),
-                       SchemaVersion("ondaedf.file-plan", 3)) === nothing
+                       FilePlanV4SchemaVersion()) === nothing
 
         samples, plan_exec = edf_to_onda_samples(edf, plan)
-        @test validate(Tables.schema(plan_exec),
-                       SchemaVersion("ondaedf.file-plan", 3)) === nothing
+        @test validate(Tables.schema(Tables.columntable(plan_exec)),
+                       FilePlanV4SchemaVersion()) === nothing
 
         plan_rt = let io=IOBuffer()
             OndaEDF.write_plan(io, plan)

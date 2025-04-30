@@ -33,7 +33,7 @@ Write a plan table to `io_or_path` using `Legolas.write`, using the
 """
 function write_plan(io_or_path, plan_table; kwargs...)
     return Legolas.write(io_or_path, plan_table,
-                         Legolas.SchemaVersion("ondaedf.file-plan", 3);
+                         OndaEDFSchemas.FilePlanV4SchemaVersion();
                          kwargs...)
 end
 
