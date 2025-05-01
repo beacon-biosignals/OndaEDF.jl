@@ -20,6 +20,9 @@ or manipulated in memory as desired.
 
 ```@docs
 edf_to_onda_samples
+ConvertedSamples
+get_plan
+get_samples
 plan_edf_to_onda_samples
 plan_edf_to_onda_samples_groups
 ```
@@ -46,7 +49,6 @@ PlanV4
 FilePlanV2
 FilePlanV3
 FilePlanV4
-write_plan
 ```
 
 ### Full-service import
