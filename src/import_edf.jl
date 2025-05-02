@@ -601,7 +601,7 @@ function Onda.store(file_path, file_format, samples::ConvertedSamples, recording
     return if ismissing(samples.samples)
         missing
     else
-        Onda.store(file_path, file_format, samples.samples, recording, start, file_format)
+        Onda.store(file_path, file_format, samples.samples, recording, start, sensor_label)
     end
 end
 
