@@ -18,13 +18,21 @@ or manipulated in memory as desired.
 
 ### Import signal data as `Samples`
 
+#### Import planning
+
+```@docs
+plan_edf_to_onda_samples
+plan_edf_to_onda_samples_groups
+```
+
+#### Import execution
+
 ```@docs
 edf_to_onda_samples
 ConvertedSamples
 get_plan
 get_samples
-plan_edf_to_onda_samples
-plan_edf_to_onda_samples_groups
+Onda.store
 ```
 
 ### Import annotations
@@ -43,11 +51,7 @@ EDFAnnotationV1
     in EDF.jl's `samples_per_record`](https://github.com/beacon-biosignals/EDF.jl/releases/tag/v0.8.0).
 
 ```@docs
-PlanV2
-PlanV3
 PlanV4
-FilePlanV2
-FilePlanV3
 FilePlanV4
 ```
 
