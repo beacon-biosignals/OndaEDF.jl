@@ -33,7 +33,7 @@
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
             converted = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
             samples = OndaEDF.get_samples(converted)
-            validate_extracted_signals(s.info for s in values(returned_samples))
+            validate_extracted_signals(s.info for s in samples)
         end
 
         @testset "custom grouping" begin
@@ -42,7 +42,7 @@
                                                             extra_onda_signal_groupby=(:label,))
             converted = edf_to_onda_samples(edf, grouped_plans)
             returned_samples = OndaEDF.get_samples(converted)
-            @test all(==(1), channel_count.(values(returned_samples)))
+            @test all(==(1), channel_count.(returned_samples))
         end
 
         @testset "plan sensor_labels are respected" begin
@@ -81,7 +81,7 @@
             # we need to re-reverse the order of channels to get to what's
             # expected in teh tests
             infos = [rowmerge(s.info; channels=reverse(s.info.channels))
-                     for s in values(returned_samples)]
+                     for s in returned_samples]
             validate_extracted_signals(infos)
 
             # test also that this will error about mismatch between plan label
