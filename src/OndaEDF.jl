@@ -19,7 +19,7 @@ using OrderedCollections: OrderedDict
 using Tables: rowmerge
 
 export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, plan_edf_to_onda_samples_groups, store_edf_as_onda
-export get_plan, get_samples
+export ConvertedSamples, get_plan, get_samples
 export onda_to_edf
 
 const REQUIRED_SIGNAL_GROUPING_COLUMNS = (:sensor_type, :sample_unit, :sample_rate)

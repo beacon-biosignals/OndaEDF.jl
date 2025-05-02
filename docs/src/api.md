@@ -93,5 +93,9 @@ removed in a future release.
 
 ```@docs
 PlanV1
+PlanV2
+PlanV3
 FilePlanV1
+FilePlanV2
+FilePlanV3
 ```
