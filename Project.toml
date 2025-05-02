@@ -4,6 +4,7 @@ authors = ["Beacon Biosignals, Inc."]
 version = "0.14.0"
 
 [deps]
+ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
 Compat = "34da2185-b29b-5c13-b0c7-acf172513d20"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -19,6 +20,7 @@ TimeSpans = "bb34ddd2-327f-4c4a-bfb0-c98fc494ece1"
 UUIDs = "cf7118a7-6976-5b1a-9a39-7adc72f591a4"
 
 [compat]
+ArgCheck = "2.5"
 Compat = "3.32, 4"
 EDF = "0.8"
 FilePathsBase = "0.9"

@@ -547,6 +547,18 @@ struct ConvertedSamples
     samples::Union{Samples,Missing}
     channel_plans::Vector{FilePlanV4}
     sensor_label::Union{String,Missing}
+
+    function ConvertedSamples(samples, channel_plans, sensor_label)
+        # do some integrity checks
+        if !ismissing(samples)
+            @argcheck Onda.channel_count(samples) == length(channel_plans)
+            @argcheck issetequal(samples.info.channels, [c.channel for c in channel_plans])
+        end
+        if !ismissing(sensor_label)
+            @argcheck all(==(sensor_label), c.sensor_label for c in channel_plans)
+        end
+        new(samples, channel_plans, sensor_label)
+    end
 end
 
 """

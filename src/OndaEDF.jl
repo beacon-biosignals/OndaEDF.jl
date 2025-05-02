@@ -12,6 +12,7 @@ using TimeSpans
 using Tables
 using UUIDs
 
+using ArgCheck: @argcheck
 using DataStructures: DefaultDict
 using Legolas: lift
 using OrderedCollections: OrderedDict
