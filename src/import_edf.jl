@@ -515,9 +515,9 @@ grouper(var::Symbol) = grouper((var, ))
     end
 
 Represents a group of `EDF.Signal`s which have been converted into a single `Onda.Samples`
-(e.g. by [`edf_to_onda_samples`](@ref)).  The `channel_plans` are the [`FilePlanV4`s](@ref)
-that were used to do the conversion.  The `sensor_label` field is the single unique value of
-the `sensor_label` fields of the `channel_plans`.
+(e.g. by [`edf_to_onda_samples`](@ref)).  The `channel_plans` are the [`FilePlanV4`s](@ref
+FilePlanV4) that were used to do the conversion.  The `sensor_label` field is the single
+unique value of the `sensor_label` fields of the `channel_plans`.
 
 If conversion failed for any reason, `samples` will be `missing`.  Any runtime errors
 encountered during conversion will be stored in the `error` field of the `channel_plans`.

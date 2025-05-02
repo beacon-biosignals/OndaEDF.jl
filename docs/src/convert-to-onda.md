@@ -191,19 +191,26 @@ new_plan = plan_edf_to_onda_samples_groups(new_plan)
 ### Execute the plan
 
 Once the plan has been reviewed and deemed satisfactory, execute the plan to generate `Onda.Samples` and an "executed plan" record.
-This is accomplished with the [`edf_to_onda_samples`](@ref) function, which takes an `EDF.File` and a plan as input, and returns an `OrderedDict` of `Onda.Samples` (keyed by the `sensor_label` from the plan), and the plan as executed.
-The executed plan may differ from the input plan.
-Most notably, if any errors were encountered during execution, they will be caught and the error and stacktrace will be stored as strings in the `error` field.
-It is important to review the executed plan a final time to ensure everything was converted as expected and no unexpected errors were encountered.
+This is accomplished with the [`edf_to_onda_samples`](@ref) function, which takes an `EDF.File` and a plan as input, and returns a `Vector{ConvertedSamples}`.
+For each `sensor_label` in the plan, the corresponding [`ConvertedSamples`](@ref) captures the plan rows, the resulting `Onda.Samples`, and the `sensor_label`.
+
+It is important to review the converted samples a final time to ensure everything was converted as expected and no unexpected errors were encountered.
+First, check for any converted samples with `missing` values in the `.samples` field.
+These indicated that conversion of these plan rows failed for some reason, either because the EDF signal metadata could not be matched with appropriate Onda metadata or because of a runtime error during conversion.
 If any errors _were_ encountered, you may need to iterate further.
+
+Second, check the combined plan as executed, which can be recovered via [`OndaEDF.get_plan(::Vector{ConvertedSamples})`](@ref), and may differ from the input plan.
+Most notably, if any errors were encountered during execution, they will be caught and the error and stacktrace will be stored as strings in the `error` field.
 
 ### Store the output
 
 The final step is to store both the `Onda.Samples` and the executed plan in some persistent storage.
 
-For storing the plan, use [`OndaEDF.write_plan`](@ref) (or `Legolas.write(file_path, plan, FilePlanV4SchemaVersion())` (see the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV4`](@ref OndaEDF.FilePlanV4).
+For storing the plan, use `Legolas.write(file_path, plan, FilePlanV4SchemaVersion())` on the results of [`OndaEDF.get_plan`](@ref) (see also the documentation for [`Legolas.write`](https://beacon-biosignals.github.io/Legolas.jl/stable/#Legolas.write) and [`FilePlanV4`](@ref OndaEDF.FilePlanV4)).
 
 For storing `Onda.Samples`, see [`Onda.store`](https://beacon-biosignals.github.io/Onda.jl/stable/#Onda.store), which supports serializing LPCM-encoded samples to [any "path-like" type](https://beacon-biosignals.github.io/Onda.jl/stable/#Support-For-Generic-Path-Like-Types) (i.e., anything that provides a method for `write`).
+OndaEDF.jl provides methods for `Onda.store` that accept [`ConvertedSamples`](@ref) and propagate `missing` samples.
+
 Note that `Onda.store` requires at a minimum the file path (or "path-like" writeable), the format to use to serialize the samples (like `"lpcm"` or `"lpcm.zst"`), and the `Samples` themselves.
 However, this only _serializes_ the samples to the file path.
 In most cases, you will want a _signal record_ that can be stored elsewhere, which combines the path and file format to the serialized samples along with the `SamplesInfo` and other metadata required to be able to _deserialize_ and use these samples.
@@ -211,11 +218,35 @@ In this case, you should use the second `Onda.store` method which additionally r
 
 - `recording::UUID` (the recording that this signal is associated with)
 - `start::Period` (the start time of this signal _relative to the start of the recording_)
-- `sensor_label::AbstractString` (a _unique label_, defaults to the `sensor_type`)
+- `sensor_label::AbstractString` (a _unique label_, defaults to the the `sensor_label` from the `ConvertedSamples`)
 
-While the `edf_to_onda_samples` returns an `OrderedDict` whose keys are valid `sensor_label`s when considering the EDF file alone, Onda requires that `sensor_label` be unique for the entire _recording_.  If you have signals from other sources that are associated with the same recording (e.g., different devices, multiple EDF files, etc.) that may have common `sensor_type`s, you must ensure that the `sensor_label`s that you store the signals with are _globally_ unique.
+While OndaEDF.jl generally creates `sensor_label`s which are valid when considering the EDF file alone, Onda requires that `sensor_label` be unique for the entire _recording_.  If you have signals from other sources that are associated with the same recording (e.g., different devices, multiple EDF files, etc.) that may have common `sensor_type`s, you must ensure that the `sensor_label`s that you store the signals with are _globally_ unique.
 
-#### Example: storing samples
+#### Example: storing samples and plan
+
+```julia
+edf = EDF.File(edf_path)
+converted_samples = edf_to_onda_samples(edf, plans)
+
+# generate SignalV2 rows
+start_relative_to_recording = Second(0)
+signals = map(converted_samples) do converted
+    return Onda.store(joinpath("samples", recording, converted.sensor_label * ".lpcm"),
+                      "lpcm", converted, recording, start_relative_to_recording)
+end
+
+# write combined signals table out
+Legolas.write(string(recording, ".onda.signal.arrow"),
+              Onda.SignalV2SchemaVersion(),
+              skipmissing(signals))
+
+# write plan table out
+Legolas.write(string(recording, ".ondaedf.file-plan.arrow"),
+              OndaEDF.FilePlanV4SchemaVersion(),
+              OndaEDF.get_plan(converted_samples))
+```
+
+#### Example: generating unique `sensor_label`s
 
 Consider a case with parallel recordings from a traditional EEG system (received as an EDF) and some custom EEG hardware (which emits Onda-formatted data natively).
 Each device generates multichannel EEG data and uses `sensor_type="eeg"`.
@@ -230,17 +261,16 @@ plans = map(plan_edf_to_onda_samples(edf)) do plan
     Legolas.record_merge(plan; recording, sensor_label="edf_" * plan.sensor_label)
 end
 
-edf_samples, plan_executed = edf_to_onda_samples(edf, plans)
+converted_samples = edf_to_onda_samples(edf, plans)
 
 start_relative_to_recording = Second(0)
-edf_signals = map(keys(edf_samples)) do sensor_label
-    samples = edf_samples[sensor_label]
-    return Onda.store(joinpath("samples", sensor_label * ".lpcm"), "lpcm", samples,
-                      recording, start_relative_to_recording, sensor_label)
+edf_signals = map(converted_samples) do converted
+    return Onda.store(joinpath("samples", recording, converted.sensor_label * ".lpcm"),
+                      "lpcm", converted, recording, start_relative_to_recording)
 end
 
 # write combined signals table out
-all_signals = vcat(prototype_signals, edf_signals)
+all_signals = vcat(prototype_signals, skipmissing(edf_signals))
 @assert allunique(s.sensor_label for s in all_signals)
 Legolas.write(string(recording, ".onda.signal.arrow"),
               Onda.SignalV2SchemaVersion(),
@@ -249,7 +279,7 @@ Legolas.write(string(recording, ".onda.signal.arrow"),
 # write plan table out
 Legolas.write(string(recording, ".ondaedf.file-plan.arrow"),
               OndaEDF.FilePlanV4SchemaVersion(),
-              plan_executed)
+              OndaEDF.get_plan(converted_samples))
 ```
 
 ## Batch conversion of many EDFs
