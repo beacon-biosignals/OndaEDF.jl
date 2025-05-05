@@ -257,7 +257,10 @@ recording = uuid4()
 prototype_signals = ingest_prototype_device_as_onda(prototype_path, recording)
 
 edf = EDF.File(edf_path)
-plans = map(plan_edf_to_onda_samples(edf)) do plan
+plans = plan_edf_to_onda_samples(edf)
+
+# modify the plan before executing to prepend "edf_" to sensor labels:
+plans = map(plans) do plan
     Legolas.record_merge(plan; recording, sensor_label="edf_" * plan.sensor_label)
 end
 
@@ -265,6 +268,7 @@ converted_samples = edf_to_onda_samples(edf, plans)
 
 start_relative_to_recording = Second(0)
 edf_signals = map(converted_samples) do converted
+    # `sensor_label` is automatically propagated from the `ConvertedSamples`:
     return Onda.store(joinpath("samples", recording, converted.sensor_label * ".lpcm"),
                       "lpcm", converted, recording, start_relative_to_recording)
 end
