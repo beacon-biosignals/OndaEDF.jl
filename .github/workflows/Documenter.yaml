@@ -1,3 +1,4 @@
+---
 name: Documenter
 on:
   workflow_dispatch:

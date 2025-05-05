@@ -38,7 +38,7 @@ This is straightforward, using [`plan_edf_to_onda_samples`](@ref).
 As outlined in the documentation for [`plan_edf_to_onda_samples`](@ref), a "plan" is a table with one row per `EDF.Signal`, which contains all the fields from the signal's header as well as the fields of the `Onda.SamplesInfoV2` that will be generated when the plan is executed (with the caveat that the `:channels` field is called `:channel` to indicate that it corresponds to a single channel in the output).
 It also contains a few additional fields for defining the mapping between EDF and Onda signal indices, as well as a field to capture any errors thrown during planning (or, more likely, during execution of the plan):
 - `:edf_signal_index`, the 1-based numerical index of the source signal in `edf.signals`.
-- `:sensor_label`, a file-unique unique label for this group of channels (may be `missing`).
+- `:sensor_label`, label that is unique within this EDF file for this group of channels (may be `missing`).
 - `:recording`, an optional UUID of the recording procedure these signals should be associated with.
 - `:error`, any errors that were caught during planning and/or execution.
 
@@ -195,8 +195,8 @@ This is accomplished with the [`edf_to_onda_samples`](@ref) function, which take
 For each `sensor_label` in the plan, the corresponding [`ConvertedSamples`](@ref) captures the plan rows, the resulting `Onda.Samples`, and the `sensor_label`.
 
 It is important to review the converted samples a final time to ensure everything was converted as expected and no unexpected errors were encountered.
-First, check for any converted samples with `missing` values in the `.samples` field.
-These indicated that conversion of these plan rows failed for some reason, either because the EDF signal metadata could not be matched with appropriate Onda metadata or because of a runtime error during conversion.
+First, check for any converted samples with `missing` values in the `samples` field.
+These indicated that conversion of these plan rows failed for some reason, either because the EDF signal metadata could not be matched with appropriate Onda metadata or because of a runtime error during conversion. If any errors were encountered during execution, they will be caught and the error and stacktrace will be stored as strings in the `error` field.
 If any errors _were_ encountered, you may need to iterate further.
 
 Second, check the combined plan as executed, which can be recovered via [`OndaEDF.get_plan(::Vector{ConvertedSamples})`](@ref), and may differ from the input plan.
@@ -216,9 +216,9 @@ However, this only _serializes_ the samples to the file path.
 In most cases, you will want a _signal record_ that can be stored elsewhere, which combines the path and file format to the serialized samples along with the `SamplesInfo` and other metadata required to be able to _deserialize_ and use these samples.
 In this case, you should use the second `Onda.store` method which additionally requires:
 
-- `recording::UUID` (the recording that this signal is associated with)
-- `start::Period` (the start time of this signal _relative to the start of the recording_)
-- `sensor_label::AbstractString` (a _unique label_, defaults to the the `sensor_label` from the `ConvertedSamples`)
+- `recording::UUID`: the recording that this signal is associated with
+- `start::Period`: the start time of this signal _relative to the start of the recording_
+- `sensor_label::AbstractString`: a _unique label_, defaults to the the `sensor_label` from the `ConvertedSamples`
 
 While OndaEDF.jl generally creates `sensor_label`s which are valid when considering the EDF file alone, Onda requires that `sensor_label` be unique for the entire _recording_.  If you have signals from other sources that are associated with the same recording (e.g., different devices, multiple EDF files, etc.) that may have common `sensor_type`s, you must ensure that the `sensor_label`s that you store the signals with are _globally_ unique.
 

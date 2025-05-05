@@ -1,3 +1,4 @@
+---
 coverage:
   # Make Codecov status checks never fail until we sort out the issues with multiple
   # conditional workflows: https://github.com/beacon-biosignals/TemplateLab.jl/issues/110
