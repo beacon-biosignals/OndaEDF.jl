@@ -22,22 +22,24 @@ end
 
 function mock_plan(; v, rng=GLOBAL_RNG)
     ingested = rand(rng, Bool)
+    errored = !ingested && rand(rng, Bool)
+
     specific_kwargs = if v == 1
-        (; kind=ingested ? "eeg" : missing)
+        (; kind=ingested ? "eeg" : missing,
+         recording=(ingested && rand(rng, Bool)) ? uuid4() : missing)
     elseif v in (2, 3)
         (; sensor_type=ingested ? "eeg" : missing,
-         sensor_label=ingested ? "eeg" : missing)
+         sensor_label=ingested ? "eeg" : missing,
+         recording= (ingested && rand(rng, Bool)) ? uuid4() : missing)
+    elseif v== 4
+        (; sensor_type=ingested ? "eeg" : missing)
     else
         error("Invalid version")
     end
-    errored = !ingested && rand(rng, Bool)
-    PlanVersion = if v == 1
-        PlanV1
-    elseif v == 2
-        PlanV2
-    else
-        PlanV3
-    end
+
+    PlanSchemaVersion = Legolas.SchemaVersion("ondaedf.plan", v)
+    Legolas.declared(PlanSchemaVersion) || error("Invalid version: $v")
+    PlanVersion = Legolas.record_type(PlanSchemaVersion)
     return PlanVersion(; label="EEG CZ-M1",
                        transducer_type="Ag-Cl electrode",
                        physical_dimension="uV",
@@ -55,7 +57,6 @@ function mock_plan(; v, rng=GLOBAL_RNG)
                        sample_type=ingested ? "float32" : missing,
                        sample_rate=ingested ? 1/128 : missing,
                        error=errored ? "Error blah blah" : nothing,
-                       recording= (ingested && rand(rng, Bool)) ? uuid4() : missing,
                        specific_kwargs...)
 end
 
@@ -65,20 +66,23 @@ function mock_file_plan(n; v, rng=GLOBAL_RNG)
 end
 
 function mock_file_plan(; v, rng=GLOBAL_RNG)
+    PlanSchemaVersion = Legolas.SchemaVersion("ondaedf.file-plan", v)
+    Legolas.declared(PlanSchemaVersion) || error("Invalid version: $v")
+    PlanVersion = Legolas.record_type(PlanSchemaVersion)
     plan = mock_plan(; v, rng)
-    PlanVersion = if v == 1
-        FilePlanV1
-    elseif v == 2
-        FilePlanV2
-    else
-        FilePlanV3
+    specific_kwargs = if v in (1, 2, 3)
+        (; onda_signal_index=rand(rng, Int))
+    elseif v == 4
+        (; sensor_label=string(plan.sensor_type, '_', rand(rng, Int)))
     end
+
     return PlanVersion(Tables.rowmerge(plan;
                                        edf_signal_index=rand(rng, Int),
-                                       onda_signal_index=rand(rng, Int)))
+                                       specific_kwargs...
+                                       ))
 end
 
-@testset "Schema version $v" for v in (1, 2, 3)
+@testset "Schema version $v" for v in (1, 2, 3, 4)
     SamplesInfo = v == 1 ? Onda.SamplesInfoV1 : SamplesInfoV2
 
     @testset "ondaedf.plan@$v" begin
