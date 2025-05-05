@@ -57,7 +57,7 @@
         end
     end
 
-    @testset "edf_to_onda_samples with manual override" begin
+    @testset "edf_to_onda_samples with plan" begin
         n_records = 100
         edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
         @test_throws(ArgumentError(":seconds_per_record not found in header, or missing"),
@@ -71,6 +71,13 @@
             converted = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
             samples = OndaEDF.get_samples(converted)
             validate_extracted_signals(s.info for s in samples)
+        end
+
+        @testset "duplicate sensor_types generate unique sensor_labels" begin
+            signal_plans = Legolas.record_merge.(signal_plans; sensor_type="blah")
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
+            @test !allequal(p.sensor_label for p in grouped_plans)
+            @test all(contains(r"^blah(_[0-9]+)?$"), p.sensor_label for p in grouped_plans)
         end
 
         @testset "custom grouping" begin
