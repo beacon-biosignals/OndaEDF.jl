@@ -1,5 +1,6 @@
 module OndaEDFSchemasTests
 
+using Aqua
 using Arrow
 using Legolas
 using Onda
@@ -9,6 +10,10 @@ using Tables
 using Test
 using TimeSpans
 using UUIDs
+
+@testset "Aqua" begin
+    Aqua.test_all(OndaEDFSchemas)
+end
 
 function mock_plan(n; v, rng=GLOBAL_RNG)
     tbl = [mock_plan(; v, rng) for _ in 1:n]
