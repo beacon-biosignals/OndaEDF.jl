@@ -20,6 +20,43 @@
         end
     end
 
+    @testset "Onda.store" begin
+        n_records = 100
+        edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
+        plan = OndaEDF.plan_edf_to_onda_samples(edf)
+        plan = map(plan) do row
+            Legolas.record_merge(row; sensor_label="edf_" * row.sensor_label)
+        end
+        converted_samples = OndaEDF.edf_to_onda_samples(edf, plan)
+        samples = first(filter(cs -> !ismissing(cs.samples), converted_samples))
+        info = samples.samples.info
+        miss = first(filter(cs -> ismissing(cs.samples), converted_samples))
+
+        mktempdir() do root
+            path = joinpath(root, info.sensor_type * ".lpcm")
+            Onda.store(path, "lpcm", samples)
+            samples_rt = Onda.load(path, "lpcm", info)
+            @test samples_rt == Onda.decode(samples.samples)
+            @test ismissing(Onda.store(path, "lpcm", miss))
+        end
+
+        mktempdir() do root
+            path = joinpath(root, info.sensor_type * ".lpcm")
+            recording = uuid4()
+            start = Second(10)
+            signal = Onda.store(path, "lpcm", samples, recording, start)
+            @test signal isa SignalV2
+            @test isfile(signal.file_path)
+            # we customized this
+            @test signal.sensor_label == samples.sensor_label != info.sensor_type
+            samples_rt = Onda.load(signal)
+            @test samples_rt == Onda.decode(samples.samples)
+            @test signal.span == translate(TimeSpan(0, Onda.duration(samples.samples)), start)
+
+            @test ismissing(Onda.store(path, "lpcm", miss, recording, start))
+        end
+    end
+
     @testset "edf_to_onda_samples with manual override" begin
         n_records = 100
         edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
