@@ -74,8 +74,8 @@
         end
 
         @testset "duplicate sensor_types generate unique sensor_labels" begin
-            signal_plans = Legolas.record_merge.(signal_plans; sensor_type="blah")
-            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
+            bad_plans = Legolas.record_merge.(signal_plans; sensor_type="blah")
+            grouped_plans = plan_edf_to_onda_samples_groups(bad_plans)
             @test !allequal(p.sensor_label for p in grouped_plans)
             @test all(contains(r"^blah(_[0-9]+)?$"), p.sensor_label for p in grouped_plans)
         end
