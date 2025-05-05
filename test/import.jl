@@ -5,15 +5,59 @@
         for T in (Int16, EDF.Int24)
             edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, T)
 
-            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf)
-            @test length(returned_samples) == 13
+            converted_samples = OndaEDF.edf_to_onda_samples(edf)
+            @test length(converted_samples) == 14
 
+            returned_samples = OndaEDF.get_samples(converted_samples)
+            @test length(returned_samples) == 13
+            @test all(!ismissing, returned_samples)
             validate_extracted_signals(s.info for s in returned_samples)
             @test all(Onda.duration(s) == Nanosecond(Second(200)) for s in returned_samples)
+
+            all_samples = OndaEDF.get_samples(converted_samples; skipmissing=false)
+            @test any(ismissing, all_samples)
+            @test length(all_samples) == length(converted_samples)
         end
     end
 
-    @testset "edf_to_onda_samples with manual override" begin
+    @testset "Onda.store" begin
+        n_records = 100
+        edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
+        plan = OndaEDF.plan_edf_to_onda_samples(edf)
+        plan = map(plan) do row
+            Legolas.record_merge(row; sensor_label="edf_" * row.sensor_label)
+        end
+        converted_samples = OndaEDF.edf_to_onda_samples(edf, plan)
+        samples = first(filter(cs -> !ismissing(cs.samples), converted_samples))
+        info = samples.samples.info
+        miss = first(filter(cs -> ismissing(cs.samples), converted_samples))
+
+        mktempdir() do root
+            path = joinpath(root, info.sensor_type * ".lpcm")
+            Onda.store(path, "lpcm", samples)
+            samples_rt = Onda.load(path, "lpcm", info)
+            @test samples_rt == Onda.decode(samples.samples)
+            @test ismissing(Onda.store(path, "lpcm", miss))
+        end
+
+        mktempdir() do root
+            path = joinpath(root, info.sensor_type * ".lpcm")
+            recording = uuid4()
+            start = Second(10)
+            signal = Onda.store(path, "lpcm", samples, recording, start)
+            @test signal isa SignalV2
+            @test isfile(signal.file_path)
+            # we customized this
+            @test signal.sensor_label == samples.sensor_label != info.sensor_type
+            samples_rt = Onda.load(signal)
+            @test samples_rt == Onda.decode(samples.samples)
+            @test signal.span == translate(TimeSpan(0, Onda.duration(samples.samples)), start)
+
+            @test ismissing(Onda.store(path, "lpcm", miss, recording, start))
+        end
+    end
+
+    @testset "edf_to_onda_samples with plan" begin
         n_records = 100
         edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
         @test_throws(ArgumentError(":seconds_per_record not found in header, or missing"),
@@ -24,24 +68,46 @@
 
         @testset "signal-wise plan" begin
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
-            returned_samples, plan = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
+            converted = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
+            samples = OndaEDF.get_samples(converted)
+            validate_extracted_signals(s.info for s in samples)
+        end
 
-            validate_extracted_signals(s.info for s in returned_samples)
+        @testset "duplicate sensor_types generate unique sensor_labels" begin
+            bad_plans = Legolas.record_merge.(signal_plans; sensor_type="blah")
+            grouped_plans = plan_edf_to_onda_samples_groups(bad_plans)
+            @test !allequal(p.sensor_label for p in grouped_plans)
+            @test all(contains(r"^blah(_[0-9]+)?$"), p.sensor_label for p in grouped_plans)
         end
 
         @testset "custom grouping" begin
-            signal_plans = [rowmerge(plan; grp=string(plan.sensor_type, plan.sample_unit, plan.sample_rate))
-                            for plan in signal_plans]
-            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
-                                                            onda_signal_groupby=:grp)
-            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
-            validate_extracted_signals(s.info for s in returned_samples)
-
             # one channel per signal, group by label
             grouped_plans = plan_edf_to_onda_samples_groups(signal_plans,
-                                                            onda_signal_groupby=:label)
-            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans)
+                                                            extra_onda_signal_groupby=(:label,))
+            converted = edf_to_onda_samples(edf, grouped_plans)
+            returned_samples = OndaEDF.get_samples(converted)
             @test all(==(1), channel_count.(returned_samples))
+        end
+
+        @testset "plan sensor_labels are respected" begin
+            grouped_plans = plan_edf_to_onda_samples_groups(signal_plans)
+            grouped_plans = let
+                ecg_count = 1
+                map(grouped_plans) do plan
+                    sensor_label = "edf_" * plan.sensor_label
+                    if isequal(plan.sensor_type, "ecg")
+                        sensor_label *= string('_', ecg_count)
+                        ecg_count += 1
+                    end
+                    return Tables.rowmerge(plan; sensor_label)
+                end
+            end
+
+            converted = OndaEDF.edf_to_onda_samples(edf, grouped_plans)
+            sensor_labels = [c.sensor_label for c in converted]
+            @test "edf_ecg_1" ∈ sensor_labels
+            @test "edf_ecg_2" ∈ sensor_labels
+            @test all(startswith("edf_"), skipmissing(sensor_labels))
         end
 
         @testset "preserve existing row index" begin
@@ -54,7 +120,8 @@
             @test last(plans_rev).edf_signal_index == 1
 
             grouped_plans_rev = plan_edf_to_onda_samples_groups(plans_rev)
-            returned_samples, plan = edf_to_onda_samples(edf, grouped_plans_rev)
+            converted = edf_to_onda_samples(edf, grouped_plans_rev)
+            returned_samples = OndaEDF.get_samples(converted)
             # we need to re-reverse the order of channels to get to what's
             # expected in teh tests
             infos = [rowmerge(s.info; channels=reverse(s.info.channels))
@@ -68,7 +135,6 @@
             grouped_plans_rev_bad = plan_edf_to_onda_samples_groups(plans_rev_bad)
             @test_throws(ArgumentError("Plan's label EcG EKGL does not match EDF label EEG C3-M2!"),
                          edf_to_onda_samples(edf, grouped_plans_rev_bad))
-
         end
     end
 
@@ -161,8 +227,8 @@
             end
 
             mktempdir() do root
-                @test_logs (:warn, r"Extracting prefix") begin
-                    nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
+                nt = @test_logs (:warn, r"Extracting prefix") begin
+                    OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
                 end
                 @test nt.signals_path == joinpath(root, "edff.onda.signals.arrow")
                 @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
@@ -202,15 +268,13 @@
                         _signal("EMG LAT", "E", "uV", 0, 1000)]
         edf_header = EDF.FileHeader("0", "", "", DateTime("2014-10-27T22:24:28"),
                                     true, 10, 1)
-        test_edf = EDF.File((io = IOBuffer(); close(io); io),
-                            edf_header, edf_signals)
+        test_edf = EDF.File(IOBuffer(), edf_header, edf_signals)
 
         plan = plan_edf_to_onda_samples(test_edf)
-        sensors = Tables.columntable(unique((; p.sensor_type, p.sensor_label, p.onda_signal_index) for p in plan))
+        sensors = Tables.columntable(unique((; p.sensor_type, p.sensor_label) for p in plan))
         @test length(sensors.sensor_type) == 2
         @test all(==("emg"), sensors.sensor_type)
-        # TODO: uniquify this in the grouping...
-        @test_broken allunique(sensors.sensor_label)
+        @test allunique(sensors.sensor_label)
     end
 
     @testset "error handling" begin
@@ -242,11 +306,13 @@
         plans = plan_edf_to_onda_samples(edf)
         # intentionally combine signals of different sensor_types
         different = findfirst(row -> !isequal(row.sensor_type, first(plans).sensor_type), plans)
-        bad_plans = rowmerge.(plans[[1, different]]; onda_signal_index=1)
-        bad_samples, bad_plans_exec = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
+        bad_plans = rowmerge.(plans[[1, different]]; sensor_label=plans[1].sensor_label)
+        bad_converted = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
+        bad_plans_exec = OndaEDF.get_plan(bad_converted)
         @test all(row.error isa String for row in bad_plans_exec)
         @test all(occursin("ArgumentError", row.error) for row in bad_plans_exec)
-        @test isempty(bad_samples)
+        @test isempty(OndaEDF.get_samples(bad_converted))
+        @test all(ismissing, OndaEDF.get_samples(bad_converted; skipmissing=false))
     end
 
     @testset "units labels and encoding matched independently" begin
@@ -287,14 +353,15 @@
         edf, _ = make_test_data(StableRNG(42), 256, 512, 100, Int16)
         plan = plan_edf_to_onda_samples(edf)
         @test validate(Tables.schema(plan),
-                       SchemaVersion("ondaedf.file-plan", 3)) === nothing
+                       FilePlanV4SchemaVersion()) === nothing
 
-        samples, plan_exec = edf_to_onda_samples(edf, plan)
-        @test validate(Tables.schema(plan_exec),
-                       SchemaVersion("ondaedf.file-plan", 3)) === nothing
+        converted = edf_to_onda_samples(edf, plan)
+        plan_exec = OndaEDF.get_plan(converted)
+        @test validate(Tables.schema(Tables.columntable(plan_exec)),
+                       FilePlanV4SchemaVersion()) === nothing
 
         plan_rt = let io=IOBuffer()
-            OndaEDF.write_plan(io, plan)
+            Legolas.write(io, plan, FilePlanV4SchemaVersion())
             seekstart(io)
             Legolas.read(io; validate=true)
         end

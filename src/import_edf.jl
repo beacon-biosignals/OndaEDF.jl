@@ -15,16 +15,19 @@ function _err_msg(e, msg="Error while converting EDF:")
     return msg
 end
 
+_merge(row; kwargs...) = rowmerge(row; kwargs...)
+_merge(row::Legolas.AbstractRecord; kwargs...) = Legolas.record_merge(row; kwargs...)
+
 function _errored_row(row, e)
     msg = _err_msg(e, "Skipping signal $(row.label): error while extracting channels")
-    return rowmerge(row; error=msg)
+    return _merge(row; error=msg)
 end
 
 function _errored_rows(rows, e)
     labels = [row.label for row in rows]
     labels_str = join(string.('"', labels, '"'), ", ", ", and ")
     msg = _err_msg(e, "Skipping signals $(labels_str): error while extracting channels")
-    return rowmerge.(rows; error=msg)
+    return _merge.(rows; error=msg)
 end
 
 #####
@@ -285,9 +288,9 @@ function Base.showerror(io::IO, e::SamplesInfoError)
 end
 
 function groupby(f, list)
-    d = Dict()
+    d = OrderedDict()
     for v in list
-        push!(get!(d, f(v), Vector{eltype(list)}()), v)
+        push!(get!(d, f(v), Vector{Any}()), v)
     end
     return d
 end
@@ -311,7 +314,7 @@ Tables.jl row with all the columns from the signal header, plus additional
 columns for the `Onda.SamplesInfo` for this signal, and the `seconds_per_record`
 that is passed in here.
 
-If no labels match, then the `channel` and `kind` columns are `missing`; the
+If no labels match, then the `channel` and `sensor_type` columns are `missing`; the
 behavior of other `SamplesInfo` columns is undefined; they are currently set to
 missing but that may change in future versions.
 
@@ -320,12 +323,12 @@ and then printed with backtrace to a `String` in the `error` column.
 
 ## Matching EDF label to Onda labels
 
-The `labels` keyword argument determines how Onda `channel` and signal `kind`
+The `labels` keyword argument determines how Onda `channel` and signal `sensor_type`
 are extracted from the EDF label.
 
 Labels are specified as an iterable of `signal_names => channel_names` pairs.
 `signal_names` should be an iterable of signal names, the first of which is the
-canonical name used as the Onda `kind`.  Each element of `channel_names` gives
+canonical name used as the Onda `sensor_type`.  Each element of `channel_names` gives
 the specification for one channel, which can either be a string, or a
 `canonical_name => alternates` pair.  Occurences of `alternates` will be
 replaces with `canonical_name` in the generated channel label.
@@ -389,63 +392,48 @@ function plan_edf_to_onda_samples(header,
                     # create SamplesInfo and return
                     row = rowmerge(row;
                                    channel=matched,
-                                   sensor_type=first(signal_names),
-                                   sensor_label=first(signal_names))
-                    return PlanV3(row)
+                                   sensor_type=first(signal_names))
+                    return PlanV4(row)
                 end
             end
         end
     catch e
         e isa InterruptException && rethrow()
-        return PlanV3(_errored_row(row, e))
+        return PlanV4(_errored_row(row, e))
     end
 
     # nothing matched, return the original signal header (as a namedtuple)
-    return PlanV3(row)
+    return PlanV4(row)
 end
-
-# create a table with a plan for converting this EDF file to onda: one row per
-# signal, with the Onda.SamplesInfo fields that will be generated (modulo
-# `promote_encoding`).  The column `onda_signal_index` gives the planned grouping
-# of EDF signals into Onda Samples.
-#
-# pass this plan to edf_to_onda_samples to actually run it
 
 """
     plan_edf_to_onda_samples(edf::EDF.File;
                              labels=STANDARD_LABELS,
                              units=STANDARD_UNITS,
-                             onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
+                             extra_onda_signal_groupby=())
 
 Formulate a plan for converting an `EDF.File` to Onda Samples.  This applies
 `plan_edf_to_onda_samples` to each individual signal contained in the file,
 storing `edf_signal_index` as an additional column.
 
 The resulting rows are then passed to [`plan_edf_to_onda_samples_groups`](@ref)
-and grouped according to `onda_signal_groupby` (by default, the `:sensor_type`,
-`:sample_unit`, and `:sample_rate` columns), and the group index is added as an
-additional column in `onda_signal_index`.
+and grouped according to the `:sensor_type`, `:sample_unit`, and `:sample_rate`
+columns, as well as any additional columns specified in
+`extra_onda_signal_groupby`.  A `sensor_label` is generated for each group,
+based on the `sensor_type` but with a numeric suffix `_n` for the `n`th
+occurance of a `sensor_type` after the first.
 
 The resulting plan is returned as a table.  No signal data is actually read from
 the EDF file; to execute this plan and generate `Onda.Samples`, use
 [`edf_to_onda_samples`](@ref).  The index of the EDF signal (after filtering out
 signals that are not `EDF.Signal`s, e.g. annotation channels) for each row is
 stored in the `:edf_signal_index` column, and the rows are sorted in order of
-`:onda_signal_index`, and then by `:edf_signal_index`.
+`:sensor_label`, and then by `:edf_signal_index`.
 """
 function plan_edf_to_onda_samples(edf::EDF.File;
                                   labels=STANDARD_LABELS,
                                   units=STANDARD_UNITS,
-                                  preprocess_labels=nothing,
-                                  onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
-    # keep the kwarg so we can throw a more informative error
-    if preprocess_labels !== nothing
-        throw(ArgumentError("the `preprocess_labels` argument has been removed.  " *
-                            "Instead, preprocess signal header rows to before calling " *
-                            "`plan_edf_to_onda_samples`.  See the OndaEDF README."))
-    end
-
-
+                                  extra_onda_signal_groupby=())
     true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
     plan_rows = map(true_signals) do s
         return plan_edf_to_onda_samples(s.header, edf.header.seconds_per_record;
@@ -454,26 +442,29 @@ function plan_edf_to_onda_samples(edf::EDF.File;
 
     # group signals by which Samples they will belong to, promote_encoding, and
     # write index of destination signal into plan to capture grouping
-    plan_rows = plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby)
+    plan_rows = plan_edf_to_onda_samples_groups(plan_rows; extra_onda_signal_groupby)
 
-    return FilePlanV3.(plan_rows)
+    return FilePlanV4.(plan_rows)
 end
 
 """
-    plan_edf_to_onda_samples_groups(plan_rows; onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
+    plan_edf_to_onda_samples_groups(plan_rows; extra_onda_signal_groupby=())
 
-Group together `plan_rows` based on the values of the `onda_signal_groupby`
-columns, creating the `:onda_signal_index` column and promoting the Onda encodings
-for each group using [`OndaEDF.promote_encodings`](@ref).
+Group together `plan_rows` based on the values of the `:sensor_type`,
+`:sample_unit`, `:sample_rate`, and `extra_onda_signal_groupby` columns,
+creating a unique `:sensor_label` per group and and promoting the Onda encodings
+for each group using [`OndaEDF.promote_encodings`](@ref).  All rows with the
+same `:sensor_label` will be combined into a single Onda Samples by
+[`edf_to_onda_samples`](@ref).
 
 If the `:edf_signal_index` column is not present or otherwise missing, it will
 be filled in based on the order of the input rows.
 
-The updated rows are returned, sorted first by the columns named in
-`onda_signal_groupby` and second by order of occurrence within the input rows.
+The updated rows are returned, sorted first by the grouping columns and second
+by order of occurrence within the input rows.
 """
 function plan_edf_to_onda_samples_groups(plan_rows;
-                                         onda_signal_groupby=(:sensor_type, :sample_unit, :sample_rate))
+                                         extra_onda_signal_groupby=())
     plan_rows = Tables.rows(plan_rows)
     # if `edf_signal_index` is not present, create it before we re-order things
     plan_rows = map(enumerate(plan_rows)) do (i, row)
@@ -481,44 +472,175 @@ function plan_edf_to_onda_samples_groups(plan_rows;
         return rowmerge(row; edf_signal_index)
     end
 
+    onda_signal_groupby = (REQUIRED_SIGNAL_GROUPING_COLUMNS...,
+                           extra_onda_signal_groupby...)
+
     grouped_rows = groupby(grouper(onda_signal_groupby), plan_rows)
     sorted_keys = sort!(collect(keys(grouped_rows)))
-    plan_rows = mapreduce(vcat, enumerate(sorted_keys)) do (onda_signal_index, key)
-        rows = grouped_rows[key]
-        encoding = promote_encodings(rows)
-        return [rowmerge(row, encoding, (; onda_signal_index)) for row in rows]
+
+    # generate a unique sensor label for each group based on sensor_type
+    sensor_labels = Dict{Any,String}()
+    sensor_counts = DefaultDict{String,Int}(0)
+    for key in sorted_keys
+        sensor_type = first(key)
+        ismissing(sensor_type) && continue
+        count = sensor_counts[sensor_type] += 1
+        sensor_labels[key] = count > 1 ? string(sensor_type, '_', count) : sensor_type
     end
-    return plan_rows
+
+    output_plan_rows = []
+    for key in sorted_keys
+        rows = grouped_rows[key]
+        sensor_label = get(sensor_labels, key, missing)
+        encoding = promote_encodings(rows)
+        append!(output_plan_rows,
+                [rowmerge(row, encoding, (; sensor_label)) for row in rows])
+    end
+
+    return output_plan_rows
 end
 
 _get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missing
-function grouper(vars=(:sensor_type, :sample_unit, :sample_rate))
+function grouper(vars=REQUIRED_SIGNAL_GROUPING_COLUMNS)
     return x -> NamedTuple{vars}(_get.(Ref(x), vars))
 end
 grouper(vars::AbstractVector{Symbol}) = grouper((vars..., ))
 grouper(var::Symbol) = grouper((var, ))
 
-# return Samples for each :onda_signal_index
+"""
+    struct ConvertedSamples
+        samples::Union{Samples,Missing}
+        channel_plans::Vector{FilePlanV4}
+        sensor_label::Union{String,Missing}
+    end
+
+Represents a group of `EDF.Signal`s which have been converted into a single `Onda.Samples`
+(e.g. by [`edf_to_onda_samples`](@ref)).  The `channel_plans` are the [`FilePlanV4`s](@ref
+FilePlanV4) that were used to do the conversion.  The `sensor_label` field is the single
+unique value of the `sensor_label` fields of the `channel_plans`.
+
+If conversion failed for any reason, `samples` will be `missing`.  Any runtime errors
+encountered during conversion will be stored in the `error` field of the `channel_plans`.
+
+## Convenience functions for storing converted samples
+
+The converted samples are _in-memory_ `Onda.Samples` objects that usually need to be
+persisted to some external storage.  OndaEDF.jl implements methods for [`Onda.store`](@ref)
+with a `ConvertedSamples` argument which will extract the wrapped `samples` and `Onda.store`
+them.  When the wrapped `samples` are `missing`, these methods return `missing.` When the
+`Onda.SignalV2`-returning method with arguments for `recording` and `start` is called, the
+`sensor_label` is propagated by default (but may be overridden).
+
+## Convenience functions for `EDF.File`-level collections
+
+Conversion of an entire `EDF.File` via [`edf_to_onda_samples`](@ref) returns a
+`Vector{ConvertedSamples}`.
+
+The [`get_plan`](@ref) function will collate the plans for a `Vector{ConvertedSamples}` into
+a single table that is suitable for passing to `Legolas.write`.
+
+The [`get_samples`](@ref) function extracts the converted samples from a
+`Vector{ConvertedSamples}`.  By default, this function will skip any samples that are
+`missing`, unless called with a keyword argument `skipmissing=false`.
+"""
+struct ConvertedSamples
+    samples::Union{Samples,Missing}
+    channel_plans::Vector{FilePlanV4}
+    sensor_label::Union{String,Missing}
+
+    function ConvertedSamples(samples, channel_plans, sensor_label)
+        # do some integrity checks
+        if !ismissing(samples)
+            @argcheck Onda.channel_count(samples) == length(channel_plans)
+            @argcheck issetequal(samples.info.channels, [c.channel for c in channel_plans])
+        end
+        if !ismissing(sensor_label)
+            @argcheck all(==(sensor_label), c.sensor_label for c in channel_plans)
+        end
+        new(samples, channel_plans, sensor_label)
+    end
+end
+
+"""
+    get_plan(cs::AbstractVector{ConvertedSamples})
+
+Extract the "executed plan" table from a collection of
+[`ConvertedSamples`](@ref) output from [`edf_to_onda_samples`](@ref).
+"""
+get_plan(cs::AbstractVector{ConvertedSamples}) = reduce(vcat, c.channel_plans for c in cs)
+
+"""
+    get_samples(cs::AbstractVector{ConvertedSamples}; skipmissing=true)
+
+Extract the `Onda.Samples` from a collection of [`ConvertedSamples`](@ref)
+output from [`edf_to_onda_samples`](@ref).
+
+If `skipmissing=true` (the default), only successfully converted samples will be
+returned.  If `skipmissing=false`, then some elements may be `missing`.
+"""
+function get_samples(cs::AbstractVector{ConvertedSamples}; skipmissing=true)
+    return if skipmissing
+        [c.samples for c in cs if !ismissing(c.samples)]
+    else
+        [c.samples for c in cs]
+    end
+end
+
+"""
+    Onda.store(file_path, file_format, samples::ConvertedSamples)
+    Onda.store(file_path, file_format, samples::ConvertedSamples, recording, start,
+               sensor_label=samples.sensor_label)
+
+[`ConvertedSamples`](@ref) (as output from [`edf_to_onda_samples`](@ref)) may be
+stored via `Onda.store`.  If the conversion failed and the wrapped `.samples`
+are `missing`, then this returns `missing`.
+
+If a recording `UUID` and start `Period` are provided, a `Onda.SignalV2` record
+will be returned pointing to the stored samples, with the `sensor_label` taken
+from the converted samples.
+"""
+function Onda.store(file_path, file_format, samples::ConvertedSamples)
+    return if ismissing(samples.samples)
+        missing
+    else
+        Onda.store(file_path, file_format, samples.samples)
+    end
+end
+
+# TODO: return a signal extension?
+function Onda.store(file_path, file_format, samples::ConvertedSamples, recording, start,
+                    sensor_label=samples.sensor_label)
+    return if ismissing(samples.samples)
+        missing
+    else
+        Onda.store(file_path, file_format, samples.samples, recording, start, sensor_label)
+    end
+end
+
 """
     edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_storage=missing)
 
-Convert Signals found in an EDF File to `Onda.Samples` according to the plan
-specified in `plan_table` (e.g., as generated by [`plan_edf_to_onda_samples`](@ref)), returning an
-iterable of the generated `Onda.Samples` and the plan as actually executed.
+Convert Signals found in an EDF File to `Onda.Samples` according to the plan specified in
+`plan_table` (e.g., as generated by [`plan_edf_to_onda_samples`](@ref)).  Returns a
+[`Vector{ConvertedSamples}`](@ref ConvertedSamples); use [`get_plan`](@ref) and
+[`get_samples`](@ref) to extract the executed plan and `Onda.Samples` respectively.
 
 The input plan is transformed by using [`merge_samples_info`](@ref) to combine
-rows with the same `:onda_signal_index` into a common `Onda.SamplesInfo`.  Then
+rows with the same `:sensor_label` into a common `Onda.SamplesInfo`.  Then
 [`OndaEDF.onda_samples_from_edf_signals`](@ref) is used to combine the EDF
 signals data into a single `Onda.Samples` per group.
 
 Any errors that occur are shown as `String`s (with backtrace) and inserted into
 the `:error` column for the corresponding rows from the plan.
 
-Samples are returned in the order of `:onda_signal_index`.  Signals that could
-not be matched or otherwise caused an error during execution are not returned.
+Samples are returned in the order that their corresponding `:sensor_label` occurs in the
+plan.  All EDF Signals from the plan with the same plan `:sensor_label` are combined into a
+single `Onda.Samples`, in order of `:edf_signal_index`.  Signals that could not be matched,
+where `:sensor_label` is `missing`, or otherwise caused an error during execution are not
+returned.
 
 If `validate=true` (the default), the plan is validated against the
-[`FilePlanV3`](@ref) schema, and the signal headers in the `EDF.File`.
+[`FilePlanV4`](@ref) schema, and the signal headers in the `EDF.File`.
 
 If `dither_storage=missing` (the default), dither storage is allocated automatically
 as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disables dithering.
@@ -531,7 +653,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
 
     if validate
         Legolas.validate(Tables.schema(Tables.columns(plan_table)),
-                         Legolas.SchemaVersion("ondaedf.file-plan", 3))
+                         OndaEDFSchemas.FilePlanV4SchemaVersion())
         for row in Tables.rows(plan_table)
             signal = true_signals[row.edf_signal_index]
             signal.header.label == row.label ||
@@ -540,9 +662,10 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
     end
 
     EDF.read!(edf)
-    plan_rows = Tables.rows(plan_table)
-    grouped_plan_rows = groupby(grouper((:onda_signal_index, )), plan_rows)
-    exec_rows = map(collect(grouped_plan_rows)) do (idx, rows)
+    plan_rows = map(FilePlanV4, Tables.rows(plan_table))
+    grouped_plan_rows = groupby(grouper((:sensor_label, )), plan_rows)
+    converted_samples = map(collect(grouped_plan_rows)) do (key, rows)
+        (; sensor_label) = key
         try
             info = merge_samples_info(rows)
             if ismissing(info)
@@ -558,20 +681,15 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
                 samples = onda_samples_from_edf_signals(SamplesInfoV2(info), signals,
                                                         edf.header.seconds_per_record; dither_storage)
             end
-            return (; idx, samples, plan_rows=rows)
+            return ConvertedSamples(samples, rows, sensor_label)
         catch e
             e isa InterruptException && rethrow()
             plan_rows = _errored_rows(rows, e)
-            return (; idx, samples=missing, plan_rows)
+            return ConvertedSamples(missing, plan_rows, sensor_label)
         end
     end
 
-    sort!(exec_rows; by=(row -> row.idx))
-    exec = Tables.columntable(exec_rows)
-
-    exec_plan = reduce(vcat, exec.plan_rows)
-
-    return collect(skipmissing(exec.samples)), exec_plan
+    return converted_samples
 end
 
 """
@@ -595,11 +713,11 @@ column.
     This is an internal function and is not meant to be called direclty.
 """
 function merge_samples_info(rows)
-    # we enforce that kind, sample_unit, and sample_rate are all equal here
-    key = unique(grouper((:sensor_type, :sample_unit, :sample_rate)).(rows))
+    # we enforce that sensor_type, sample_unit, and sample_rate are all equal here
+    key = unique(map(grouper(REQUIRED_SIGNAL_GROUPING_COLUMNS), rows))
     if length(key) != 1
         throw(ArgumentError("couldn't merge samples info from rows: multiple " *
-                            "kind/sample_unit/sample_rate combinations:\n\n" *
+                            "sensor_type/sample_unit/sample_rate combinations:\n\n" *
                             "$(pretty_table(String, key))\n\n" *
                             "$(pretty_table(String, rows))"))
     end
@@ -616,10 +734,6 @@ function merge_samples_info(rows)
         return (; onda_encoding..., NamedTuple(key)..., channels, edf_channels)
     end
 end
-
-#####
-##### `import_edf!`
-#####
 
 """
     OndaEDF.onda_samples_from_edf_signals(target::Onda.SamplesInfo, edf_signals,
@@ -681,7 +795,6 @@ end
 """
     store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
                       custom_extractors=STANDARD_EXTRACTORS, import_annotations::Bool=true,
-                      postprocess_samples=identity,
                       signals_prefix="edf", annotations_prefix=signals_prefix)
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
@@ -723,7 +836,6 @@ See the OndaEDF README for additional details regarding EDF formatting expectati
 """
 function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4();
                            import_annotations::Bool=true,
-                           postprocess_samples=identity,
                            signals_prefix="edf", annotations_prefix=signals_prefix,
                            kwargs...)
 
@@ -737,8 +849,9 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
     # Trailing slash needed for compatibility with AWSS3.jl's `S3Path`
     mkpath(joinpath(onda_dir, "samples") * '/')
 
-    signals = Onda.SignalV2[]
-    edf_samples, plan = edf_to_onda_samples(edf; kwargs...)
+    # edf_samples, plan = edf_to_onda_samples(edf; kwargs...)
+    converted_samples = edf_to_onda_samples(edf; kwargs...)
+    plan = get_plan(converted_samples)
 
     errors = _get(Tables.columns(plan), :error)
     if !ismissing(errors)
@@ -752,15 +865,17 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         end
     end
 
-    edf_samples = postprocess_samples(edf_samples)
-    for samples in edf_samples
-        sample_filename = string(recording_uuid, "_", samples.info.sensor_type, ".", file_format)
+    signals = Onda.SignalV2[]
+    for (; sensor_label, samples) in converted_samples
+        ismissing(samples) && continue
+        sample_filename = string(recording_uuid, "_", sensor_label, ".", file_format)
         file_path = joinpath(onda_dir, "samples", sample_filename)
-        signal = store(file_path, file_format, samples, recording_uuid, Second(0))
+        signal = store(file_path, file_format, samples, recording_uuid, Second(0), sensor_label)
         push!(signals, signal)
     end
 
     Legolas.write(signals_path, signals, SignalV2SchemaVersion())
+
     if import_annotations
         annotations = edf_to_onda_annotations(edf, recording_uuid)
         if !isempty(annotations)
@@ -790,18 +905,30 @@ end
 """
     edf_to_onda_samples(edf::EDF.File; kwargs...)
 
-Read signals from an `EDF.File` into a vector of `Onda.Samples`.  This is a
-convenience function that first formulates an import plan via [`plan_edf_to_onda_samples`](@ref),
-and then immediately executes this plan with [`edf_to_onda_samples`](@ref).
+Read signals from an `EDF.File` into a [`Vector{ConvertedSamples}`](@ref ConvertedSamples).
+This is a convenience function that first formulates an import plan via
+[`plan_edf_to_onda_samples`](@ref), and then immediately executes this plan with
+[`edf_to_onda_samples`](@ref).
 
-The samples and executed plan are returned; it is **strongly advised** that you
-review the plan for un-extracted signals (where `:sensor_type` or `:channel` is
-`missing`) and errors (non-`nothing` values in `:error`).
+!!! warning
+    This function is provided as a convenience for "quick and dirty" exploration.  In
+    general, it is strongly adivsed to review the plan and make any necessary adjustments
+    _before_ execution.
+
+A [`Vector{ConvertedSamples}`](@ref ConvertedSamples) is returned; use [`get_plan`](@ref)
+and [`get_samples`](@ref) to extract the executed plan and `Onda.Samples` respectively.  It
+is **strongly advised** that you review the output for un-extracted signals by investigating
+any `ConvertedSamples` where the `.samples` are `missing`.  Run-time errors during
+conversion are stored in the `:error` column of the `.channel_plans`, and any EDF Signals
+that could not be matched will have `missing` values in their `.channel_plans` for
+`:sensor_type`, `:channel`, or `:physical_unit`.
 
 Collections of `EDF.Signal`s are mapped as channels to `Onda.Samples` via
-[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the
-plan via the `labels` and `units` keyword arguments, all of which are forwarded
-to [`plan_edf_to_onda_samples`](@ref).
+[`plan_edf_to_onda_samples`](@ref).  The caller of this function can control the plan via
+the `labels` and `units` keyword arguments, all of which are forwarded to
+[`plan_edf_to_onda_samples`](@ref).  If more control is required, first generate the plan,
+review and edit it as needed, and then execute by passing it as the second argument to
+`edf_to_onda_samples`.
 
 `EDF.Signal` labels that are converted into Onda channel names undergo the
 following transformations:
@@ -819,8 +946,7 @@ $SAMPLES_ENCODED_WARNING
 function edf_to_onda_samples(edf::EDF.File; kwargs...)
     signals_plan = plan_edf_to_onda_samples(edf; kwargs...)
     EDF.read!(edf)
-    samples, exec_plan = edf_to_onda_samples(edf, signals_plan)
-    return samples, exec_plan
+    return edf_to_onda_samples(edf, signals_plan)
 end
 
 """

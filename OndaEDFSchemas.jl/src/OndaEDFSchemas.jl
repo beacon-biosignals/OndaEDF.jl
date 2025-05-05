@@ -7,7 +7,7 @@ using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type,
             AnnotationV1
 using UUIDs
 
-export PlanV1, PlanV2, PlanV3, FilePlanV1, FilePlanV2, FilePlanV3, EDFAnnotationV1
+export PlanV1, PlanV2, PlanV3, PlanV4, FilePlanV1, FilePlanV2, FilePlanV3, FilePlanV4, EDFAnnotationV1
 
 @schema "ondaedf.plan" Plan
 
@@ -93,6 +93,33 @@ end
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
 
+@version PlanV4 begin
+    # EDF.SignalHeader fields
+    label::String
+    transducer_type::String
+    physical_dimension::String
+    physical_minimum::Float32
+    physical_maximum::Float32
+    digital_minimum::Float32
+    digital_maximum::Float32
+    prefilter::String
+    samples_per_record::Int32
+    # EDF.FileHeader field
+    seconds_per_record::Float64
+    # Onda.SamplesInfoV2 fields (channels -> channel), may be missing
+    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
+    channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
+    sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
+    sample_resolution_in_unit::Union{Missing,Float64}
+    sample_offset_in_unit::Union{Missing,Float64}
+    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type, sample_type)
+    sample_rate::Union{Missing,Float64}
+    # errors, use `nothing` to indicate no error
+    error::Union{Nothing,String} = coalesce(error, nothing)
+end
+
+# TODO: update docstring for v4
+
 const PLAN_DOC_TEMPLATE = """
     @version PlanV{{ VERSION }} begin
         # EDF.SignalHeader fields
@@ -108,7 +135,6 @@ const PLAN_DOC_TEMPLATE = """
         # EDF.FileHeader field
         seconds_per_record::Float64
         # Onda.SignalV{{ VERSION }} fields (channels -> channel), may be missing
-        recording::Union{UUID,Missing} = passmissing(UUID)
 {{ SAMPLES_INFO_UNIQUE_FIELDS }}
         channel::Union{Missing,AbstractString}
         sample_unit::Union{Missing,AbstractString}
@@ -133,10 +159,14 @@ conversion.  The columns are the union of
 
 function _plan_doc(v)
     uniques = if v == 1
-        ["kind::Union{Missing,AbstractString}"]
+        ["recording::Union{UUID,Missing} = passmissing(UUID)",
+         "kind::Union{Missing,AbstractString}"]
     elseif v == 2 || v == 3
-        ["sensor_type::Union{Missing,AbstractString}",
+        ["recording::Union{UUID,Missing} = passmissing(UUID)",
+         "sensor_type::Union{Missing,AbstractString}",
          "sensor_label::Union{Missing,AbstractString}"]
+    elseif v == 4
+        ["sensor_type::Union{Missing,AbstractString}"]
     else
         throw(ArgumentError("Invalid version"))
     end
@@ -150,6 +180,7 @@ end
 @doc _plan_doc(1) PlanV1
 @doc _plan_doc(2) PlanV2
 @doc _plan_doc(3) PlanV3
+@doc _plan_doc(4) PlanV4
 
 @schema "ondaedf.file-plan" FilePlan
 
@@ -166,6 +197,27 @@ end
 @version FilePlanV3 > PlanV3 begin
     edf_signal_index::Int
     onda_signal_index::Int
+end
+
+"""
+    @version FilePlanV4 > PlanV4 begin
+        recording::Union{UUID,Missing} = lift(UUID, recording)
+        edf_signal_index::Int
+        sensor_label::Union{String,Missing}
+    end
+
+A Legolas-generated record type representing one EDF signal-to-Onda channel conversion,
+which includes the columns of a [`PlanV4`](@ref) and additional file-level context:
+- `recording::Union{UUID,Missing}` the UUID of the recording, if known.
+- `edf_signal_index` gives the index of the `signals` in the source `EDF.File`
+  corresponding to this row
+- `sensor_label::AbstractString` gives the unique identifier of the corresponding output
+  `Onda.Samples` after conversion.
+"""
+@version FilePlanV4 > PlanV4 begin
+    recording::Union{UUID,Missing} = lift(UUID, recording)
+    edf_signal_index::Int
+    sensor_label::Union{String,Missing}
 end
 
 const FILE_PLAN_DOC_TEMPLATE = """
@@ -196,7 +248,8 @@ end
 
 const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,FilePlanV1SchemaVersion,
                                     PlanV2SchemaVersion,FilePlanV2SchemaVersion,
-                                    PlanV3SchemaVersion,FilePlanV3SchemaVersion}
+                                    PlanV3SchemaVersion,FilePlanV3SchemaVersion,
+                                    PlanV4SchemaVersion,FilePlanV4SchemaVersion}
 Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
 # we need this because Arrow write can introduce a Missing for the error column
 # (I think because of how missing/nothing sentinels are handled?)

@@ -1,3 +1,4 @@
+using Aqua
 using Dates
 using EDF
 using Legolas
@@ -15,8 +16,10 @@ using FilePathsBase: AbstractPath, PosixPath
 using Functors: fmap
 using Legolas: validate, SchemaVersion, read
 using OndaEDF: validate_arrow_prefix
+using OndaEDFSchemas: FilePlanV4SchemaVersion
 using SparseArrays: spzeros
 using Tables: rowmerge
+using TimeSpans: TimeSpan, duration, translate
 
 function test_edf_signal(rng, label, transducer, physical_units,
                          physical_min, physical_max,
