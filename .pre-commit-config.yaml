@@ -3,8 +3,6 @@ repos:
     hooks:
       - id: julia-format
         name: Julia formatter
-        entry: format/run.jl
-        language: julia # note: use pre-commit v4.3+
+        entry: julia --project=format format/run.jl
+        language: system
         files: \.jl$
-        additional_dependencies:
-        - 'JuliaFormatter@2'
