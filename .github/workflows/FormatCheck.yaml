@@ -28,4 +28,4 @@ jobs:
         run: julia --project=format format/run.jl
       - name: Formatting reminder
         if: failure()
-        run: echo "Consider install the pre-commit hook to format your code"
+        run: echo "Consider installing the pre-commit hook to format your code"
