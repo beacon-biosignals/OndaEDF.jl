@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: julia-format
+        name: Julia formatter
+        entry: julia --project=format format/run.jl
+        language: system
+        files: \.jl$

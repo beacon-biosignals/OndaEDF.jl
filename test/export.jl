@@ -1,5 +1,4 @@
 @testset "EDF Export" begin
-
     n_records = 100
     edf, edf_channel_indices = make_test_data(MersenneTwister(42), 256, 512, n_records)
     uuid = uuid4()
@@ -25,12 +24,14 @@
         edf_indices = (1:length(channel_names)) .+ offset
         offset += length(channel_names)
         samples_data = Onda.decode(samples).data
-        edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, exported_edf.signals[edf_indices])
+        edf_samples = mapreduce(transpose ∘ EDF.decode, vcat,
+                                exported_edf.signals[edf_indices])
         @test isapprox(samples_data, edf_samples; rtol=0.02)
         for (i, channel_name) in zip(edf_indices, channel_names)
             s = exported_edf.signals[i]
             @test s.header.label == OndaEDF.export_edf_label(signal_name, channel_name)
-            @test s.header.physical_dimension == OndaEDF.onda_to_edf_unit(samples.info.sample_unit)
+            @test s.header.physical_dimension ==
+                  OndaEDF.onda_to_edf_unit(samples.info.sample_unit)
         end
     end
     @testset "Record metadata" begin
@@ -38,7 +39,9 @@
             info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_rate=sample_rate))
             # sparse CSC but for wide data we have a huge column pointer
             # so transposing to get sparse CSR
-            new_data = spzeros(eltype(samples.data), Onda.index_from_time(sample_rate, Onda.duration(samples)) - 1, channel_count(samples))'
+            new_data = spzeros(eltype(samples.data),
+                               Onda.index_from_time(sample_rate, Onda.duration(samples)) -
+                               1, channel_count(samples))'
             return Samples(new_data, info, samples.encoded; validate=false)
         end
 
@@ -50,7 +53,8 @@
 
         chunky_eeg = change_sample_rate(eeg_samples; sample_rate=9999.0)
         chunky_ecg = change_sample_rate(ecg_samples; sample_rate=425.0)
-        @test_throws OndaEDF.RecordSizeException OndaEDF.edf_record_metadata([chunky_eeg, chunky_ecg])
+        @test_throws OndaEDF.RecordSizeException OndaEDF.edf_record_metadata([chunky_eeg,
+                                                                              chunky_ecg])
 
         e_notation_eeg = change_sample_rate(eeg_samples; sample_rate=20_000_000.0)
         @test OndaEDF.edf_record_metadata([e_notation_eeg]) == (4.0e9, 1 / 20_000_000)
@@ -69,7 +73,8 @@
         @testset "Exception and Error handling" begin
             messages = ("RecordSizeException: sample rates [9999.0, 425.0] cannot be resolved to a data record size smaller than 61440 bytes",
                         "EDFPrecisionError: String representation of value 2.0576999e7 is longer than 8 ASCII characters")
-            exceptions = (OndaEDF.RecordSizeException([chunky_eeg, chunky_ecg]), OndaEDF.EDFPrecisionError(20576999.0))
+            exceptions = (OndaEDF.RecordSizeException([chunky_eeg, chunky_ecg]),
+                          OndaEDF.EDFPrecisionError(20576999.0))
             for (message, exception) in zip(messages, exceptions)
                 buffer = IOBuffer()
                 showerror(buffer, exception)
@@ -86,7 +91,8 @@
         @test getproperty.(round_tripped, :span) == getproperty.(ann_sorted, :span)
         @test getproperty.(round_tripped, :value) == getproperty.(ann_sorted, :value)
         # same recording UUID passed as original:
-        @test getproperty.(round_tripped, :recording) == getproperty.(ann_sorted, :recording)
+        @test getproperty.(round_tripped, :recording) ==
+              getproperty.(ann_sorted, :recording)
         # new UUID for each annotation created during import
         @test all(getproperty.(round_tripped, :id) .!= getproperty.(ann_sorted, :id))
     end
@@ -100,11 +106,14 @@
         @test getproperty.(nt.annotations, :span) == getproperty.(ann_sorted, :span)
         @test getproperty.(nt.annotations, :value) == getproperty.(ann_sorted, :value)
         # same recording UUID passed as original:
-        @test getproperty.(nt.annotations, :recording) == getproperty.(ann_sorted, :recording)
+        @test getproperty.(nt.annotations, :recording) ==
+              getproperty.(ann_sorted, :recording)
         # new UUID for each annotation created during import
         @test all(getproperty.(nt.annotations, :id) .!= getproperty.(ann_sorted, :id))
 
-        @testset "$(samples_orig.info.sensor_type)" for (samples_orig, signal_round_tripped) in zip(onda_samples, nt.signals)
+        @testset "$(samples_orig.info.sensor_type)" for (samples_orig,
+                                                         signal_round_tripped) in
+                                                        zip(onda_samples, nt.signals)
             info_orig = samples_orig.info
             info_round_tripped = SamplesInfoV2(signal_round_tripped)
 
@@ -125,7 +134,9 @@
 
         # import empty annotations
         exported_edf2 = onda_to_edf(samples_to_export)
-        @test_logs (:warn, r"No annotations found in") store_edf_as_onda(exported_edf2, mktempdir(), uuid; import_annotations=true)
+        @test_logs (:warn, r"No annotations found in") store_edf_as_onda(exported_edf2,
+                                                                         mktempdir(), uuid;
+                                                                         import_annotations=true)
     end
 
     @testset "re-encoding" begin
@@ -251,7 +262,8 @@
             # due to FMA and other floating point details, this may not be exactly equal
             # but it should be very close. Elementwise approximate equality is a stronger
             # requirement than matrix approximate equality
-            @test all(isapprox.(decode(samples_reenc).data, decode(samples).data; atol=1e-12))
+            @test all(isapprox.(decode(samples_reenc).data, decode(samples).data;
+                                atol=1e-12))
 
             signal = only(OndaEDF.onda_samples_to_edf_signals([samples], 1.0))
             @test EDF.decode(signal) == vec(decode(samples).data)
@@ -261,12 +273,12 @@
     @testset "`reencode_samples` edge case: constant data" begin
         # Weird encoding
         info = SamplesInfoV2(; sensor_type="x",
-            channels=["x"],
-            sample_unit="microvolt",
-            sample_resolution_in_unit=0.001,
-            sample_offset_in_unit=0,
-            sample_type=Float64,
-            sample_rate=1)
+                             channels=["x"],
+                             sample_unit="microvolt",
+                             sample_resolution_in_unit=0.001,
+                             sample_offset_in_unit=0,
+                             sample_type=Float64,
+                             sample_rate=1)
 
         data = zeros(UInt64, 1, 2) .+ 0x02
         samples = Samples(data, info, false)
@@ -274,5 +286,4 @@
         @test samples_reenc isa Samples
         @test decode(samples_reenc).data == data
     end
-
 end

@@ -30,8 +30,8 @@ function mock_plan(; v, rng=GLOBAL_RNG)
     elseif v in (2, 3)
         (; sensor_type=ingested ? "eeg" : missing,
          sensor_label=ingested ? "eeg" : missing,
-         recording= (ingested && rand(rng, Bool)) ? uuid4() : missing)
-    elseif v== 4
+         recording=(ingested && rand(rng, Bool)) ? uuid4() : missing)
+    elseif v == 4
         (; sensor_type=ingested ? "eeg" : missing)
     else
         error("Invalid version")
@@ -45,14 +45,14 @@ function mock_plan(; v, rng=GLOBAL_RNG)
                        physical_dimension="uV",
                        physical_minimum=0.0,
                        physical_maximum=2.0,
-                       digital_minimum=-1f4,
-                       digital_maximum=1f4,
+                       digital_minimum=-1.0f4,
+                       digital_maximum=1.0f4,
                        prefilter="HP 0.1Hz; LP 80Hz; N 60Hz",
                        samples_per_record=128,
                        seconds_per_record=1.0,
                        channel=ingested ? "cz-m1" : missing,
                        sample_unit=ingested ? "microvolt" : missing,
-                       sample_resolution_in_unit=ingested ? 1f-4 : missing,
+                       sample_resolution_in_unit=ingested ? 1.0f-4 : missing,
                        sample_offset_in_unit=ingested ? 1.0 : missing,
                        sample_type=ingested ? "float32" : missing,
                        sample_rate=ingested ? 1/128 : missing,
@@ -78,8 +78,7 @@ function mock_file_plan(; v, rng=GLOBAL_RNG)
 
     return PlanVersion(Tables.rowmerge(plan;
                                        edf_signal_index=rand(rng, Int),
-                                       specific_kwargs...
-                                       ))
+                                       specific_kwargs...))
 end
 
 @testset "Schema version $v" for v in (1, 2, 3, 4)
@@ -96,21 +95,22 @@ end
         # conversion to samples info with channel -> channels
         @test all(x -> isa(x, SamplesInfo),
                   SamplesInfo(Tables.rowmerge(p; channels=[p.channel]))
-                              for p in plans if !ismissing(p.channel))
+                  for p in plans if !ismissing(p.channel))
     end
 
     @testset "ondaedf.file-plan@$v" begin
         rng = StableRNG(11)
         file_plans = mock_file_plan(50; v, rng)
         schema = Tables.schema(file_plans)
-        @test nothing === Legolas.validate(schema, Legolas.SchemaVersion("ondaedf.file-plan", v))
+        @test nothing ===
+              Legolas.validate(schema, Legolas.SchemaVersion("ondaedf.file-plan", v))
         tbl = Arrow.Table(Arrow.tobuffer(file_plans; maxdepth=9))
         @test isequal(Tables.columntable(tbl), Tables.columntable(file_plans))
 
         # conversion to samples info with channel -> channels
         @test all(x -> isa(x, SamplesInfo),
                   SamplesInfo(Tables.rowmerge(p; channels=[p.channel]))
-                              for p in file_plans if !ismissing(p.channel))
+                  for p in file_plans if !ismissing(p.channel))
     end
 end
 
