@@ -6,4 +6,4 @@
 
 OndaEDF provides functionality to convert/import/export EDF files to/from [Onda format](https://github.com/beacon-biosignals/Onda.jl).
 
-To use the pre-commit hook for formatting [install pre-commit](https://pre-commit.com/) in an isolated environment (with [pipx](https://pipx.pypa.io/stable/) or [uvx](https://docs.astral.sh/uv/guides/tools/#installing-tools)).
+To use the pre-commit hook for formatting [install pre-commit](https://pre-commit.com/) in an isolated environment (with [pipx](https://pipx.pypa.io/stable/) or [uvx](https://docs.astral.sh/uv/guides/tools/#installing-tools)), then run `pre-commit install` from the command line to install the git hooks into your local repository.
