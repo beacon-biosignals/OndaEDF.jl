@@ -22,5 +22,7 @@ jobs:
         with:
           version: "1.10"
       - uses: julia-actions/cache@v2
+      - name: Instantiate format environment
+        run: julia --project=format -e 'using Pkg; Pkg.instantiate()'
       - name: Check formatting
         run: julia --project=format format/run.jl
