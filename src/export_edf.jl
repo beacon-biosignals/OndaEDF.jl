@@ -93,10 +93,10 @@ end
 
 function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
                                     version::AbstractString="0",
-                                    patient_metadata=EDF.PatientID(missing, missing,
-                                                                   missing, missing),
-                                    recording_metadata=EDF.RecordingID(missing, missing,
-                                                                       missing, missing),
+            patient_metadata=EDF.PatientID(missing, missing,
+                                            missing, missing),
+            recording_metadata=EDF.RecordingID(missing, missing,
+                                                missing, missing),
                                     is_contiguous::Bool=true,
                                     start::DateTime=DateTime(Year(1985)))
     return EDF.FileHeader(version, patient_metadata, recording_metadata, start,
