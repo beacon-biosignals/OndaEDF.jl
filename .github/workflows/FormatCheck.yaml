@@ -1,0 +1,26 @@
+---
+name: Format Check
+on:
+  pull_request:
+    paths:
+      - "**/*.jl"
+      - ".github/workflows/FormatCheck.yaml"
+jobs:
+  format-check:
+    name: Julia
+    # These permissions are needed to:
+    # - Delete old caches: https://github.com/julia-actions/cache#usage
+    # - Post formatting suggestions: https://github.com/reviewdog/action-suggester#required-permissions
+    permissions:
+      actions: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: "1.10"
+      - uses: julia-actions/cache@v2
+      - name: Check formatting
+        run: julia --project=format format/run.jl
