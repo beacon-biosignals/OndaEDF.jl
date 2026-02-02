@@ -196,8 +196,8 @@ end
         onda_samples::AbstractVector{<:Samples},
         seconds_per_record::Float64,
         unit_alternatives=STANDARD_UNITS,
-        transducer_fn=default_transducer,
-        prefilter_fn=default_prefilter
+        transducer_fn=_ -> "",
+        prefilter_fn=_ -> ""
     )
 
 Convert a collection of Onda `Samples` into EDF signals.
