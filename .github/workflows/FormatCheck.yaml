@@ -26,3 +26,6 @@ jobs:
         run: julia --project=format -e 'using Pkg; Pkg.instantiate()'
       - name: Check formatting
         run: julia --project=format format/run.jl
+      - name: Formatting reminder
+        if: failure()
+        run: echo "Consider install the pre-commit hook to format your code"
