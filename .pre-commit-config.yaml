@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: julia-format
+        name: Julia formatter
+        entry: format/run.jl
+        language: julia # note: use pre-commit v4.3+
+        files: \.jl$
+        additional_dependencies:
+          - 'JuliaFormatter@2'

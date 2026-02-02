@@ -1,5 +1,4 @@
 @testset "Import EDF" begin
-
     @testset "edf_to_onda_samples" begin
         n_records = 100
         for T in (Int16, EDF.Int24)
@@ -25,7 +24,7 @@
         edf, edf_channel_indices = make_test_data(StableRNG(42), 256, 512, n_records, Int16)
         plan = OndaEDF.plan_edf_to_onda_samples(edf)
         plan = map(plan) do row
-            Legolas.record_merge(row; sensor_label="edf_" * row.sensor_label)
+            return Legolas.record_merge(row; sensor_label="edf_" * row.sensor_label)
         end
         converted_samples = OndaEDF.edf_to_onda_samples(edf, plan)
         samples = first(filter(cs -> !ismissing(cs.samples), converted_samples))
@@ -51,7 +50,8 @@
             @test signal.sensor_label == samples.sensor_label != info.sensor_type
             samples_rt = Onda.load(signal)
             @test samples_rt == Onda.decode(samples.samples)
-            @test signal.span == translate(TimeSpan(0, Onda.duration(samples.samples)), start)
+            @test signal.span ==
+                  translate(TimeSpan(0, Onda.duration(samples.samples)), start)
 
             @test ismissing(Onda.store(path, "lpcm", miss, recording, start))
         end
@@ -63,7 +63,8 @@
         @test_throws(ArgumentError(":seconds_per_record not found in header, or missing"),
                      plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals)))
 
-        signal_plans = plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal), edf.signals),
+        signal_plans = plan_edf_to_onda_samples.(filter(x -> isa(x, EDF.Signal),
+                                                        edf.signals),
                                                  edf.header.seconds_per_record)
 
         @testset "signal-wise plan" begin
@@ -115,7 +116,8 @@
             # orders before grouping.
             plans_numbered = [rowmerge(plan; edf_signal_index)
                               for (edf_signal_index, plan)
-                              in enumerate(signal_plans)]
+                                   in
+                                  enumerate(signal_plans)]
             plans_rev = reverse!(plans_numbered)
             @test last(plans_rev).edf_signal_index == 1
 
@@ -169,7 +171,8 @@
             for (signal_name, edf_indices) in edf_channel_indices
                 @testset "$signal_name" begin
                     onda_samples = load(signals[string(signal_name)]).data
-                    edf_samples = mapreduce(transpose ∘ EDF.decode, vcat, edf.signals[sort(edf_indices)])
+                    edf_samples = mapreduce(transpose ∘ EDF.decode, vcat,
+                                            edf.signals[sort(edf_indices)])
                     @test isapprox(onda_samples, edf_samples; rtol=0.02)
                 end
             end
@@ -182,11 +185,15 @@
                 start = Nanosecond(Second(i))
                 stop = start + Nanosecond(Second(i + 1))
                 # two annotations with same 1s span and different values:
-                @test any(a -> a.value == "$i a" && a.span.start == start && a.span.stop == stop, nt.annotations)
-                @test any(a -> a.value == "$i b" && a.span.start == start && a.span.stop == stop, nt.annotations)
+                @test any(a -> a.value == "$i a" && a.span.start == start &&
+                               a.span.stop == stop, nt.annotations)
+                @test any(a -> a.value == "$i b" && a.span.start == start &&
+                               a.span.stop == stop, nt.annotations)
                 # two annotations with instantaneous (1ns) span and different values
-                @test any(a -> a.value == "$i c" && a.span.start == start && a.span.stop == start + Nanosecond(1), nt.annotations)
-                @test any(a -> a.value == "$i d" && a.span.start == start && a.span.stop == start + Nanosecond(1), nt.annotations)
+                @test any(a -> a.value == "$i c" && a.span.start == start &&
+                               a.span.stop == start + Nanosecond(1), nt.annotations)
+                @test any(a -> a.value == "$i d" && a.span.start == start &&
+                               a.span.stop == start + Nanosecond(1), nt.annotations)
             end
         end
 
@@ -221,21 +228,26 @@
             end
 
             mktempdir() do root
-                nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edfff", annotations_prefix="edff")
+                nt = OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edfff",
+                                               annotations_prefix="edff")
                 @test nt.signals_path == joinpath(root, "edfff.onda.signals.arrow")
                 @test nt.annotations_path == joinpath(root, "edff.onda.annotations.arrow")
             end
 
             mktempdir() do root
                 nt = @test_logs (:warn, r"Extracting prefix") begin
-                    OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="edff.onda.signals.arrow", annotations_prefix="edf")
+                    OndaEDF.store_edf_as_onda(edf, root, uuid;
+                                              signals_prefix="edff.onda.signals.arrow",
+                                              annotations_prefix="edf")
                 end
                 @test nt.signals_path == joinpath(root, "edff.onda.signals.arrow")
                 @test nt.annotations_path == joinpath(root, "edf.onda.annotations.arrow")
             end
 
             mktempdir() do root
-                @test_throws ArgumentError OndaEDF.store_edf_as_onda(edf, root, uuid; signals_prefix="stuff/edf", annotations_prefix="edf")
+                @test_throws ArgumentError OndaEDF.store_edf_as_onda(edf, root, uuid;
+                                                                     signals_prefix="stuff/edf",
+                                                                     annotations_prefix="edf")
             end
         end
 
@@ -256,13 +268,13 @@
 
     @testset "duplicate sensor_type" begin
         rng = StableRNG(1234)
-        _signal = function(label, transducer, unit, lo, hi)
+        _signal = function (label, transducer, unit, lo, hi)
             return test_edf_signal(rng, label, transducer, unit, lo, hi,
                                    Float32(typemin(Int16)),
                                    Float32(typemax(Int16)),
                                    128, 10, Int16)
         end
-        T = Union{EDF.AnnotationsSignal, EDF.Signal{Int16}}
+        T = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}
         edf_signals = T[_signal("EMG Chin1", "E", "mV", -100, 100),
                         _signal("EMG Chin2", "E", "mV", -120, 90),
                         _signal("EMG LAT", "E", "uV", 0, 1000)]
@@ -286,26 +298,32 @@
         one_plan = plan_edf_to_onda_samples(one_signal, edf.header.seconds_per_record)
         @test one_plan.label == one_signal.header.label
 
-        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal, 1.0; preprocess_labels=identity)
+        @test_throws ArgumentError plan_edf_to_onda_samples(one_signal, 1.0;
+                                                            preprocess_labels=identity)
 
-        err_plan = @test_logs (:error, ) plan_edf_to_onda_samples(one_signal, 1.0; units=[1, 2, 3])
+        err_plan = @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0;
+                                                                 units=[1, 2, 3])
         @test err_plan.error isa String
         # malformed units arg: elements should be de-structurable
         @test contains(err_plan.error, "BoundsError")
 
         # malformed labels/units
-        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; labels=[["signal"] => nothing])
-        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => nothing])
+        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0;
+                                                      labels=[["signal"] => nothing])
+        @test_logs (:error,) plan_edf_to_onda_samples(one_signal, 1.0;
+                                                      units=["millivolt" => nothing])
 
         # unit not found does not error but does create a missing
-        unitless_plan = plan_edf_to_onda_samples(one_signal, 1.0; units=["millivolt" => ["mV"]])
+        unitless_plan = plan_edf_to_onda_samples(one_signal, 1.0;
+                                                 units=["millivolt" => ["mV"]])
         @test unitless_plan.error === nothing
         @test ismissing(unitless_plan.sample_unit)
 
         # error on execution
         plans = plan_edf_to_onda_samples(edf)
         # intentionally combine signals of different sensor_types
-        different = findfirst(row -> !isequal(row.sensor_type, first(plans).sensor_type), plans)
+        different = findfirst(row -> !isequal(row.sensor_type, first(plans).sensor_type),
+                              plans)
         bad_plans = rowmerge.(plans[[1, different]]; sensor_label=plans[1].sensor_label)
         bad_converted = @test_logs (:error,) OndaEDF.edf_to_onda_samples(edf, bad_plans)
         bad_plans_exec = OndaEDF.get_plan(bad_converted)
@@ -369,8 +387,8 @@
         plan_exec_cols = Tables.columns(plan_exec)
         plan_rt_cols = Tables.columns(plan_rt)
         for col in Tables.columnnames(plan_exec_cols)
-            @test all(isequal.(Tables.getcolumn(plan_rt_cols, col), Tables.getcolumn(plan_exec_cols, col)))
+            @test all(isequal.(Tables.getcolumn(plan_rt_cols, col),
+                               Tables.getcolumn(plan_exec_cols, col)))
         end
     end
-
 end

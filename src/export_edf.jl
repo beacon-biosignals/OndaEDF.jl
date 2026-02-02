@@ -12,8 +12,8 @@ end
 SignalExtrema(samples::Samples) = SignalExtrema(samples.info)
 function SignalExtrema(info::SamplesInfoV2)
     digital_extrema = (typemin(sample_type(info)), typemax(sample_type(info)))
-    physical_extrema =
-        @. (info.sample_resolution_in_unit * digital_extrema) + info.sample_offset_in_unit
+    physical_extrema = @. (info.sample_resolution_in_unit * digital_extrema) +
+                          info.sample_offset_in_unit
     return SignalExtrema(physical_extrema..., digital_extrema...)
 end
 
@@ -24,8 +24,9 @@ end
 const DATA_RECORD_SIZE_LIMIT = 30720
 const EDF_BYTE_LIMIT = 8
 
-edf_sample_count_per_record(samples::Samples, seconds_per_record::Float64) =
-    Int32(samples.info.sample_rate * seconds_per_record)
+function edf_sample_count_per_record(samples::Samples, seconds_per_record::Float64)
+    return Int32(samples.info.sample_rate * seconds_per_record)
+end
 
 _rationalize(x) = rationalize(x)
 _rationalize(x::Int) = x // 1
@@ -68,13 +69,13 @@ function Base.showerror(io::IO, exception::RecordSizeException)
     print(io, "RecordSizeException: sample rates ")
     print(io, [s.info.sample_rate for s in exception.samples])
     print(io, " cannot be resolved to a data record size smaller than ")
-    print(io, DATA_RECORD_SIZE_LIMIT * 2, " bytes")
+    return print(io, DATA_RECORD_SIZE_LIMIT * 2, " bytes")
 end
 
 function Base.showerror(io::IO, exception::EDFPrecisionError)
     print(io, "EDFPrecisionError: String representation of value ")
     print(io, exception.value)
-    print(io, " is longer than 8 ASCII characters")
+    return print(io, " is longer than 8 ASCII characters")
 end
 
 #####
@@ -90,23 +91,16 @@ function export_edf_label(signal_name::String, channel_name::String)
     return string(signal_edf_name, " ", channel_edf_name)
 end
 
-
-function onda_samples_to_edf_header(
-    samples::AbstractVector{<:Samples};
-    version::AbstractString = "0",
-    patient_metadata = EDF.PatientID(missing, missing, missing, missing),
-    recording_metadata = EDF.RecordingID(missing, missing, missing, missing),
-    is_contiguous::Bool = true,
-    start::DateTime = DateTime(Year(1985)),
-)
-    return EDF.FileHeader(
-        version,
-        patient_metadata,
-        recording_metadata,
-        start,
-        is_contiguous,
-        edf_record_metadata(samples)...,
-    )
+function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
+                                    version::AbstractString="0",
+                                    patient_metadata=EDF.PatientID(missing, missing,
+                                                                   missing, missing),
+                                    recording_metadata=EDF.RecordingID(missing, missing,
+                                                                       missing, missing),
+                                    is_contiguous::Bool=true,
+                                    start::DateTime=DateTime(Year(1985)))
+    return EDF.FileHeader(version, patient_metadata, recording_metadata, start,
+                          is_contiguous, edf_record_metadata(samples)...)
 end
 
 """
@@ -127,7 +121,7 @@ encoded values can be represented with `sample_type`, the `.info` is not changed
 they cannot, the `sample_type`, `sample_resolution_in_unit`, and
 `sample_offset_in_unit` fields are changed to reflect the new encoding.
 """
-function reencode_samples(samples::Samples, sample_type::Type{<:Integer} = Int16)
+function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
     # if we can fit the encoded values in `sample_type` without any changes,
     # return as-is.
     #
@@ -143,13 +137,10 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer} = Int16
     if Onda.sample_type(samples.info) <: Integer
         smin, smax = extrema(samples.data)
         if !samples.encoded
-            smin, smax =
-                Onda.encode_sample.(
-                    Onda.sample_type(samples.info),
-                    samples.info.sample_resolution_in_unit,
-                    samples.info.sample_offset_in_unit,
-                    (smin, smax),
-                )
+            smin, smax = Onda.encode_sample.(Onda.sample_type(samples.info),
+                                             samples.info.sample_resolution_in_unit,
+                                             samples.info.sample_offset_in_unit,
+                                             (smin, smax))
             # make sure we handle negative resolutions properly!
             smin, smax = extrema((smin, smax))
         end
@@ -161,7 +152,7 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer} = Int16
             # converting everything to sample_type in the actual export.
             samples = encode(samples)
             new_info = SamplesInfoV2(Tables.rowmerge(samples.info; sample_type))
-            return Samples(samples.data, new_info, true; validate = false)
+            return Samples(samples.data, new_info, true; validate=false)
         end
     end
 
@@ -181,23 +172,20 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer} = Int16
     # re-use the import encoding calculator here:
     # need to convert all the min/max to floats due to possible overflow
     mock_header = (;
-        digital_minimum = Float64(emin),
-        digital_maximum = Float64(emax),
-        physical_minimum = Float64(smin),
-        physical_maximum = Float64(smax),
-        samples_per_record = 0,
-    ) # not using this
+                   digital_minimum=Float64(emin),
+                   digital_maximum=Float64(emax),
+                   physical_minimum=Float64(smin),
+                   physical_maximum=Float64(smax),
+                   samples_per_record=0,) # not using this
 
     donor_info = edf_signal_encoding(mock_header, 1)
     sample_resolution_in_unit = donor_info.sample_resolution_in_unit
     sample_offset_in_unit = donor_info.sample_offset_in_unit
 
-    new_info = Tables.rowmerge(
-        samples.info;
-        sample_resolution_in_unit,
-        sample_offset_in_unit,
-        sample_type,
-    )
+    new_info = Tables.rowmerge(samples.info;
+                               sample_resolution_in_unit,
+                               sample_offset_in_unit,
+                               sample_type,)
 
     new_samples = Samples(samples.data, SamplesInfoV2(new_info), samples.encoded)
     return encode(new_samples)
@@ -218,28 +206,26 @@ Each input `Samples` contributes one `EDF.Signal` per channel. Samples are
 re-encoded to `Int16` if needed, and signal headers are populated using the
 signal name, units (via `unit_alternatives`), and per-signal extrema.
 
-`transducer_fn` and `prefilter_fn` are callables that accept `signal_name::String`
+`transducer_fn` and `prefilter_fn` are callables that accept `sensor_type::String`
 and return the `transducer` and `prefilter` strings for the EDF header.
 """
-function onda_samples_to_edf_signals(
-    onda_samples::AbstractVector{<:Samples},
-    seconds_per_record::Float64,
-    unit_alternatives = STANDARD_UNITS,
-    transducer_fn = _ -> "",
-    prefilter_fn = _ -> "",
-)
+function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples},
+                                     seconds_per_record::Float64,
+                                     unit_alternatives=STANDARD_UNITS,
+                                     transducer_fn=_ -> "",
+                                     prefilter_fn=_ -> "")
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[]
     for samples in onda_samples
 
         # encode samples, rescaling if necessary
         samples = reencode_samples(samples, Int16)
-        signal_name = samples.info.sensor_type
+        sensor_type = samples.info.sensor_type
         extrema = SignalExtrema(samples)
 
         # ---
         # Get the transducer type and prefilter based on the signal type
-        transducer = transducer_fn(signal_name)
-        prefilter = prefilter_fn(signal_name)
+        transducer = transducer_fn(sensor_type)
+        prefilter = prefilter_fn(sensor_type)
 
         physical_dimension = onda_to_edf_unit(samples.info.sample_unit, unit_alternatives)
         if ismissing(physical_dimension)
@@ -249,24 +235,23 @@ function onda_samples_to_edf_signals(
 
         for channel_name in samples.info.channels
             sample_count = edf_sample_count_per_record(samples, seconds_per_record)
-            edf_signal_header = EDF.SignalHeader(
-                export_edf_label(signal_name, channel_name),
-                transducer,
-                physical_dimension,
-                extrema.physical_min,
-                extrema.physical_max,
-                extrema.digital_min,
-                extrema.digital_max,
-                prefilter,
-                sample_count,
-            )
+            edf_signal_header = EDF.SignalHeader(export_edf_label(sensor_type,
+                                                                  channel_name),
+                                                 transducer,
+                                                 physical_dimension,
+                                                 extrema.physical_min,
+                                                 extrema.physical_max,
+                                                 extrema.digital_min,
+                                                 extrema.digital_max,
+                                                 prefilter,
+                                                 sample_count)
             # manually convert here in case we have input samples whose encoded
             # values are convertible losslessly to Int16:
             sample_data = Int16.(vec(samples[channel_name, :].data))
-            padding = Iterators.repeated(
-                zero(Int16),
-                (sample_count - (length(sample_data) % sample_count)) % sample_count,
-            )
+            padding = Iterators.repeated(zero(Int16),
+                                         (sample_count -
+                                          (length(sample_data) % sample_count)) %
+                                         sample_count)
             edf_signal_samples = append!(sample_data, padding)
             push!(edf_signals, EDF.Signal(edf_signal_header, edf_signal_samples))
         end
@@ -304,7 +289,7 @@ samples' channels).
 
 `unit_alternatives` controls unit normalization for EDF physical dimension
 strings. `transducer_fn` and `prefilter_fn` are callables that accept
-`signal_name::String` and return the `transducer` and `prefilter` strings for
+`sensor_type::String` and return the `transducer` and `prefilter` strings for
 each EDF signal header.
 
 !!! note
@@ -319,46 +304,33 @@ each EDF signal header.
 datasets to EDF and back.
 
 """
-function onda_to_edf(
-    samples::AbstractVector{<:Samples},
-    annotations = [];
-    unit_alternatives = STANDARD_UNITS,
-    transducer_fn = _ -> "",
-    prefilter_fn = _ -> "",
-    kwargs...,
-)
+function onda_to_edf(samples::AbstractVector{<:Samples},
+                     annotations=[];
+                     unit_alternatives=STANDARD_UNITS,
+                     transducer_fn=_ -> "",
+                     prefilter_fn=_ -> "",
+                     kwargs...,)
     edf_header = onda_samples_to_edf_header(samples; kwargs...)
-    edf_signals = onda_samples_to_edf_signals(
-        samples,
-        edf_header.seconds_per_record,
-        unit_alternatives,
-        transducer_fn,
-        prefilter_fn,
-    )
+    edf_signals = onda_samples_to_edf_signals(samples,
+                                              edf_header.seconds_per_record,
+                                              unit_alternatives,
+                                              transducer_fn,
+                                              prefilter_fn)
     if !isempty(annotations)
-        records = [
-            [
-                EDF.TimestampedAnnotationList(
-                    edf_header.seconds_per_record * i,
-                    nothing,
-                    String[""],
-                ),
-            ] for i = 0:(edf_header.record_count-1)
-        ]
-        for annotation in sort(Tables.rowtable(annotations); by = row -> start(row.span))
+        records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i,
+                                                  nothing,
+                                                  String[""])]
+                   for i in 0:(edf_header.record_count - 1)]
+        for annotation in sort(Tables.rowtable(annotations); by=row -> start(row.span))
             annotation_onset_in_seconds = start(annotation.span).value / 1e9
             annotation_duration_in_seconds = duration(annotation.span).value / 1e9
-            matching_record = records[Int(
-                fld(annotation_onset_in_seconds, edf_header.seconds_per_record),
-            )+1]
-            tal = EDF.TimestampedAnnotationList(
-                annotation_onset_in_seconds,
-                annotation_duration_in_seconds,
-                [annotation.value],
-            )
+            matching_record = records[Int(fld(annotation_onset_in_seconds, edf_header.seconds_per_record))+1]
+            tal = EDF.TimestampedAnnotationList(annotation_onset_in_seconds,
+                                                annotation_duration_in_seconds,
+                                                [annotation.value])
             push!(matching_record, tal)
         end
         push!(edf_signals, EDF.AnnotationsSignal(records))
     end
-    return EDF.File((io = IOBuffer(); close(io); io), edf_header, edf_signals)
+    return EDF.File((io=IOBuffer(); close(io); io), edf_header, edf_signals)
 end

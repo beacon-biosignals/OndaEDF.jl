@@ -165,17 +165,18 @@ end
 #####
 
 struct MismatchedSampleRateError <: Exception
-    sample_rates
+    sample_rates::Any
 end
 
 function Base.showerror(io::IO, err::MismatchedSampleRateError)
-    print(io, """
-              found mismatched sample rate between channel encodings: $(err.sample_rates)
+    return print(io,
+                 """
+                 found mismatched sample rate between channel encodings: $(err.sample_rates)
 
-              OndaEDF does not currently automatically resolve mismatched sample rates;
-              please preprocess your data before attempting `import_edf` so that channels
-              of the same signal share a common sample rate.
-              """)
+                 OndaEDF does not currently automatically resolve mismatched sample rates;
+                 please preprocess your data before attempting `import_edf` so that channels
+                 of the same signal share a common sample rate.
+                 """)
 end
 
 # I wasn't super confident that the `sample_offset_in_unit` calculation I derived
@@ -284,7 +285,7 @@ end
 
 function Base.showerror(io::IO, e::SamplesInfoError)
     print(io, "SamplesInfoError: ", e.msg, " caused by: ")
-    Base.showerror(io, e.cause)
+    return Base.showerror(io, e.cause)
 end
 
 function groupby(f, list)
@@ -301,8 +302,12 @@ canonical_channel_name(channel_name) = channel_name
 # "channel" => ["alt1", "alt2", ...]
 canonical_channel_name(channel_alternates::Pair) = first(channel_alternates)
 
-plan_edf_to_onda_samples(signal::EDF.Signal, s; kwargs...) = plan_edf_to_onda_samples(signal.header, s; kwargs...)
-plan_edf_to_onda_samples(header::EDF.SignalHeader, s; kwargs...) = plan_edf_to_onda_samples(_named_tuple(header), s; kwargs...)
+function plan_edf_to_onda_samples(signal::EDF.Signal, s; kwargs...)
+    return plan_edf_to_onda_samples(signal.header, s; kwargs...)
+end
+function plan_edf_to_onda_samples(header::EDF.SignalHeader, s; kwargs...)
+    return plan_edf_to_onda_samples(_named_tuple(header), s; kwargs...)
+end
 
 """
     plan_edf_to_onda_samples(header, seconds_per_record; labels=STANDARD_LABELS,
@@ -358,7 +363,8 @@ function plan_edf_to_onda_samples(header,
                                   preprocess_labels=nothing)
     # we don't check this inside the try/catch because it's a user/method error
     # rather than a data/ingest error
-    ismissing(seconds_per_record) && throw(ArgumentError(":seconds_per_record not found in header, or missing"))
+    ismissing(seconds_per_record) &&
+        throw(ArgumentError(":seconds_per_record not found in header, or missing"))
 
     # keep the kwarg so we can throw a more informative error
     if preprocess_labels !== nothing
@@ -386,7 +392,8 @@ function plan_edf_to_onda_samples(header,
             for canonical in channel_names
                 channel_name = canonical_channel_name(canonical)
 
-                matched = match_edf_label(edf_label, signal_names, channel_name, channel_names)
+                matched = match_edf_label(edf_label, signal_names, channel_name,
+                                          channel_names)
 
                 if matched !== nothing
                     # create SamplesInfo and return
@@ -504,8 +511,8 @@ _get(x, property) = hasproperty(x, property) ? getproperty(x, property) : missin
 function grouper(vars=REQUIRED_SIGNAL_GROUPING_COLUMNS)
     return x -> NamedTuple{vars}(_get.(Ref(x), vars))
 end
-grouper(vars::AbstractVector{Symbol}) = grouper((vars..., ))
-grouper(var::Symbol) = grouper((var, ))
+grouper(vars::AbstractVector{Symbol}) = grouper((vars...,))
+grouper(var::Symbol) = grouper((var,))
 
 """
     struct ConvertedSamples
@@ -557,7 +564,7 @@ struct ConvertedSamples
         if !ismissing(sensor_label)
             @argcheck all(==(sensor_label), c.sensor_label for c in channel_plans)
         end
-        new(samples, channel_plans, sensor_label)
+        return new(samples, channel_plans, sensor_label)
     end
 end
 
@@ -647,8 +654,8 @@ as specified in the docstring for `Onda.encode`. `dither_storage=nothing` disabl
 
 $SAMPLES_ENCODED_WARNING
 """
-function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_storage=missing)
-
+function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true,
+                             dither_storage=missing)
     true_signals = filter(x -> isa(x, EDF.Signal), edf.signals)
 
     if validate
@@ -663,7 +670,7 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
 
     EDF.read!(edf)
     plan_rows = map(FilePlanV4, Tables.rows(plan_table))
-    grouped_plan_rows = groupby(grouper((:sensor_label, )), plan_rows)
+    grouped_plan_rows = groupby(grouper((:sensor_label,)), plan_rows)
     converted_samples = map(collect(grouped_plan_rows)) do (key, rows)
         (; sensor_label) = key
         try
@@ -679,7 +686,8 @@ function edf_to_onda_samples(edf::EDF.File, plan_table; validate=true, dither_st
             else
                 signals = [true_signals[row.edf_signal_index] for row in rows]
                 samples = onda_samples_from_edf_signals(SamplesInfoV2(info), signals,
-                                                        edf.header.seconds_per_record; dither_storage)
+                                                        edf.header.seconds_per_record;
+                                                        dither_storage)
             end
             return ConvertedSamples(samples, rows, sensor_label)
         catch e
@@ -760,7 +768,8 @@ function onda_samples_from_edf_signals(target::SamplesInfoV2, edf_signals,
                                        edf_seconds_per_record; dither_storage=missing)
     sample_count = length(first(edf_signals).samples)
     if !all(length(s.samples) == sample_count for s in edf_signals)
-        error("mismatched sample counts between `EDF.Signal`s: ", [length(s.samples) for s in edf_signals])
+        error("mismatched sample counts between `EDF.Signal`s: ",
+              [length(s.samples) for s in edf_signals])
     end
     sample_data = Matrix{sample_type(target)}(undef, length(target.channels), sample_count)
     for (i, edf_signal) in enumerate(edf_signals)
@@ -778,12 +787,12 @@ function onda_samples_from_edf_signals(target::SamplesInfoV2, edf_signals,
                 Onda.encode(sample_type(target), target.sample_resolution_in_unit,
                             target.sample_offset_in_unit, decoded_samples,
                             dither_storage)
-             catch e
-                 if e isa DomainError
-                     @warn "DomainError during `Onda.encode` can be due to a dithering bug; try calling with `dither_storage=nothing` to disable dithering."
-                 end
-                 rethrow()
-             end
+            catch e
+                if e isa DomainError
+                    @warn "DomainError during `Onda.encode` can be due to a dithering bug; try calling with `dither_storage=nothing` to disable dithering."
+                end
+                rethrow()
+            end
         else
             encoded_samples = edf_signal.samples
         end
@@ -840,8 +849,10 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
                            kwargs...)
 
     # Validate input argument early on
-    signals_path = joinpath(onda_dir, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
-    annotations_path = joinpath(onda_dir, "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
+    signals_path = joinpath(onda_dir,
+                            "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
+    annotations_path = joinpath(onda_dir,
+                                "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
 
     EDF.read!(edf)
     file_format = "lpcm.zst"
@@ -870,7 +881,8 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
         ismissing(samples) && continue
         sample_filename = string(recording_uuid, "_", sensor_label, ".", file_format)
         file_path = joinpath(onda_dir, "samples", sample_filename)
-        signal = store(file_path, file_format, samples, recording_uuid, Second(0), sensor_label)
+        signal = store(file_path, file_format, samples, recording_uuid, Second(0),
+                       sensor_label)
         push!(signals, signal)
     end
 
@@ -893,7 +905,8 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
 end
 
 function validate_arrow_prefix(prefix)
-    prefix == basename(prefix) || throw(ArgumentError("prefix \"$prefix\" is invalid: cannot contain directory separator"))
+    prefix == basename(prefix) ||
+        throw(ArgumentError("prefix \"$prefix\" is invalid: cannot contain directory separator"))
     pm = match(r"(.*)\.onda\.(signals|annotations)\.arrow", prefix)
     if pm !== nothing
         @warn "Extracting prefix \"$(pm.captures[1])\" from provided prefix \"$prefix\""
@@ -971,12 +984,14 @@ function edf_to_onda_annotations(edf::EDF.File, uuid::UUID)
                 if tal.duration_in_seconds === nothing
                     stop_nanosecond = start_nanosecond
                 else
-                    stop_nanosecond = start_nanosecond + Nanosecond(round(Int, 1e9 * tal.duration_in_seconds))
+                    stop_nanosecond = start_nanosecond +
+                                      Nanosecond(round(Int, 1e9 * tal.duration_in_seconds))
                 end
                 for annotation_string in tal.annotations
                     isempty(annotation_string) && continue
                     annotation = EDFAnnotationV1(; recording=uuid, id=uuid4(),
-                                                 span=TimeSpan(start_nanosecond, stop_nanosecond),
+                                                 span=TimeSpan(start_nanosecond,
+                                                               stop_nanosecond),
                                                  value=annotation_string)
                     push!(annotations, annotation)
                 end
