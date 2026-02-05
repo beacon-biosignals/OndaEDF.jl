@@ -18,8 +18,7 @@ using Legolas: lift
 using OrderedCollections: OrderedDict
 using Tables: rowmerge
 
-export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples,
-       plan_edf_to_onda_samples_groups, store_edf_as_onda
+export edf_to_onda_samples, edf_to_onda_annotations, plan_edf_to_onda_samples, plan_edf_to_onda_samples_groups, store_edf_as_onda
 export ConvertedSamples, get_plan, get_samples
 export onda_to_edf
 

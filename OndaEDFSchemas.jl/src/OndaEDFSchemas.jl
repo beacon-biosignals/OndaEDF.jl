@@ -7,8 +7,7 @@ using Onda: LPCM_SAMPLE_TYPE_UNION, onda_sample_type_from_julia_type,
             AnnotationV1
 using UUIDs
 
-export PlanV1, PlanV2, PlanV3, PlanV4, FilePlanV1, FilePlanV2, FilePlanV3, FilePlanV4,
-       EDFAnnotationV1
+export PlanV1, PlanV2, PlanV3, PlanV4, FilePlanV1, FilePlanV2, FilePlanV3, FilePlanV4, EDFAnnotationV1
 
 @schema "ondaedf.plan" Plan
 
@@ -30,14 +29,10 @@ export PlanV1, PlanV2, PlanV3, PlanV4, FilePlanV1, FilePlanV2, FilePlanV3, FileP
     kind::Union{Missing,AbstractString} = lift(String, kind)
     channel::Union{Missing,AbstractString} = lift(String, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
-    sample_resolution_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type,
-                                                                            sample_resolution_in_unit)
-    sample_offset_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type,
-                                                                        sample_offset_in_unit)
-    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type,
-                                                      sample_type)
-    sample_rate::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type,
-                                                              sample_rate)
+    sample_resolution_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_resolution_in_unit)
+    sample_offset_in_unit::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_offset_in_unit)
+    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type, sample_type)
+    sample_rate::Union{Missing,LPCM_SAMPLE_TYPE_UNION} = lift(convert_number_to_lpcm_sample_type, sample_rate)
     # errors, use `nothing` to indicate no error
     error::Union{Nothing,String} = coalesce(error, nothing)
 end
@@ -57,16 +52,14 @@ end
     seconds_per_record::Float64
     # Onda.SignalV2 fields (channels -> channel), may be missing
     recording::Union{UUID,Missing} = lift(UUID, recording)
-    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type,
-                                                      sensor_type)
+    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
     sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label,
                                                        coalesce(sensor_label, sensor_type))
     channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
     sample_resolution_in_unit::Union{Missing,Float64}
     sample_offset_in_unit::Union{Missing,Float64}
-    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type,
-                                                      sample_type)
+    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type, sample_type)
     sample_rate::Union{Missing,Float64}
     # errors, use `nothing` to indicate no error
     error::Union{Nothing,String} = coalesce(error, nothing)
@@ -87,16 +80,14 @@ end
     seconds_per_record::Float64
     # Onda.SignalV2 fields (channels -> channel), may be missing
     recording::Union{UUID,Missing} = lift(UUID, recording)
-    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type,
-                                                      sensor_type)
+    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
     sensor_label::Union{Missing,AbstractString} = lift(_validate_signal_sensor_label,
                                                        coalesce(sensor_label, sensor_type))
     channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
     sample_resolution_in_unit::Union{Missing,Float64}
     sample_offset_in_unit::Union{Missing,Float64}
-    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type,
-                                                      sample_type)
+    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type, sample_type)
     sample_rate::Union{Missing,Float64}
     # errors, use `nothing` to indicate no error
     error::Union{Nothing,String} = coalesce(error, nothing)
@@ -116,14 +107,12 @@ end
     # EDF.FileHeader field
     seconds_per_record::Float64
     # Onda.SamplesInfoV2 fields (channels -> channel), may be missing
-    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type,
-                                                      sensor_type)
+    sensor_type::Union{Missing,AbstractString} = lift(_validate_signal_sensor_type, sensor_type)
     channel::Union{Missing,AbstractString} = lift(_validate_signal_channel, channel)
     sample_unit::Union{Missing,AbstractString} = lift(String, sample_unit)
     sample_resolution_in_unit::Union{Missing,Float64}
     sample_offset_in_unit::Union{Missing,Float64}
-    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type,
-                                                      sample_type)
+    sample_type::Union{Missing,AbstractString} = lift(onda_sample_type_from_julia_type, sample_type)
     sample_rate::Union{Missing,Float64}
     # errors, use `nothing` to indicate no error
     error::Union{Nothing,String} = coalesce(error, nothing)
@@ -181,7 +170,7 @@ function _plan_doc(v)
     else
         throw(ArgumentError("Invalid version"))
     end
-    samples_per_record_type = v in (1, 2) ? "Int16" : "Int32"
+    samples_per_record_type = v in (1,2) ? "Int16" : "Int32"
     unique_lines = join(map(s -> "        $s", uniques), "\n")
     s = replace(PLAN_DOC_TEMPLATE, "{{ VERSION }}" => v)
     s = replace(s, "{{ SAMPLES_PER_RECORD_TYPE }}" => samples_per_record_type)
@@ -264,9 +253,7 @@ const OndaEDFSchemaVersions = Union{PlanV1SchemaVersion,FilePlanV1SchemaVersion,
 Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{String}) = AbstractString
 # we need this because Arrow write can introduce a Missing for the error column
 # (I think because of how missing/nothing sentinels are handled?)
-function Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{Union{Nothing,String}})
-    return Union{Nothing,Missing,AbstractString}
-end
+Legolas.accepted_field_type(::OndaEDFSchemaVersions, ::Type{Union{Nothing,String}}) = Union{Nothing,Missing,AbstractString}
 
 @schema "edf.annotation" EDFAnnotation
 
