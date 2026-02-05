@@ -76,6 +76,7 @@ OndaEDF.promote_encodings
 ## Export EDF from Onda
 
 ```@docs
+onda_samples_to_edf_signals
 onda_to_edf
 ```
 

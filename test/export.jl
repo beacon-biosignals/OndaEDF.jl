@@ -18,6 +18,44 @@
     @test exported_edf.header.record_count == 200
     offset = 0
 
+    @testset "custom onda_to_edf transducer/prefilter" begin
+        transducer_fn = signal_name -> signal_name == "eeg" ? "T1" : "T2"
+        prefilter_fn = signal_name -> signal_name == "eeg" ? "0.9-20" : "0.1-0.3"
+        exported_custom = onda_to_edf(samples_to_export, annotations;
+                                      transducer_fn = transducer_fn,
+                                      prefilter_fn = prefilter_fn)
+        channel_total = sum(length(s.info.channels) for s in samples_to_export)
+        custom_offset = 0
+        for samples in samples_to_export
+            signal_name = samples.info.sensor_type
+            for (i, _) in enumerate(samples.info.channels)
+                s = exported_custom.signals[custom_offset+i]
+                @test s.header.transducer_type == (signal_name == "eeg" ? "T1" : "T2")
+                @test s.header.prefilter == (signal_name == "eeg" ? "0.9-20" : "0.1-0.3")
+            end
+            custom_offset += length(samples.info.channels)
+        end
+        @test custom_offset == channel_total
+    end
+
+    @testset "custom transducer/prefilter" begin
+        transducer_fn = signal_name -> signal_name == "eeg" ? "T1" : "T2"
+        prefilter_fn = signal_name -> signal_name == "eeg" ? "0.9-20" : "0.1-0.3"
+        custom_signals = OndaEDF.onda_samples_to_edf_signals(samples_to_export, 1.0,
+                                                             OndaEDF.STANDARD_UNITS, 
+                                                             transducer_fn, prefilter_fn)
+        custom_offset = 0
+        for samples in samples_to_export
+            signal_name = samples.info.sensor_type
+            for (i, _) in enumerate(samples.info.channels)
+                s = custom_signals[custom_offset+i]
+                @test s.header.transducer_type == (signal_name == "eeg" ? "T1" : "T2")
+                @test s.header.prefilter == (signal_name == "eeg" ? "0.9-20" : "0.1-0.3")
+            end
+            custom_offset += length(samples.info.channels)
+        end
+    end
+
     onda_samples = OndaEDF.get_samples(converted_samples)
     @testset "export $signal_name" for signal_name in signal_names
         samples = only(filter(s -> s.info.sensor_type == signal_name, onda_samples))

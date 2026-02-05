@@ -181,21 +181,53 @@ function reencode_samples(samples::Samples, sample_type::Type{<:Integer}=Int16)
     return encode(new_samples)
 end
 
-function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples}, seconds_per_record::Float64)
+"""
+    onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples},
+                                seconds_per_record::Float64,
+                                unit_alternatives=STANDARD_UNITS,
+                                transducer_fn=_ -> "",
+                                prefilter_fn=_ -> "")
+
+Convert a collection of Onda `Samples` into EDF signals.
+
+Each input `Samples` contributes one `EDF.Signal` per channel. Samples are
+re-encoded to `Int16` if needed, and signal headers are populated using the
+signal name, units (via `unit_alternatives`), and per-signal extrema.
+
+`transducer_fn` and `prefilter_fn` are callables that accept `signal_name::String`
+and return the `transducer` and `prefilter` strings for the EDF header.
+"""
+function onda_samples_to_edf_signals(onda_samples::AbstractVector{<:Samples},
+                                    seconds_per_record::Float64,
+                                    unit_alternatives = STANDARD_UNITS,
+                                    transducer_fn = _ -> "",
+                                    prefilter_fn = _ -> "")
     edf_signals = Union{EDF.AnnotationsSignal,EDF.Signal{Int16}}[]
     for samples in onda_samples
+
         # encode samples, rescaling if necessary
         samples = reencode_samples(samples, Int16)
         signal_name = samples.info.sensor_type
         extrema = SignalExtrema(samples)
+
+        # ---
+        # Get the transducer type and prefilter based on the signal type
+        transducer = transducer_fn(signal_name)
+        prefilter = prefilter_fn(signal_name)
+
+        physical_dimension = onda_to_edf_unit(samples.info.sample_unit, unit_alternatives)
+        if ismissing(physical_dimension)
+            throw(UnsupportedSampleUnit(samples.info.sample_unit))
+        end
+        # ---
+
         for channel_name in samples.info.channels
             sample_count = edf_sample_count_per_record(samples, seconds_per_record)
-            physical_dimension = onda_to_edf_unit(samples.info.sample_unit)
             edf_signal_header = EDF.SignalHeader(export_edf_label(signal_name, channel_name),
-                                                 "", physical_dimension,
+                                                 transducer, physical_dimension,
                                                  extrema.physical_min, extrema.physical_max,
                                                  extrema.digital_min, extrema.digital_max,
-                                                 "", sample_count)
+                                                 prefilter, sample_count)
             # manually convert here in case we have input samples whose encoded
             # values are convertible losslessly to Int16:
             sample_data = Int16.(vec(samples[channel_name, :].data))
@@ -212,7 +244,12 @@ end
 #####
 
 """
-    onda_to_edf(samples::AbstractVector{<:Samples}, annotations=[]; kwargs...)
+    onda_to_edf(samples::AbstractVector{<:Samples}, 
+                annotations = [];
+                unit_alternatives = STANDARD_UNITS,
+                transducer_fn = _ -> "",
+                prefilter_fn = _ -> "",
+                kwargs...)
 
 Return an `EDF.File` containing signal data converted from a collection of Onda
 [`Samples`](https://beacon-biosignals.github.io/Onda.jl/stable/#Samples-1) and
@@ -231,6 +268,11 @@ The ordering of `EDF.Signal`s in the output will match the order of the input
 collection of `Samples` (and within each channel grouping, the order of the
 samples' channels).
 
+`unit_alternatives` controls unit normalization for EDF physical dimension
+strings. `transducer_fn` and `prefilter_fn` are callables that accept
+`signal_name::String` and return the `transducer` and `prefilter` strings for
+each EDF signal header.
+
 !!! note
 
     EDF signals are encoded as Int16, while Onda allows a range of different
@@ -243,9 +285,18 @@ samples' channels).
     datasets to EDF and back.
 
 """
-function onda_to_edf(samples::AbstractVector{<:Samples}, annotations=[]; kwargs...)
+function onda_to_edf(samples::AbstractVector{<:Samples}, 
+                     annotations = [];
+                     unit_alternatives = STANDARD_UNITS,
+                     transducer_fn = _ -> "",
+                     prefilter_fn = _ -> "",
+                     kwargs...)
     edf_header = onda_samples_to_edf_header(samples; kwargs...)
-    edf_signals = onda_samples_to_edf_signals(samples, edf_header.seconds_per_record)
+    edf_signals = onda_samples_to_edf_signals(samples, 
+                                              edf_header.seconds_per_record,
+                                              unit_alternatives,
+                                              transducer_fn,
+                                              prefilter_fn)
     if !isempty(annotations)
         records = [[EDF.TimestampedAnnotationList(edf_header.seconds_per_record * i, nothing, String[""])]
                    for i in 0:(edf_header.record_count - 1)]
