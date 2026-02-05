@@ -28,7 +28,7 @@ plan_edf_to_onda_samples_groups
 #### Import execution
 
 ```@docs
-OndaEDF.edf_to_onda_samples
+edf_to_onda_samples
 ConvertedSamples
 get_plan
 get_samples
@@ -76,6 +76,7 @@ OndaEDF.promote_encodings
 ## Export EDF from Onda
 
 ```@docs
+onda_samples_to_edf_signals
 onda_to_edf
 ```
 
