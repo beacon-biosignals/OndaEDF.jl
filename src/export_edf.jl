@@ -86,7 +86,6 @@ function export_edf_label(signal_name::String, channel_name::String)
     return string(signal_edf_name, " ", channel_edf_name)
 end
 
-
 function onda_samples_to_edf_header(samples::AbstractVector{<:Samples};
                                     version::AbstractString="0",
                                     patient_metadata=EDF.PatientID(missing, missing, missing, missing),
