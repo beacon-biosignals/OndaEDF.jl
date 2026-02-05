@@ -28,7 +28,7 @@ plan_edf_to_onda_samples_groups
 #### Import execution
 
 ```@docs
-edf_to_onda_samples
+OndaEDF.edf_to_onda_samples
 ConvertedSamples
 get_plan
 get_samples
