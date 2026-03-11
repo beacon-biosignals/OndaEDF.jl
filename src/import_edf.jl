@@ -799,8 +799,8 @@ end
 
 Convert an EDF.File to `Onda.Samples` and `Onda.Annotation`s, store the samples
 in `\$path/samples/`, and write the Onda signals and annotations tables to
-`\$path/\$(signals_prefix).onda.signals.arrow` and
-`\$path/\$(annotations_prefix).onda.annotations.arrow`.  The default prefix is
+`\$path/\$(signals_prefix).onda.signal.arrow` and
+`\$path/\$(annotations_prefix).onda.annotation.arrow`.  The default prefix is
 "edf", and if a prefix is provided for signals but not annotations both will use
 the signals prefix.  The prefixes cannot reference (sub)directories.
 
@@ -840,8 +840,8 @@ function store_edf_as_onda(edf::EDF.File, onda_dir, recording_uuid::UUID=uuid4()
                            kwargs...)
 
     # Validate input argument early on
-    signals_path = joinpath(onda_dir, "$(validate_arrow_prefix(signals_prefix)).onda.signals.arrow")
-    annotations_path = joinpath(onda_dir, "$(validate_arrow_prefix(annotations_prefix)).onda.annotations.arrow")
+    signals_path = joinpath(onda_dir, "$(validate_arrow_prefix(signals_prefix)).onda.signal.arrow")
+    annotations_path = joinpath(onda_dir, "$(validate_arrow_prefix(annotations_prefix)).onda.annotation.arrow")
 
     EDF.read!(edf)
     file_format = "lpcm.zst"
