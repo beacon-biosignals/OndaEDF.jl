@@ -43,7 +43,7 @@ jobs:
       - name: "Run CompatHelper"
         run: |
           using CompatHelper
-          CompatHelper.main()
+          CompatHelper.main(; bump_version=true)
         shell: julia --color=yes --project=@compathelper {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
