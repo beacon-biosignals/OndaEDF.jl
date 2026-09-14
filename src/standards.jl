@@ -100,3 +100,13 @@ const STANDARD_LABELS = Dict(# This EEG channel name list is a combined 10/20 an
                              ["spo2"] => ["spo2"],
                              ["sao2"] => ["sao2", "osat"],
                              ["etco2"] => ["etco2" => ["capno"]])
+
+"""
+    UnsupportedSamplesUnit
+
+Exception thrown for an input Onda signal with an unsupported `sample_unit`.
+"""
+struct UnsupportedSampleUnit <: Exception
+    unit::String
+end
+Base.show(io::IO, e::UnsupportedSampleUnit) = print(io, "Unsupported input `sample_unit`: ", e.unit)
