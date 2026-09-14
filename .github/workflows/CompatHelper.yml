@@ -8,7 +8,7 @@ on:
       - main
       - master
     paths:
-      - ./.github/workflows/CompatHelper.jl
+      - ./.github/workflows/CompatHelper.yml
 permissions:
   contents: write
   pull-requests: write
