@@ -244,7 +244,7 @@ end
 #####
 
 """
-    onda_to_edf(samples::AbstractVector{<:Samples}, 
+    onda_to_edf(samples::AbstractVector{<:Samples},
                 annotations = [];
                 unit_alternatives = STANDARD_UNITS,
                 transducer_fn = _ -> "",
@@ -285,14 +285,14 @@ each EDF signal header.
     datasets to EDF and back.
 
 """
-function onda_to_edf(samples::AbstractVector{<:Samples}, 
+function onda_to_edf(samples::AbstractVector{<:Samples},
                      annotations = [];
                      unit_alternatives = STANDARD_UNITS,
                      transducer_fn = _ -> "",
                      prefilter_fn = _ -> "",
                      kwargs...)
     edf_header = onda_samples_to_edf_header(samples; kwargs...)
-    edf_signals = onda_samples_to_edf_signals(samples, 
+    edf_signals = onda_samples_to_edf_signals(samples,
                                               edf_header.seconds_per_record,
                                               unit_alternatives,
                                               transducer_fn,

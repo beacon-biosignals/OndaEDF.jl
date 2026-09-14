@@ -42,7 +42,7 @@
         transducer_fn = signal_name -> signal_name == "eeg" ? "T1" : "T2"
         prefilter_fn = signal_name -> signal_name == "eeg" ? "0.9-20" : "0.1-0.3"
         custom_signals = OndaEDF.onda_samples_to_edf_signals(samples_to_export, 1.0,
-                                                             OndaEDF.STANDARD_UNITS, 
+                                                             OndaEDF.STANDARD_UNITS,
                                                              transducer_fn, prefilter_fn)
         custom_offset = 0
         for samples in samples_to_export
@@ -311,6 +311,22 @@
         samples_reenc = OndaEDF.reencode_samples(samples)
         @test samples_reenc isa Samples
         @test decode(samples_reenc).data == data
+    end
+
+    @testset "UnsupportedSampleUnit" begin
+        info = SamplesInfoV2(; sensor_type="x",
+                             channels=["x"],
+                             sample_unit="furlongs_per_fortnight",
+                             sample_resolution_in_unit=1.0,
+                             sample_offset_in_unit=0.0,
+                             sample_type=Float32,
+                             sample_rate=1.0)
+        samples = Samples(reshape(Float32[1.0], 1, 1), info, false)
+        @test_throws OndaEDF.UnsupportedSampleUnit OndaEDF.onda_samples_to_edf_signals([samples], 1.0)
+        @test_throws OndaEDF.UnsupportedSampleUnit onda_to_edf([samples])
+
+        exc = OndaEDF.UnsupportedSampleUnit("furlongs_per_fortnight")
+        @test sprint(show, exc) == "Unsupported input `sample_unit`: furlongs_per_fortnight"
     end
 
 end
