@@ -16,16 +16,10 @@ jobs:
   CompatHelper:
     runs-on: ubuntu-latest
     steps:
-      - name: Check if Julia is already available in the PATH
-        id: julia_in_path
-        run: which julia
-        continue-on-error: true
       - name: Install Julia, but only if it is not already available in the PATH
         uses: julia-actions/setup-julia@v3
         with:
-          version: '1'
-          arch: ${{ runner.arch }}
-        if: steps.julia_in_path.outcome != 'success'
+          version: 'lts'
       - name: "Add the General registry via Git"
         run: |
           using Pkg
@@ -35,6 +29,7 @@ jobs:
       - name: "Install CompatHelper"
         run: |
           using Pkg
+          Pkg.activate("compathelper"; shared=true)
           name = "HTTP"
           uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
           version = "1"
@@ -48,7 +43,7 @@ jobs:
         run: |
           using CompatHelper
           CompatHelper.main()
-        shell: julia --color=yes {0}
+        shell: julia --color=yes --project=@compathelper {0}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # This repo uses Documenter, so we can reuse our [Documenter SSH key](https://documenter.juliadocs.org/stable/man/hosting/walkthrough/).
