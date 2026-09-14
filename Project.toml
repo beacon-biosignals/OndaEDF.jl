@@ -1,7 +1,7 @@
 name = "OndaEDF"
 uuid = "e3ed2cd1-99bf-415e-bb8f-38f4b42a544e"
 authors = ["Beacon Biosignals, Inc."]
-version = "0.14.2"
+version = "0.14.3"
 
 [deps]
 ArgCheck = "dce04be8-c92d-5529-be00-80e4d2c0e197"
@@ -31,7 +31,7 @@ Functors = "0.5"
 Legolas = "0.5"
 Onda = "0.15"
 OndaEDFSchemas = "0.2.4"
-OrderedCollections = "1.8"
+OrderedCollections = "1.8, 2"
 PrettyTables = "1.3, 2, 3"
 Random = "1"
 SparseArrays = "1"
