@@ -78,6 +78,7 @@ OndaEDF.promote_encodings
 ```@docs
 onda_samples_to_edf_signals
 onda_to_edf
+OndaEDF.UnsupportedSampleUnit
 ```
 
 #### Internal export utilities
